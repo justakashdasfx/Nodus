@@ -1,0 +1,362 @@
+/* ==========================================================================
+   EDITOR — writing typography (.prose), the note page, focus effect,
+   floating selection toolbar, colour popover.
+   .prose is shared by the editor, gallery previews and anything that shows
+   note content, so they always look consistent.
+   ========================================================================== */
+
+/* ---------- Prose (content styles) ---------- */
+
+.prose {
+  font-size: var(--prose-fs);
+  line-height: var(--prose-lh);
+  color: var(--prose-text);
+  overflow-wrap: anywhere;
+
+  /* Vertical centre of the first text line (half the line height).
+     Bullets and checkboxes are centred on this, which matches the x-height centre of Geist. */
+  --bullet-y: calc(0.5em * var(--prose-lh));
+}
+.prose > :first-child { margin-top: 0; }
+.prose p, .prose ul, .prose ol, .prose blockquote { margin: 0 0 var(--prose-block-gap); }
+
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  font-weight: var(--prose-heading-weight);
+  line-height: 1.25;
+  letter-spacing: -0.012em;
+  color: var(--prose-heading);
+  margin: 1.5em 0 0.5em;
+}
+.prose h1 { font-size: var(--prose-h1); }
+.prose h2 { font-size: var(--prose-h2); }
+.prose h3 { font-size: var(--prose-h3); }
+.prose h4 { font-size: var(--prose-h4); }
+
+/* Lists — small dot bullets, roomy spacing */
+.prose ul, .prose ol { padding-left: 1.5em; }
+.prose ul { list-style: none; }
+.prose ul > li { position: relative; }
+.prose ul > li::before {
+  content: "";
+  position: absolute;
+  left: -1.1em;
+  top: calc(var(--bullet-y) - 0.13em);   /* dot is 0.26em tall → centred on the line */
+  width: 0.26em;
+  height: 0.26em;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.75;
+}
+.prose ol > li::marker { color: var(--text-muted); }
+.prose li { margin-bottom: 0.25em; }
+.prose li > ul, .prose li > ol { margin: 0.25em 0 0; }
+
+.prose blockquote { padding-left: 1em; border-left: 2px solid var(--border-strong); color: var(--prose-quote); }
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  padding: 0.12em 0.4em;
+  border-radius: 4px;
+  background: var(--prose-code-bg);
+  color: var(--prose-code-text);
+}
+
+/* Highlight (<mark data-hl>) — tinted background + matching text colour */
+.prose mark {
+  background: none;
+  color: inherit;
+  padding: 0.1em 0.25em;
+  margin: 0 -0.05em;
+  border-radius: 4px;
+  -webkit-box-decoration-break: clone;
+          box-decoration-break: clone;
+}
+.prose mark[data-hl="blue"]   { background: var(--hl-blue-bg);   color: var(--hl-blue-fg); }
+.prose mark[data-hl="green"]  { background: var(--hl-green-bg);  color: var(--hl-green-fg); }
+.prose mark[data-hl="yellow"] { background: var(--hl-yellow-bg); color: var(--hl-yellow-fg); }
+.prose mark[data-hl="orange"] { background: var(--hl-orange-bg); color: var(--hl-orange-fg); }
+.prose mark[data-hl="pink"]   { background: var(--hl-pink-bg);   color: var(--hl-pink-fg); }
+.prose mark[data-hl="purple"] { background: var(--hl-purple-bg); color: var(--hl-purple-fg); }
+
+/* Text colour (<span data-tc>) */
+.prose [data-tc="blue"]   { color: var(--hl-blue-fg); }
+.prose [data-tc="green"]  { color: var(--hl-green-fg); }
+.prose [data-tc="yellow"] { color: var(--hl-yellow-fg); }
+.prose [data-tc="orange"] { color: var(--hl-orange-fg); }
+.prose [data-tc="pink"]   { color: var(--hl-pink-fg); }
+.prose [data-tc="purple"] { color: var(--hl-purple-fg); }
+
+/* Mini variant: the glimpse inside gallery cards */
+.prose--mini {
+  --prose-fs: var(--gallery-preview-fs);
+  --prose-lh: 1.55;
+  --prose-block-gap: 0.7em;
+  --prose-h1: 1.5em; --prose-h2: 1.35em; --prose-h3: 1.2em; --prose-h4: 1.1em;
+}
+.prose--mini h1, .prose--mini h2, .prose--mini h3, .prose--mini h4 { margin-top: 1em; }
+
+/* ---------- Note page ---------- */
+
+.note { min-height: 100%; display: flex; justify-content: center; padding: 0 var(--view-pad); }
+.note__body { position: relative; }
+.note__col { width: 100%; max-width: var(--editor-width); padding: var(--editor-pad-top) 0 var(--editor-pad-bottom); }
+
+.note__bar { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; color: var(--text-muted); font-size: var(--fs-small); flex-wrap: wrap; }
+.note__spacer { flex: 1; }
+.note__tag, .note__folder { display: inline-flex; align-items: center; gap: 6px; }
+.note__folder select {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 2px 0;
+  color: var(--text-muted);
+  cursor: pointer;
+  outline-offset: 4px;
+}
+.note__folder select:hover { color: var(--text); }
+.note__folder select option { background: var(--bg-raised); color: var(--text); }
+.note__banner { margin-bottom: 20px; color: var(--danger); font-size: var(--fs-small); }
+
+/* ---------- Editor + focus effect ---------- */
+
+.editor { outline: none; min-height: 50vh; caret-color: var(--accent); }
+.editor > * { position: relative; }
+.editor > *, .editor li { transition: color var(--t-focus) var(--ease), background var(--t-med) var(--ease), box-shadow var(--t-med) var(--ease); }
+
+/* The paragraph you're writing in is brighter; headings light up only while you're in them */
+.editor .is-active { color: var(--prose-text-active); }
+.editor :is(h1, h2, h3, h4).is-active { color: var(--prose-heading-active); }
+
+/* Thin marker beside the active paragraph (set --active-marker to transparent to remove).
+   Distance from the text: --active-marker-offset in css/tokens.css. Thickness: --active-marker-width. */
+.editor > .is-active::after,
+.editor li.is-active::after {
+  content: "";
+  position: absolute;
+  left: calc(-1 * var(--active-marker-offset));
+  top: 0.3em; bottom: 0.3em;
+  width: var(--active-marker-width);
+  border-radius: 3px;
+  background: var(--active-marker);
+  pointer-events: none;
+}
+/* A list item sits inside its list's indent, so the line is pulled back out to the same spot as for paragraphs.
+   --li-x = how far in from the editor's edge this item starts (1.5em per list level; checklists indent 1.7em). */
+.editor li { position: relative; --li-x: 1.5em; }
+.editor > ul[data-type="todo"] > li { --li-x: 1.7em; }
+.editor :is(ul, ol) :is(ul, ol) > li { --li-x: 3em; }
+.editor :is(ul, ol) :is(ul, ol) :is(ul, ol) > li { --li-x: 4.5em; }
+.editor :is(ul, ol) :is(ul, ol) :is(ul, ol) :is(ul, ol) > li { --li-x: 6em; }
+.editor li.is-active::after { left: calc(-1 * (var(--li-x) + var(--active-marker-offset))); }
+/* An item with sub-items: the line only runs along its own first line, not down through the children */
+.editor li.is-active:has(> ul, > ol)::after { bottom: auto; height: calc(var(--prose-lh) * 1em - 0.6em); }
+@media (max-width: 760px) { .editor > .is-active::after, .editor li.is-active::after { display: none; } }
+
+/* Focus modes — set in js/core/config.js → defaults.focusMode */
+.editor[data-focus="strict"] { --prose-text: var(--prose-text-strict); --prose-quote: var(--prose-text-strict); }
+.editor[data-focus="off"] .is-active { color: inherit; }
+.editor[data-focus="off"] :is(h1, h2, h3, h4).is-active { color: var(--prose-heading); }
+.editor[data-focus="off"] .is-active::after { display: none; }
+
+/* "Untitled" hint on an empty first heading */
+.editor > h1:first-child:has(> br:only-child)::before {
+  content: "Untitled";
+  float: left;
+  height: 0;
+  color: var(--text-faint);
+  pointer-events: none;
+}
+
+/* ---------- Floating selection toolbar ---------- */
+
+.sel-toolbar {
+  position: fixed;
+  z-index: 60;
+  display: none;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: var(--bg-raised);
+  border-radius: var(--radius-pop);
+  box-shadow: var(--shadow-pop);
+}
+.sel-toolbar.is-open { display: flex; }
+
+.sel-btn {
+  position: relative;
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  border-radius: 8px;
+  color: var(--text-muted);
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.sel-btn:hover { background: var(--bg-hover); color: var(--text); }
+.sel-btn.is-on { color: var(--text); background: var(--bg-pressed); }
+.sel-btn__dot { position: absolute; right: 6px; bottom: 6px; width: 5px; height: 5px; border-radius: 50%; }
+
+/* Popovers hang below the toolbar */
+.sel-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 190px;
+  padding: 10px;
+  background: var(--bg-raised);
+  border-radius: var(--radius-pop);
+  box-shadow: var(--shadow-pop);
+}
+.sel-toolbar.is-right .sel-pop { left: auto; right: 0; }
+.sel-pop--more { padding: 4px; }
+
+.sel-pop__section + .sel-pop__section { margin-top: 12px; }
+.sel-pop__label { display: block; margin-bottom: 8px; font-size: var(--fs-tiny); color: var(--text-muted); }
+
+.swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+.swatch {
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  border-radius: 7px;
+  font-size: 12px; font-weight: 600;
+  color: var(--c);
+  background: var(--bg);
+}
+.swatch--tc { border-radius: 50%; background: var(--c); }
+.swatch--none { background: var(--bg-hover); color: var(--text-muted); }
+.swatch:hover { filter: brightness(1.2); }
+.swatch.is-last { box-shadow: 0 0 0 2px var(--bg-raised), 0 0 0 3.5px var(--c); }
+
+
+/* ---------- Checklists  (<ul data-type="todo"><li data-check="true|false">) ---------- */
+
+.prose ul[data-type="todo"] { padding-left: 1.7em; }
+
+/* the box: a squircle, drawn where the bullet dot would be */
+.prose ul[data-type="todo"] > li::before {
+  left: -1.7em;
+  top: calc(var(--bullet-y) - 0.5em);    /* box is 1em tall → centred on the line */
+  width: 1em;
+  height: 1em;
+  box-sizing: border-box;
+  border: 1.5px solid var(--text-muted);
+  border-radius: 32%;
+  background: transparent;
+  opacity: 1;
+  cursor: pointer;
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+.prose ul[data-type="todo"] > li[data-check="true"]::before { background: var(--text-faint); border-color: transparent; }
+
+/* the tick */
+.prose ul[data-type="todo"] > li[data-check="true"]::after {
+  content: "";
+  position: absolute;
+  left: -1.34em;
+  top: calc(var(--bullet-y) - 0.32em);   /* tick sits in the middle of the box */
+  width: 0.28em;
+  height: 0.5em;
+  border: solid var(--bg-card);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+/* ticked item: greyed out with a see-through strike-through (stays grey even while active) */
+.prose ul[data-type="todo"] > li[data-check="true"] {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  text-decoration-color: rgba(128, 128, 128, 0.45);
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+}
+
+/* ---------- Shortcut hints in the "More" menu ---------- */
+
+
+/* ---------- Tags in the right margin (js/editor/tags.js) ---------- */
+.tag-rail { position: absolute; top: 0; left: calc(100% + var(--rail-gap)); width: var(--rail-width); height: 0; pointer-events: none; }
+.tag-group { position: absolute; left: 0; width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.tag-chip {
+  display: inline-flex; align-items: center; gap: 2px; max-width: 100%;
+  height: 22px; padding: 0;
+  --tag-h: 210;                                    /* set per tag from its name (tagHue) */
+  color: hsl(var(--tag-h) var(--tag-sat) var(--tag-light));   /* just a soft colour — no background */
+  font-size: 11.5px; line-height: 1; white-space: nowrap;
+  pointer-events: auto;
+}
+.tag-chip__label { overflow: hidden; text-overflow: ellipsis; line-height: 1.5; /* room for descenders (g, y, p) */ color: inherit; text-decoration: none; transition: color var(--t-fast); }
+.tag-chip__label:hover, .tag-chip__label:focus-visible { filter: brightness(1.25); text-decoration: underline; text-underline-offset: 2px; }
+.tag-chip__x { display: none; padding: 0 0 0 4px; font-size: 13px; line-height: 1; color: inherit; cursor: pointer; transition: color var(--t-fast); }
+.tag-chip:hover .tag-chip__x, .tag-chip:focus-within .tag-chip__x { display: inline; }
+.tag-chip__x:hover, .tag-chip__x:focus-visible { color: var(--tag-remove); }
+
+/* No room beside the text: each block's tags sit right after its last word (positioned by js/editor/tags.js) */
+.tag-rail.is-compact { left: 0; width: 100%; }
+.tag-rail.is-compact .tag-group { width: auto; max-width: 100%; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 8px; }
+
+/* Soft highlight on the block you jumped to (from a thread, a tag list or the side pane).
+   It stays until you click or type in that editor. Colour: --block-target-bg in css/tokens.css. */
+.editor .is-target { background: var(--block-target-bg); box-shadow: 0 0 0 6px var(--block-target-bg); border-radius: 4px; }
+
+/* ---------- Block handle, menu and drag line (js/editor/block-handle.js) ---------- */
+.block-handle {
+  position: absolute; z-index: 5;
+  left: calc(-1 * min(var(--handle-offset), var(--view-pad) - 4px));
+  width: 24px; height: 24px; padding: 0;
+  display: grid; place-items: center;
+  border-radius: 6px; color: var(--handle-color);
+  cursor: grab; touch-action: none;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.block-handle[hidden] { display: none; }
+.block-handle:hover, .block-handle:focus-visible { background: var(--bg-hover); color: var(--text-dim); }
+.block-handle:active { cursor: grabbing; }
+
+.editor .is-dragging { opacity: 0.35; }
+.drop-line { position: absolute; z-index: 4; height: 3px; border-radius: 3px; background: var(--accent); pointer-events: none; }
+.drop-line[hidden] { display: none; }
+body.is-block-dragging, body.is-block-dragging * { cursor: grabbing !important; user-select: none !important; }
+
+.block-menu {
+  position: fixed; z-index: 100; width: 256px; max-height: calc(100vh - 16px); overflow-y: auto;
+  padding: 6px; border-radius: 12px;
+  background: var(--bg-raised); border: 1px solid var(--border); box-shadow: var(--shadow-pop);
+  font-size: var(--fs-small);
+}
+.block-menu__title { padding: 6px 10px 4px; font-size: var(--fs-tiny); color: var(--text-faint); }
+.block-menu__sep { height: 1px; margin: 6px 4px; background: var(--border); }
+.block-menu__item {
+  display: flex; align-items: center; gap: 8px; width: 100%; height: 30px; padding: 0 10px;
+  border-radius: 8px; color: var(--text-dim); text-align: left;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.block-menu__item:hover, .block-menu__item:focus-visible { background: var(--bg-hover); color: var(--text); outline: none; }
+.block-menu__item[disabled] { opacity: 0.4; pointer-events: none; }
+.block-menu__item.is-current { color: var(--text); }
+.block-menu__item.is-danger:hover, .block-menu__item.is-danger:focus-visible { color: var(--tag-remove); }
+.block-menu__icon { width: 16px; display: grid; place-items: center; flex: none; color: var(--text-muted); }
+.block-menu__label { flex: 1; white-space: nowrap; }
+.block-menu__hint { font-size: var(--fs-tiny); color: var(--text-faint); white-space: nowrap; }
+
+/* The same menu inside the selection toolbar's "…", and under the caret for "/" */
+.block-menu__item.is-active { background: var(--bg-hover); color: var(--text); }
+.block-menu__empty { padding: 8px 10px; color: var(--text-faint); }
+.block-menu--inline { position: static; width: 240px; max-height: none; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+.slash-menu { width: 256px; max-height: min(340px, calc(100vh - 16px)); }
+@media (pointer: coarse) { .block-menu__item { height: 38px; } }
+
+/* Phones: the grip needs room beside the text, so the page's side padding grows a little */
+@media (max-width: 760px) { .note { --view-pad: 30px; } }
+
+/* ---------- #tag suggestions (js/editor/tag-suggest.js) ---------- */
+.tag-suggest {
+  position: fixed; z-index: 100; min-width: 200px; max-width: 300px; padding: 5px; border-radius: 12px;
+  background: var(--bg-raised); border: 1px solid var(--border); box-shadow: var(--shadow-pop);
+  font-size: var(--fs-small);
+}
+.tag-suggest[hidden] { display: none; }
+.tag-suggest__item { --tag-h: 210; display: flex; align-items: center; gap: 8px; width: 100%; height: 30px; padding: 0 10px; border-radius: 8px; color: var(--text-dim); text-align: left; }
+.tag-suggest__item.is-active, .tag-suggest__item:hover { background: var(--bg-hover); color: var(--text); }
+.tag-suggest__dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: hsl(var(--tag-h) var(--tag-sat) var(--tag-light)); }
+.tag-suggest__name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tag-suggest__name b { font-weight: 600; color: var(--text); }
+.tag-suggest__count { font-size: var(--fs-tiny); color: var(--text-faint); font-variant-numeric: tabular-nums; }

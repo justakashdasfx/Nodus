@@ -1,0 +1,10 @@
+{
+  "name": "nodus",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal personal notes app — static front end + two Vercel serverless functions.",
+  "scripts": {
+    "dev": "vercel dev"
+  }
+}

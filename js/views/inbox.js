@@ -1,0 +1,16 @@
+/* INBOX — every note that is not in a notebook, newest first. Journal entries are not included.
+   New notes start here (unless you create them inside a notebook); file one by choosing a notebook at the top of the note. */
+import * as store from '../core/store.js';
+import { button, viewHead, gallery, noteCard, emptyState } from '../ui/components.js';
+
+export function render() {
+  const notes = store.looseNotes();
+  const actions = button({ action: 'note-new', iconName: 'plus', label: 'New note', variant: 'btn--solid' })
+                + button({ action: 'import-text', iconName: 'upload', label: 'Import' });
+  const body = notes.length
+    ? gallery(notes.map(noteCard))
+    : emptyState({ title: 'Your inbox is empty', text: 'Notes without a notebook land here. Everything you file into a notebook leaves the inbox.',
+        actionHtml: button({ action: 'note-new', iconName: 'plus', label: 'New note', variant: 'btn--solid' }) });
+  const subtitle = `${notes.length} ${notes.length === 1 ? 'note' : 'notes'} without a notebook`;
+  return { html: `<div class="view">${viewHead({ title: 'Inbox', subtitle, actions })}${body}</div>` };
+}

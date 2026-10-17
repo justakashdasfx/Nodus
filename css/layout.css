@@ -1,0 +1,256 @@
+/* ==========================================================================
+   LAYOUT — app shell: sidebar, topbar, the rounded card.
+   The sidebar sits directly on the page background (no box); the card floats
+   to its right. Collapsing the sidebar lets the card fill the width.
+   ========================================================================== */
+
+.app {
+  display: flex;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--bg-app);
+}
+
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+/* ---------- Topbar ---------- */
+
+.topbar {
+  flex: none;
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 var(--card-gap) 0 8px;
+}
+.topbar__spacer { flex: 1; }
+
+/* "│ 342 words · 2 min read" beside the menu button */
+.topbar__sep { width: 1px; height: 16px; margin: 0 10px 0 6px; background: var(--border-strong); flex: none; }
+.topbar__stats { color: var(--text-muted); font-size: var(--fs-small); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* ---------- Card ---------- */
+
+.card {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;               /* the page card, and — when open — the gap (divider) and the side pane card */
+  margin: 0 var(--card-gap) var(--card-gap) 0;
+  transition: margin var(--t-med) var(--ease);
+}
+.sidebar-collapsed .card { margin-left: var(--card-gap); }
+.card__scroll {
+  flex: 1 1 0; min-width: 0; min-height: 0; overflow-y: auto;
+  background: var(--bg-card); border-radius: var(--card-radius);   /* the page is a card… */
+}
+
+/* ---------- Side pane (js/ui/pane.js) ---------- */
+
+.pane {
+  /* a narrower page inside the pane: the handle, the side line and the tags need less room */
+  --view-pad: 44px; --editor-pad-top: 28px; --editor-pad-bottom: 30vh;
+  /* width = the saved share of the card (--pane-frac, set by the divider), never below --pane-min on either side */
+  flex: 0 0 clamp(var(--pane-min), calc(var(--pane-frac, 0.5) * 100%), calc(100% - var(--pane-min) - var(--pane-divider-w)));
+  min-width: 0; min-height: 0;
+  display: flex; flex-direction: column;
+  background: var(--bg-card); border-radius: var(--card-radius); overflow: hidden;   /* …and so is the pane */
+}
+.pane[hidden], .divider[hidden] { display: none; }
+
+.pane__head {
+  flex: none; display: flex; align-items: center; gap: 2px;
+  height: 44px; padding: 0 8px 0 12px;
+  border-bottom: 1px solid var(--border);
+}
+.pane__title {
+  flex: 1; min-width: 0; margin-right: 6px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: var(--fs-ui); font-weight: 500; color: var(--text-dim);
+}
+.pane__title[style*="--tag-h"] { color: hsl(var(--tag-h) var(--tag-sat) var(--tag-light)); }
+.pane__head .btn--icon { flex: none; }
+.pane__scroll { flex: 1; min-height: 0; overflow-y: auto; }
+
+.pane .view { padding: 20px var(--view-pad) 48px; }
+.pane .view-head { margin-bottom: 18px; }
+.pane .view-head__title { font-size: 22px; }
+.note--pane .note__bar { margin-bottom: 20px; }
+
+/* The gap between the two cards is the draggable divider; a small grip appears in it when you point at it */
+.divider {
+  flex: none; position: relative;
+  width: var(--pane-divider-w);
+  cursor: col-resize; touch-action: none; outline: none;
+}
+.divider__grip {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: calc(var(--pane-divider-w) - 4px); height: 48px; max-width: 18px;
+  display: grid; place-items: center;
+  border-radius: 8px; background: var(--pane-grip-bg); color: var(--pane-grip-color);
+  box-shadow: 0 0 0 1px var(--border);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--t-fast), color var(--t-fast);
+}
+.divider:hover .divider__grip, .divider:focus-visible .divider__grip, body.is-pane-resizing .divider__grip { opacity: 1; color: var(--pane-grip-color-hover); }
+@media (pointer: coarse) { .divider__grip { opacity: 0.7; } }   /* no hover on touch: always faintly there */
+body.is-pane-resizing, body.is-pane-resizing * { cursor: col-resize !important; user-select: none !important; }
+
+/* ---------- Sidebar ---------- */
+
+.sidebar {
+  width: var(--sidebar-width);
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  padding: 0 8px 12px;
+  overflow: hidden;
+  transition: margin-left var(--t-med) var(--ease), opacity var(--t-med) var(--ease), visibility var(--t-med);
+}
+.sidebar-collapsed .sidebar { margin-left: calc(var(--sidebar-width) * -1); opacity: 0; pointer-events: none; visibility: hidden; }
+
+.sidebar__head { height: var(--topbar-height); display: flex; align-items: center; padding: 0 10px; flex: none; }
+.sidebar__brand { font-weight: 600; color: var(--text-dim); }
+
+/* Search box shell (does nothing yet) */
+.search-box {
+  display: flex; align-items: center; gap: 10px;
+  height: 44px; margin: 20px 0 12px; padding: 0 8px 0 10px;
+  border-radius: 8px;
+  background-color: var(--bg-card);
+  color: var(--text-muted); text-align: left;
+  cursor: default; flex: none;
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+}
+.search-box:hover { background: var(--bg-hover); border-color: var(--border-strong); color: var(--text-dim); }
+.search-box__label { flex: 1; }
+.search-box__hint {
+  font: inherit; font-size: var(--fs-tiny); line-height: 1;
+  padding: 3px 5px; border-radius: 0px;
+  color: var(--text-muted);
+}
+
+.sidebar__nav { display: flex; flex-direction: column; gap: 0px; flex: none; }
+.sidebar__divider { height: 1px; background: var(--border); margin: 10px 8px; flex: none; }
+.sidebar__tree { flex: 1; min-height: 0; overflow-y: auto; padding-bottom: 12px; }
+.sidebar__foot { flex: none; padding-top: 8px; }
+.sidebar__label { margin-top: 16px; padding: 12px 10px 4px; font-size: var(--fs-fs); color: var(--text-muted); }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: var(--radius-ui);
+  color: var(--nav-text);
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.nav-item:hover { background: var(--nav-hover-bg); color: var(--nav-hover-text);}
+.nav-item.is-active { background: var(--nav-active-bg); color: var(--nav-active-text); border-left: 4px solid var(--border-left); }
+.nav-item:active { background: var(--nav-pressed-bg); }   /* last, so it shows even on the page you are on */
+.nav-item__count { margin-left: auto; font-size: var(--fs-tiny); color: var(--text-muted); }
+
+/* Folder → notes tree */
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: var(--radius-ui);
+  min-width: 0;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.tree-row__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+
+/* Notebooks: their own colours (--folder-* in css/tokens.css) */
+.tree-row--folder { padding: 0 4px 0 2px; gap: 2px; color: var(--folder-text); }
+.tree-row--folder:hover { background: var(--folder-hover-bg); color: var(--folder-hover-text); }
+.tree-row--folder.is-active { background: var(--folder-active-bg); color: var(--folder-active-text); border-left: 2px solid var(--border-left); }
+.tree-row--folder:active { background: var(--folder-pressed-bg); }
+
+/* Notes under a notebook: their own colours (--note-* in css/tokens.css) */
+.tree-note { color: var(--note-text); }
+.tree-note:hover { background: var(--note-hover-bg); color: var(--note-hover-text);}
+.tree-note.is-active { background: var(--note-active-bg); color: var(--note-active-text); border-left: 2px solid var(--border-left); }
+.tree-note:active { background: var(--note-pressed-bg); }
+
+.tree-row--folder .tree-link { padding-left: 4px; }
+.tree-link { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; height: 100%; }
+.tree-caret, .tree-add {
+  width: 22px; height: 22px; flex: none;
+  display: grid; place-items: center;
+  border-radius: 6px; color: var(--text-muted);
+}
+.tree-caret:hover, .tree-add:hover { background: var(--bg-pressed); color: var(--text); }
+.tree-caret .icon { transition: transform var(--t-fast) var(--ease); }
+.tree-folder.is-open .tree-caret .icon { transform: rotate(90deg); }
+.tree-add { opacity: 0; }
+
+/* Right-hand slot: the note count; on hover (or keyboard focus) the + button takes its place */
+.tree-trail { display: grid; place-items: center; flex: none; min-width: 22px; height: 22px; }
+.tree-trail > * { grid-area: 1 / 1; }
+.tree-count { padding: 0 4px; font-size: var(--fs-tiny); color: var(--text-muted); font-variant-numeric: tabular-nums; transition: opacity var(--t-fast); }
+.tree-row:hover .tree-count, .tree-row:focus-within .tree-count { opacity: 0; }
+.tree-row:hover .tree-add, .tree-add:focus-visible { opacity: 1; }
+@media (hover: none) {
+  .tree-trail { display: flex; gap: 2px; }
+  .tree-row:hover .tree-count, .tree-row:focus-within .tree-count { opacity: 1; }
+  .tree-add { opacity: 1; }
+}
+
+/* The guide line: runs down from the chevron along the notes of an open notebook */
+.tree-children {
+  margin-left: var(--tree-guide-indent);
+  padding-left: 8px;
+  border-left: var(--tree-guide-width) solid var(--tree-guide);
+}
+.tree-empty { padding: 4px 10px; font-size: var(--fs-small); color: var(--text-muted); }
+
+/* ---------- Hidden top bar (Ctrl+Shift+/) and focus mode (Ctrl+Alt+/) — desktop only ---------- */
+
+@media (min-width: 761px) {
+  .topbar-hidden .topbar, .focus-mode .topbar { display: none; }
+  .topbar-hidden .card { margin-top: var(--card-gap); }
+
+  .focus-mode .sidebar { margin-left: calc(var(--sidebar-width) * -1); opacity: 0; pointer-events: none; visibility: hidden; }
+  .focus-mode .card { margin: var(--card-gap); }
+  /* Focus mode also dims every paragraph except the one you're in (unless focusMode is 'off' in config.js) */
+  .focus-mode .editor:not([data-focus="off"]) { --prose-text: var(--prose-text-strict); --prose-quote: var(--prose-text-strict); }
+}
+
+@keyframes sheet-in { from { transform: translateY(28px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ---------- Mobile: sidebar becomes an overlay ---------- */
+
+.scrim { display: none; }
+
+@media (max-width: 760px) {
+  :root { --view-pad: 20px; --card-radius: 22px; --card-gap: 8px; --editor-pad-top: 32px; }
+
+  .sidebar {
+    position: fixed; inset: 0 auto 0 0; z-index: 40;
+    background: var(--bg-app);
+    padding-top: env(safe-area-inset-top, 0);
+    box-shadow: var(--shadow-pop);
+    transition: transform var(--t-med) var(--ease);
+  }
+  .sidebar-collapsed .sidebar { margin-left: 0; transform: translateX(-100%); opacity: 1; }
+  html:not(.sidebar-collapsed) .scrim { display: block; position: fixed; inset: 0; z-index: 30; background: rgba(0, 0, 0, 0.5); }
+
+  .card, .sidebar-collapsed .card { margin: 0 var(--card-gap) var(--card-gap); }
+  .card__scroll { border-radius: var(--card-radius); }
+
+  /* The side pane becomes a full-screen sheet (js/ui/pane.js also makes the back gesture close it) */
+  .card.has-pane .divider { display: none; }
+  .card.has-pane .pane {
+    --view-pad: 30px;
+    position: fixed; inset: 0; z-index: 50; width: auto; flex: none; border-radius: 0;
+    padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+    animation: sheet-in var(--t-med) var(--ease);
+  }
+  .pane__head { height: 52px; }
+  .topbar { padding-left: 4px; overflow-x: auto; }
+  .topbar .btn__label { display: none; }
+}
