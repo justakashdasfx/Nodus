@@ -133,7 +133,7 @@ body.is-pane-resizing, body.is-pane-resizing * { cursor: col-resize !important; 
 .sidebar__nav { display: flex; flex-direction: column; gap: 0px; flex: none; }
 .sidebar__divider { height: 1px; background: var(--border); margin: 10px 8px; flex: none; }
 .sidebar__tree { flex: 1; min-height: 0; overflow-y: auto; padding-bottom: 12px; }
-.sidebar__foot { flex: none; padding-top: 8px; }
+.sidebar__foot { flex: none; padding-top: 8px;margin-bottom: 20px;}
 .sidebar__label { margin-top: 16px; padding: 12px 10px 4px; font-size: var(--fs-fs); color: var(--text-muted); }
 
 .nav-item {
