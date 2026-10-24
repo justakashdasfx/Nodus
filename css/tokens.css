@@ -115,7 +115,7 @@
   --menu-item-h: 32px;                      /* ← height of one row */
   --menu-item-h-touch: 40px;                /*   the same on phones / tablets */
   --menu-item-pad-x: 10px;                  /*   space left and right inside a row */
-  --menu-gap: 8px;                          /*   space between icon and label */
+  --menu-gap: 12px;                          /*   space between icon and label */
   --menu-icon-size: 16px;
   --menu-item-radius: var(--r-sm);          /*   corner of the highlight */
   --toolbar-btn-size: 32px;                 /* selection toolbar buttons (B I U …) */

@@ -482,3 +482,15 @@ body.is-block-dragging, body.is-block-dragging * { cursor: grabbing !important; 
 }
 .block-sel-bar button:hover { background: var(--bg-hover); color: var(--text); }
 .block-sel-bar button.is-danger:hover { color: var(--danger); }
+
+/* Tag picker for a block selection (js/editor/block-select.js). Rows are the same as the #tag popup (.tag-suggest__*) */
+.tag-picker { width: 260px; max-width: calc(100vw - 16px); padding: 6px; }
+.tag-picker__input {
+  width: 100%; height: 34px; margin-bottom: 4px; padding: 0 10px;
+  border: 1px solid var(--border-strong); border-radius: var(--r-sm); background: var(--bg-card);
+  color: var(--text); font: inherit; font-size: var(--fs-small); outline: none;
+}
+.tag-picker__input:focus { border-color: var(--accent); }
+.tag-picker__input::placeholder { color: var(--text-faint); }
+.tag-picker__list { max-height: 240px; overflow-y: auto; }
+.tag-picker__empty { padding: 8px 10px; color: var(--text-faint); font-size: var(--fs-small); }

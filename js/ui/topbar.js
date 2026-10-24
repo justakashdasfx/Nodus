@@ -30,7 +30,7 @@ export function renderTopbar(route, status = 'idle') {
     const mode = store.noteMode(note);
     const modeBtn = (value, label, iconName) =>
       `<button type="button" class="seg__btn ${mode === value ? 'is-on' : ''}" data-action="mode-set" data-id="${note.id}" data-mode="${value}" aria-pressed="${mode === value}">${icon(iconName, 16)}${label}</button>`;
-    modeSwitch = `<div class="seg seg--plain" role="group" aria-label="Write or Read" title="Write / Read — saved for this note (${comboLabel(CONFIG.shortcuts['mode.toggle'])})">${modeBtn('edit', 'Write', 'pencil-simple')}${modeBtn('read', 'Read', 'eye')}</div>`;
+    modeSwitch = `<div class="seg seg--plain" role="group" aria-label="Write or Read" title="Write / Read — saved for this note (${comboLabel(CONFIG.shortcuts['mode.toggle'])})">${modeBtn('edit', 'Write', 'write')}${modeBtn('read', 'Read', 'eye')}</div>`;
     const liveEditor = document.querySelector('#view .editor');
     const count = statsLabel(liveEditor ? liveEditor.innerText : htmlToText(note.html), getStatsMode());
     meta = `<div class="topbar__meta">

@@ -88,7 +88,7 @@ export function menuModel(block, { turnOnly = false, extra = [] } = {}) {
       { act: 'duplicate', label: 'Duplicate', ic: 'copy', words: 'copy clone' },
       { act: 'up', label: 'Move up', ic: 'arrowUp', hint: hintFor('block.moveUp'), disabled: !canStep(block, -1), words: 'shift' },
       { act: 'down', label: 'Move down', ic: 'arrowDown', hint: hintFor('block.moveDown'), disabled: !canStep(block, 1), words: 'shift' },
-      ...(tagged ? [{ act: 'untag', label: 'Remove tags', ic: 'tag', words: 'untag' }] : []),
+      ...(tagged ? [{ act: 'untag', label: 'Remove tags', ic: 'tag-remove', words: 'untag' }] : []),
     ] },
     ...extra,
     { items: [{ act: 'delete', label: 'Delete', ic: 'trash', danger: true, words: 'remove' }] },

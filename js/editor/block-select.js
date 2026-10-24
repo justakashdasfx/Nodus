@@ -15,8 +15,8 @@
 import { CONFIG } from '../core/config.js';
 import { icon } from '../core/icons.js';
 import { matches } from '../core/keys.js';
-import { htmlToText, parseTags } from '../core/utils.js';
-import * as modal from '../ui/modal.js';
+import { htmlToText, parseTags, escapeHtml, tagHue } from '../core/utils.js';
+import * as store from '../core/store.js';
 import { idFactory } from './block-ops.js';
 import { turnInto, renderMenu, placeMenu } from './block-menu.js';
 
@@ -44,9 +44,6 @@ export function mountBlockSelect(root, { history }) {
   bar.className = 'block-sel-bar';
   bar.hidden = true;
   bar.innerHTML = `<span class="block-sel-bar__count"></span>
-    <button type="button" data-b="copy">Copy</button>
-    <button type="button" data-b="cut">Cut</button>
-    <button type="button" data-b="dup">Duplicate</button>
     <button type="button" data-b="turn">Turn into ${icon('caret', 12)}</button>
     <button type="button" data-b="tag">${icon('tag', 14)}<span>Tag</span></button>
     <button type="button" data-b="up" aria-label="Move up" title="Move up">${icon('arrowUp', 14)}</button>
@@ -77,6 +74,7 @@ export function mountBlockSelect(root, { history }) {
     for (const u of sel) u.classList.add(SELECTED);
     countEl.textContent = `${sel.length} ${sel.length === 1 ? 'block' : 'blocks'}`;
     closeMenu();
+    closePicker();
     placeBar();
     document.body.classList.toggle('has-block-selection', sel.length > 0);
   }
@@ -159,7 +157,7 @@ export function mountBlockSelect(root, { history }) {
 
   function onDocDown(e) {
     if (e.button !== 0) return;
-    if (e.target.closest('.block-sel-bar, .block-menu')) return;
+    if (e.target.closest('.block-sel-bar, .block-menu, .tag-picker')) return;
 
     // Shift+click on a block while blocks are selected: extend
     if (sel.length && e.shiftKey && root.contains(e.target)) {
@@ -281,18 +279,77 @@ export function mountBlockSelect(root, { history }) {
     finish();
   }
 
-  async function tag() {
-    const value = await modal.prompt({ title: 'Tag these blocks', message: `Type one or more tags, e.g. work idea. They are added to ${sel.length === 1 ? 'the block' : `all ${sel.length} blocks`}.`, placeholder: 'work idea', confirmLabel: 'Add tags' });
-    if (value == null) return;
-    const add = parseTags(String(value).replace(/#/g, ' '));
-    if (!add.length) return;
+  /* ---------- Tag picker: the same list as the #tag popup, with a search / add box ---------- */
+
+  let picker = null;
+
+  function closePicker() {
+    picker?.remove();
+    picker = null;
+    document.removeEventListener('mousedown', onPickerOutside, true);
+  }
+  const onPickerOutside = (e) => { if (picker && !picker.contains(e.target) && !e.target.closest('[data-b="tag"]')) closePicker(); };
+
+  function applyTag(tag) {
     commit();
     for (const b of leaves('tag')) {
       const have = parseTags(b.getAttribute('data-tags'));
-      b.setAttribute('data-tags', [...new Set([...have, ...add])].join(' '));
+      b.setAttribute('data-tags', [...new Set([...have, tag])].join(' '));
     }
     finish();
-    focusQuietly();
+  }
+
+  function openTagPicker(button) {
+    if (picker) { closePicker(); return; }
+    closeMenu();
+    const known = new Map(store.tagCounts());
+    root.querySelectorAll('[data-tags]').forEach((b) => parseTags(b.getAttribute('data-tags')).forEach((t) => { if (!known.has(t)) known.set(t, 1); }));
+    const all = [...known].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    let items = [];
+    let active = 0;
+
+    picker = document.createElement('div');
+    picker.className = 'tag-suggest tag-picker';
+    picker.innerHTML = '<input class="tag-picker__input" type="text" placeholder="Search or add a tag" aria-label="Search or add a tag" spellcheck="false" autocomplete="off"><div class="tag-picker__list" role="listbox"></div>';
+    const input = picker.querySelector('input');
+    const listEl = picker.querySelector('.tag-picker__list');
+
+    function draw() {
+      const q = input.value.trim().replace(/^#/, '').toLowerCase();
+      items = all
+        .filter(([t]) => t.includes(q))
+        .sort((a, b) => ((b[0] === q) - (a[0] === q)) || (b[0].startsWith(q) - a[0].startsWith(q)) || (b[1] - a[1]) || a[0].localeCompare(b[0]))
+        .slice(0, 8)
+        .map(([tag, count]) => ({ tag, count }));
+      const typed = parseTags(q)[0];
+      if (typed && !known.has(typed)) items.unshift({ tag: typed, count: 0, isNew: true });   // a tag that does not exist yet
+      active = Math.min(active, Math.max(items.length - 1, 0));
+      listEl.innerHTML = items.length
+        ? items.map((it, i) => `<button type="button" role="option" class="tag-suggest__item${i === active ? ' is-active' : ''}" data-tag="${escapeHtml(it.tag)}" style="--tag-h:${tagHue(it.tag)}">
+            <span class="tag-suggest__dot"></span><span class="tag-suggest__name">${escapeHtml(it.tag)}</span><span class="tag-suggest__count">${it.isNew ? 'New' : it.count}</span></button>`).join('')
+        : '<div class="tag-picker__empty">No tags yet. Type a name to add one.</div>';
+    }
+
+    const pick = (tag) => { if (!tag) return; closePicker(); applyTag(tag); focusQuietly(); };
+
+    input.addEventListener('input', () => { active = 0; draw(); });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown' && items.length) { e.preventDefault(); active = (active + 1) % items.length; draw(); }
+      else if (e.key === 'ArrowUp' && items.length) { e.preventDefault(); active = (active - 1 + items.length) % items.length; draw(); }
+      else if (e.key === 'Enter') { e.preventDefault(); pick(items[active]?.tag); }
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closePicker(); focusQuietly(); }
+    });
+    listEl.addEventListener('click', (e) => { const b = e.target.closest('.tag-suggest__item'); if (b) pick(b.dataset.tag); });
+
+    document.body.append(picker);
+    const r = button.getBoundingClientRect();
+    const h = picker.offsetHeight;
+    const top = r.bottom + 6 + h > innerHeight - 8 ? Math.max(8, r.top - h - 6) : r.bottom + 6;
+    picker.style.top = `${top}px`;
+    picker.style.left = `${Math.max(8, Math.min(r.left, innerWidth - picker.offsetWidth - 8))}px`;
+    draw();
+    input.focus();
+    document.addEventListener('mousedown', onPickerOutside, true);
   }
 
   /* ---------- Turn-into menu ---------- */
@@ -306,7 +363,7 @@ export function mountBlockSelect(root, { history }) {
 
   function openTurnMenu(button) {
     if (menu) { closeMenu(); return; }
-    const items = CONFIG.blockTypes.filter(([k]) => k !== 'divider' && k !== 'toggle').map(([k, label, , words]) => ({ act: 'turn:' + k, label, words }));
+    const items = CONFIG.blockTypes.filter(([k]) => k !== 'divider' && k !== 'toggle').map(([k, label, , words, ic]) => ({ act: 'turn:' + k, label, words, ic }));
     menu = document.createElement('div');
     menu.className = 'block-menu';
     menu.setAttribute('role', 'menu');
@@ -330,11 +387,8 @@ export function mountBlockSelect(root, { history }) {
     const b = e.target.closest('[data-b]');
     if (!b || !sel.length) return;
     switch (b.dataset.b) {
-      case 'copy': if (await copy()) toast('Copied'); break;
-      case 'cut': await cut(); break;
-      case 'dup': duplicate(); break;
       case 'turn': openTurnMenu(b); break;
-      case 'tag': await tag(); break;
+      case 'tag': openTagPicker(b); break;
       case 'up': move(-1); break;
       case 'down': move(1); break;
       case 'del': remove(); break;
@@ -382,6 +436,7 @@ export function mountBlockSelect(root, { history }) {
     window.removeEventListener('mousemove', onMove);
     window.removeEventListener('mouseup', onUp);
     closeMenu();
+    closePicker();
     document.body.classList.remove('has-block-selection');
     for (const u of units()) u.classList.remove(SELECTED);
     bar.remove(); band.remove();
