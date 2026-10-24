@@ -386,7 +386,7 @@
   --write-checked:           var(--grey-800);    /* ticked checklist items */
   --write-dim:               var(--grey-700);    /* focus mode (Ctrl/Cmd+Alt+/): how dim the other paragraphs get */
 
-  --read-text:      var(--grey-1200);
+  --read-text:      var(--grey-1150);
   --read-heading:   var(--grey-1100);
   --read-quote:     var(--grey-1000);
   --read-code-bg:   color-mix(in srgb, var(--grey-1200) 7%, transparent);
