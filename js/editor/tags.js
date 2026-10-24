@@ -144,7 +144,7 @@ export function mountTagRail(root, { editable = true } = {}) {
     if (!tagged.length) { rail.innerHTML = ''; return; }
 
     const chip = (tag) => `<span class="tag-chip" data-tag="${escapeHtml(tag)}" style="--tag-h:${tagHue(tag)}">`
-      + `<a class="tag-chip__label" href="#/tag/${encodeURIComponent(tag)}" title="Show every block tagged #${escapeHtml(tag)}">#${escapeHtml(tag)}</a>`
+      + `<a class="tag-chip__label" href="#/tag/${encodeURIComponent(tag)}" title="Show every block tagged #${escapeHtml(tag)}">${escapeHtml(tag)}</a>`
       + (editable ? `<button type="button" class="tag-chip__x" title="Remove this tag from the block" aria-label="Remove tag ${escapeHtml(tag)}">×</button>` : '')
       + `</span>`;
 

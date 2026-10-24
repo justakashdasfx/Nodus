@@ -260,7 +260,7 @@
 
 
 /* ---------- Tags in the right margin (js/editor/tags.js) ---------- */
-.tag-rail { position: absolute; top: 0; left: calc(100% + var(--rail-gap)); width: var(--rail-width); height: 0; pointer-events: none; }
+.tag-rail { position: absolute; top: 0; left: calc(110% + var(--rail-gap)); width: var(--rail-width); height: 0; pointer-events: none; }
 .tag-group { position: absolute; left: 0; width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
 .tag-chip {
   display: inline-flex; align-items: center; gap: 2px; max-width: 100%;
@@ -445,12 +445,12 @@ body.is-block-dragging, body.is-block-dragging * { cursor: grabbing !important; 
 .prose p[data-callout] {
   position: relative;
   margin: 0 0 var(--prose-block-gap);
-  padding: 12px 16px 12px 46px;
-  border: 1px solid var(--callout-border);
-  border-radius: var(--r-sm);
-  background: var(--callout-bg);
+  padding: 16px;
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-callout);
+  background: var(--grey-300);
 }
-.prose p[data-callout]::before { content: var(--callout-icon); position: absolute; left: 15px; top: 12px; line-height: inherit; }
+/* .prose p[data-callout]::before { content: var(--callout-icon); position: absolute; left: 15px; top: 12px; line-height: inherit; } */
 
 .prose details { margin: 0 0 var(--prose-block-gap); }
 .prose summary { position: relative; display: block; padding-left: 26px; list-style: none; cursor: text; }

@@ -121,7 +121,7 @@ function draw({ keepScroll = false } = {}) {
     title = store.getNote(state.id)?.title || 'Untitled';
   } else {
     out = tagView.render({ id: state.id });
-    title = '#' + state.id;
+    title = state.id;
     titleStyle = ` style="--tag-h:${tagHue(state.id)}"`;
   }
 

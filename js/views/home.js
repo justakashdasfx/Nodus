@@ -8,9 +8,10 @@ export function render() {
   const pinned = store.pinnedNotes();
   const style = settings.getViewStyle('home');
   const show = (list) => (style === 'list' ? noteList(list) : gallery(list.map(noteCard)));
-  const actions = viewSwitch(style, { page: 'home' }) + button({ action: 'note-new', iconName: 'plus', label: 'New note', variant: 'btn--solid' })
+  const actions = viewSwitch(style, { page: 'home' })
                 + button({ action: 'template-pick', iconName: 'copy', label: 'From template' })
-                + button({ action: 'import-text', iconName: 'upload', label: 'Import' });
+                + button({ action: 'import-text', iconName: 'upload', label: 'Import' })
+                + button({ action: 'note-new', iconName: 'plus', label: 'New note', variant: 'button' });
   const body = notes.length
     ? show(notes)
     : emptyState({ title: 'No notes yet', text: 'Write a new note or import a text file.',

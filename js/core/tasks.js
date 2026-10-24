@@ -7,7 +7,7 @@
 
 import { CONFIG } from './config.js';
 import * as store from './store.js';
-import { sanitizeHtml, BID_RE } from './utils.js';
+import { sanitizeHtml, BID_RE, DUE_RE } from './utils.js';
 import { todayIso } from './dates.js';
 
 /** Every checklist item: [{ note, block, done, due }] — notes in Trash and templates are not included. */
@@ -61,6 +61,18 @@ export function toggleTask(noteId, blockId) {
   const li = body.querySelector(`li[data-bid="${blockId}"]`);
   if (!li || !li.hasAttribute('data-check')) return false;
   li.setAttribute('data-check', li.getAttribute('data-check') === 'true' ? 'false' : 'true');
+  store.updateNoteContent(noteId, body.innerHTML);
+  return true;
+}
+
+/** Sets (iso = 'YYYY-MM-DD') or removes (iso = '') the date of one checklist item in its note. → true if it was found. */
+export function setTaskDue(noteId, blockId, iso) {
+  const note = store.getNote(noteId);
+  if (!note || !BID_RE.test(blockId || '') || (iso && !DUE_RE.test(iso))) return false;
+  const body = new DOMParser().parseFromString(`<body>${sanitizeHtml(note.html || '')}</body>`, 'text/html').body;
+  const li = body.querySelector(`li[data-bid="${blockId}"]`);
+  if (!li || !li.hasAttribute('data-check')) return false;
+  if (iso) li.setAttribute('data-due', iso); else li.removeAttribute('data-due');
   store.updateNoteContent(noteId, body.innerHTML);
   return true;
 }

@@ -52,9 +52,9 @@
    Everything you may want to tweak is in the variables right below. Keep this block AFTER the .btn rules. */
 .button {
   /* Size and shape: auto layout, hug width, height 40, gap 8, padding 8 12 8 10, radius 8 */
-  --button-height:  40px;
+  --button-height:  32px;
   --button-gap:      8px;
-  --button-padding:  8px 12px 8px 10px;      /* top  right  bottom  left */
+  --button-padding:  12px 12px 12px 10px;      /* top  right  bottom  left */
   --button-radius:   8px;
 
   /* Fill: the Linear layer (15%) sits over the solid #26292B */
@@ -97,7 +97,7 @@
   box-shadow: var(--button-ring), var(--button-inner-bottom), var(--button-inner-top), var(--button-drop);
   transition: box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
-.button .icon { flex: none; }
+.button .icon { flex: none; color: var(--grey-1200);}
 
 /* The overlay layer: invisible at rest, lighter on hover, darker when pressed */
 .button::before {
@@ -139,7 +139,8 @@
   color: var(--text-muted);
 }
 .seg .icon { margin-right: 5px; }
-.topbar .seg--plain { padding: 0 4px; background: var(--modeswitch-bg); border-radius: var(--toggle-radius); }   /* Write | Read in the top bar and Gallery | List. Colours: --toggle-bg in css/tokens.css */
+.topbar .seg--plain { padding: 0 4px; background: var(--modeswitch-bg); border-radius: var(--toggle-radius);}   /* Write | Read in the top bar and Gallery | List. Colours: --toggle-bg in css/tokens.css */
+.topbar .seg--plain .seg__btn.is-on { color: var(--grey-1200); }
 .seg__btn { display: flex; align-items: center; height: 24px; padding: 0 8px; border-radius: var(--r-sm); color: inherit; transition: background var(--t-fast), color var(--t-fast); }
 .seg__btn:hover { color: var(--text); }
 .seg__btn.is-on { background: var(--bg-pressed); color: var(--text); }

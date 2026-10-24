@@ -212,7 +212,7 @@ registerActions({
   'thread-new': () => go(`#/thread/${store.createThread().id}`),
   'thread-from-tag': (el) => {
     const tag = el.dataset.tag;
-    go(`#/thread/${store.createThread({ title: '#' + tag, rules: { tags: [tag] } }).id}`);
+    go(`#/thread/${store.createThread({ title: tag, rules: { tags: [tag] } }).id}`);
   },
   'thread-delete': async (el) => {
     const t = store.getThread(el.dataset.id);
@@ -288,6 +288,7 @@ registerActions({
 
   /* Tasks page: tick the box → the checklist item is ticked in its note */
   'task-toggle': (el) => { if (toggleTask(el.dataset.note, el.dataset.block)) drawView(); },
+  'task-due': async (el) => { if (await tasks.editDue(el)) drawView(); },
 
   /* Templates (built in: config.js → templates · your own: notes of type 'template') */
   'template-pick': async () => {

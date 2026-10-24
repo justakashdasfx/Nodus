@@ -4,14 +4,17 @@
 
 .view { max-width: var(--view-max-width); margin: 0 auto; padding: 36px var(--view-pad) 64px; }
 
-.view-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+.view-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 28px; flex-wrap: wrap;}
 .view-head__title { font-size: var(--fs-title); font-weight: 600; letter-spacing: -0.015em; color: var(--text-dim); }
 .view-head__sub { margin-top: 4px; color: var(--text-muted); }
 .view-head__title[style*="--tag-h"] { color: hsl(var(--tag-h) var(--tag-sat) var(--tag-light)); }
 .view-head__desc { max-width: 62ch; margin-top: 10px; color: var(--text-dim); line-height: 1.55; white-space: pre-line; }
 .view-head__add-desc { margin-top: 8px; padding: 0; color: var(--text-faint); font-size: var(--fs-small); transition: color var(--t-fast); }
 .view-head__add-desc:hover { color: var(--text-dim); }
-.view-head__actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.view-head__actions { display: flex; align-items: center; gap: 0px; flex-wrap: wrap; }
+.view-head__actions .button { margin: 0 8px; }   /* extra space on both sides of New note */
+.view-head .seg--plain { padding: 0 4px; align-items: center;  background: var(--toggle-bg); border-radius: var(--toggle-radius); margin-right: 4px; }
+.seg--view .seg__btn .icon { margin-right: 0; }
 
 /* ---------- Gallery ---------- */
 

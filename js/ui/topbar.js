@@ -48,7 +48,7 @@ export function renderTopbar(route, status = 'idle') {
     </div>
     ${meta}
     <div class="topbar__spacer"></div>
-    ${button({ action: 'note-new', iconName: 'plus', label: 'New' })}
+    ${button({ action: 'note-new', iconName: 'plus', label: 'New Note' })}
     ${modeSwitch}
     <button type="button" class="status" id="sync-status" data-action="sync-key" data-state="${status}" title="Sync status — click to set the sync key">
       <span class="status__dot"></span><span class="status__text">${STATUS_LABELS[status]}</span>

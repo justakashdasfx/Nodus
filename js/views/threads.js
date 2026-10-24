@@ -7,7 +7,7 @@ import { button, viewHead, emptyState } from '../ui/components.js';
 /** Small readable summary of a thread's rules: coloured #tags, then words and keywords. */
 export function rulesSummary(rules) {
   const parts = [
-    ...rules.tags.map(t => `<span class="rule-chip rule-chip--tag" style="--tag-h:${tagHue(t)}">#${escapeHtml(t)}</span>`),
+    ...rules.tags.map(t => `<span class="rule-chip rule-chip--tag" style="--tag-h:${tagHue(t)}">${escapeHtml(t)}</span>`),
     ...rules.words.map(w => `<span class="rule-chip">${escapeHtml(w)}</span>`),
     ...rules.keywords.map(k => `<span class="rule-chip rule-chip--keyword">“${escapeHtml(k)}”</span>`),
   ];
@@ -17,7 +17,7 @@ export function rulesSummary(rules) {
 export function render() {
   const list = store.threads();
   const notes = store.searchableNotes();
-  const add = button({ action: 'thread-new', iconName: 'plus', label: 'New thread', variant: 'btn--solid' });
+  const add = button({ action: 'thread-new', iconName: 'plus', label: 'New thread', variant: 'button' });
 
   if (!list.length) {
     return { html: `<div class="view">${viewHead({ title: 'Threads' })}${emptyState({

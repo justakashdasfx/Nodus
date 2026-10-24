@@ -2,6 +2,8 @@
    THREAD — one saved thread: a title, the rules, the Live switch and the blocks it gathers.
 
    Live   → the list follows your notes: new matching blocks appear, edited ones update.
+   Rules  → a card with Match Any/All and three fields (Tags · Words · Keywords). The Tags field opens a picker of your existing tags
+              (type to filter, ↑ ↓ Enter, or click; "Create" adds a new one). Look: css/tasks-tags.css (.tr-*).
    Settings → open while a thread has no rules yet (and after Edit); Save hides them, Edit brings them back.
               Changes are stored as you make them; Save just closes the panel (and adds any word you typed but did not confirm).
    Paused → the list is frozen as it was when you paused (the blocks stay, with their current text).
@@ -17,9 +19,9 @@ import { blockRows } from './blocklist.js';
 import { icon } from '../core/icons.js';
 
 const KINDS = [
-  { key: 'tags', label: 'Tags', placeholder: 'Add a tag', help: '' },
-  { key: 'words', label: 'Words', placeholder: 'Add a word', help: 'whole words, e.g. budget' },
-  { key: 'keywords', label: 'Keywords', placeholder: 'Add a keyword', help: 'anywhere in the text, e.g. deep work, or part of a word' },
+  { key: 'tags', label: 'Tags', icon: 'tag', placeholder: 'Search or add a tag', help: '' },
+  { key: 'words', label: 'Words', icon: 'font', placeholder: 'Add a word', help: 'whole words, e.g. budget' },
+  { key: 'keywords', label: 'Keywords', icon: 'search', placeholder: 'Add a keyword', help: 'anywhere in the text, e.g. deep work, or part of a word' },
 ];
 
 export function render({ id }) {
@@ -47,7 +49,7 @@ export function render({ id }) {
           ${button({ action: 'thread-delete', iconName: 'trash', label: 'Delete', data: { id: thread.id } })}
         </div>
       </header>
-      <section class="thread__rules" id="thread-rules" aria-label="Rules"></section>
+      <section class="tr" id="thread-rules" aria-label="Rules"></section>
       <div id="thread-paused"></div>
       <div class="list" id="thread-list"></div>
     </div>`;
@@ -68,33 +70,63 @@ function mountThread(root, id) {
 
   function rulesHtml(thread) {
     const r = thread.rules;
-    const chip = (kind, value) => {
-      const style = kind === 'tags' ? ` style="--tag-h:${tagHue(value)}"` : '';
-      const label = kind === 'tags' ? '#' + value : kind === 'keywords' ? `“${value}”` : value;
-      return `<span class="rule-chip ${kind === 'tags' ? 'rule-chip--tag' : kind === 'keywords' ? 'rule-chip--keyword' : ''}"${style}>${escapeHtml(label)}<button type="button" class="rule-chip__x" data-remove="${kind}" data-value="${escapeHtml(value)}" aria-label="Remove ${escapeHtml(value)}">×</button></span>`;
-    };
-    const tagList = [...store.tagCounts().keys()].filter(t => !r.tags.includes(t)).sort()
-      .map(t => `<option value="${escapeHtml(t)}"></option>`).join('');
+    const x = (kind, value) => `<button type="button" class="tr-chip__x" data-remove="${kind}" data-value="${escapeHtml(value)}" aria-label="Remove ${escapeHtml(value)}">${icon('close', 10)}</button>`;
+    const chip = (kind, value) => kind === 'tags'
+      ? `<span class="tr-chip tr-chip--tag" style="--tag-h:${tagHue(value)}"><span class="tr-chip__label">${escapeHtml(value)}</span>${x(kind, value)}</span>`
+      : `<span class="tr-chip"><span class="tr-chip__label">${kind === 'keywords' ? `“${escapeHtml(value)}”` : escapeHtml(value)}</span>${x(kind, value)}</span>`;
     return `
-      <div class="rule-row">
-        <span class="rule-row__label">Match</span>
-        <div class="seg" role="group" aria-label="Match any or all">
-          <button type="button" class="seg__btn ${r.mode === 'any' ? 'is-on' : ''}" data-mode="any">Any</button>
-          <button type="button" class="seg__btn ${r.mode === 'all' ? 'is-on' : ''}" data-mode="all">All</button>
+      <div class="tr-head">
+        <span class="tr-label">Match</span>
+        <div class="tr-seg" role="group" aria-label="Match any or all">
+          <button type="button" class="tr-seg__btn" data-mode="any" aria-pressed="${r.mode === 'any'}">Any</button>
+          <button type="button" class="tr-seg__btn" data-mode="all" aria-pressed="${r.mode === 'all'}">All</button>
         </div>
-        <span class="rule-row__help">${r.mode === 'any' ? 'a block counts if it fits at least one rule' : 'a block must fit every rule'}</span>
+        <span class="tr-hint">${r.mode === 'any' ? 'a block counts if it fits at least one rule' : 'a block must fit every rule'}</span>
       </div>
       ${KINDS.map(k => `
-        <div class="rule-row">
-          <span class="rule-row__label">${k.label}</span>
-          <div class="rule-row__field">
+        <div class="tr-field">
+          <span class="tr-label">${icon(k.icon, 14)}${k.label}</span>
+          <div class="tr-box" data-box="${k.key}">
             ${r[k.key].map(v => chip(k.key, v)).join('')}
-            <input class="rule-input" type="text" data-kind="${k.key}" placeholder="${k.placeholder}" autocomplete="off" ${k.key === 'tags' ? 'list="thread-taglist"' : ''} maxlength="60">
+            <input class="rule-input tr-input" type="text" data-kind="${k.key}" placeholder="${k.placeholder}" autocomplete="off" spellcheck="false" maxlength="60">
+            ${k.key === 'tags' ? '<div class="tr-pick" role="listbox" hidden></div>' : ''}
           </div>
-          ${k.help ? `<span class="rule-row__help">${k.help}</span>` : ''}
+          ${k.help ? `<p class="tr-help">${k.help}</p>` : ''}
         </div>`).join('')}
-      <datalist id="thread-taglist">${tagList}</datalist>
-      <div class="rule-actions"><button type="button" class="btn btn--solid" data-thread-act="save"><span class="btn__label">Save</span></button></div>`;
+      <div class="tr-foot"><button type="button" class="btn btn--primary" data-thread-act="save"><span class="btn__label">Save</span></button></div>`;
+  }
+
+  /* ---- The tag picker: your existing tags under the Tags field (replaces the browser's own list) ---- */
+  let pickActive = 0;
+  const pickEl = () => $('.tr-pick');
+  const tagInput = () => $('.rule-input[data-kind="tags"]');
+
+  function pickItems(q) {
+    const have = new Set(store.getThread(id)?.rules.tags || []);
+    const needle = q.trim().replace(/^#/, '').toLowerCase();
+    const counts = store.tagCounts();
+    const items = [...counts].filter(([t]) => !have.has(t) && (!needle || t.includes(needle)))
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([tag]) => ({ tag }));
+    if (needle && TAG_RE.test(needle) && !counts.has(needle) && !have.has(needle)) items.push({ tag: needle, create: true });
+    return items;
+  }
+
+  function openPick() {
+    const pop = pickEl(), input = tagInput();
+    if (!pop || !input) return;
+    const items = pickItems(input.value);
+    if (!items.length) { pop.hidden = true; return; }
+    pickActive = Math.max(0, Math.min(pickActive, items.length - 1));
+    pop.innerHTML = items.map((it, i) =>
+      `<button type="button" role="option" class="tr-pick__item${i === pickActive ? ' is-active' : ''}" data-pick="${escapeHtml(it.tag)}" style="--tag-h:${tagHue(it.tag)}">`
+      + `<span class="tr-pick__dot"></span><span class="tr-pick__name">${escapeHtml(it.tag)}</span>${it.create ? '<span class="tr-pick__meta">Create</span>' : ''}</button>`).join('');
+    pop.hidden = false;
+    pop.querySelector('.is-active')?.scrollIntoView({ block: 'nearest' });
+  }
+  const closePick = () => { const pop = pickEl(); if (pop) pop.hidden = true; };
+
+  function pickTag(tag) {
+    if (addTerm('tags', tag)) { pickActive = 0; paint(); tagInput()?.focus(); }   // focusing reopens the picker, so you can add several in a row
   }
 
   let editing = !ruleCount(store.getThread(id)?.rules || { tags: [], words: [], keywords: [] }); // a new thread starts with its settings open
@@ -157,22 +189,31 @@ function mountThread(root, id) {
 
   root.addEventListener('keydown', (e) => {
     const input = e.target.closest?.('.rule-input');
-    if (!input || (e.key !== 'Enter' && e.key !== ',')) return;
-    e.preventDefault();
+    if (!input) return;
     const kind = input.dataset.kind;
+    const pop = kind === 'tags' ? pickEl() : null;
+    if (pop && !pop.hidden) {                                   // the picker is open
+      const n = pop.querySelectorAll('.tr-pick__item').length;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); pickActive = (pickActive + (e.key === 'ArrowDown' ? 1 : -1) + n) % n; openPick(); return; }
+      if (e.key === 'Escape') { e.preventDefault(); closePick(); return; }
+      if (e.key === 'Enter') { e.preventDefault(); const it = pop.querySelectorAll('.tr-pick__item')[pickActive]; if (it) pickTag(it.dataset.pick); return; }
+    }
+    if (e.key !== 'Enter' && e.key !== ',') return;
+    e.preventDefault();
     if (addTerm(kind, input.value)) { paint(); root.querySelector(`.rule-input[data-kind="${kind}"]`)?.focus(); }
   });
 
-  root.addEventListener('change', (e) => { // choosing a tag from the browser's suggestion list
-    const input = e.target.closest?.('.rule-input[data-kind="tags"]');
-    if (input && input.value && [...store.tagCounts().keys()].includes(input.value.replace(/^#/, '').toLowerCase())) {
-      if (addTerm('tags', input.value)) { paint(); root.querySelector('.rule-input[data-kind="tags"]')?.focus(); }
-    }
-  });
+  root.addEventListener('focusin', (e) => { if (e.target.closest?.('.rule-input[data-kind="tags"]')) { pickActive = 0; openPick(); } });
+  root.addEventListener('input', (e) => { if (e.target.closest?.('.rule-input[data-kind="tags"]')) { pickActive = 0; openPick(); } });
+  root.addEventListener('mousedown', (e) => { if (e.target.closest?.('.tr-pick')) e.preventDefault(); });   // clicking a tag must not take focus away from the field
+  const outside = (e) => { if (!e.target.closest?.('.tr-box[data-box="tags"]')) closePick(); };
+  document.addEventListener('pointerdown', outside, true);
 
   root.addEventListener('click', (e) => {
     const thread = store.getThread(id);
     if (!thread) return;
+    const pick = e.target.closest('[data-pick]');
+    if (pick) { pickTag(pick.dataset.pick); return; }
     const remove = e.target.closest('[data-remove]');
     if (remove) {
       const kind = remove.dataset.remove;
@@ -196,5 +237,5 @@ function mountThread(root, id) {
 
   paint();
   if (!store.getThread(id)?.title || store.getThread(id).title === 'Untitled thread') { title.focus(); title.select(); }
-  return () => {};
+  return () => { document.removeEventListener('pointerdown', outside, true); };
 }

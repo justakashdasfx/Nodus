@@ -4,7 +4,7 @@
    ========================================================================== */
 
 export const CONFIG = {
-  appName: 'Notes',
+  appName: 'Nodus',
 
   /* ---- Server endpoints (Vercel serverless functions in /api) ---- */
   api: {

@@ -10,7 +10,7 @@ const snippet = (note) =>
 export function render() {
   const entries = store.journalEntries();
   const style = settings.getViewStyle('journal');
-  const today = button({ action: 'journal-today', iconName: 'plus', label: "Today's entry", variant: 'btn--solid' });
+  const today = button({ action: 'journal-today', iconName: 'plus', label: "Today's Entry", variant: 'button' });
   const rows = entries.map(n => `
     <a class="row" href="#/note/${n.id}">
       <span class="row__title">${escapeHtml(formatJournalDate(n.date))}</span>

@@ -7,8 +7,9 @@ import { button, viewHead, gallery, noteCard, noteList, viewSwitch, emptyState }
 export function render() {
   const notes = store.looseNotes();
   const style = settings.getViewStyle('inbox');
-  const actions = viewSwitch(style, { page: 'inbox' }) + button({ action: 'note-new', iconName: 'plus', label: 'New note', variant: 'btn--solid' })
-                + button({ action: 'import-text', iconName: 'upload', label: 'Import' });
+  const actions = viewSwitch(style, { page: 'inbox' })
++ button({ action: 'import-text', iconName: 'upload', label: 'Import' })
+  + button({ action: 'note-new', iconName: 'plus', label: 'New note', variant: 'button' });
   const body = notes.length
     ? (style === 'list' ? noteList(notes) : gallery(notes.map(noteCard)))
     : emptyState({ title: 'Your inbox is empty', text: 'Notes without a notebook land here. Everything you file into a notebook leaves the inbox.',

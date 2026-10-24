@@ -78,7 +78,7 @@ export function mountTagSuggest(root, { counts }) {
         ? `${escapeHtml(it.tag.slice(0, at))}<b>${escapeHtml(q)}</b>${escapeHtml(it.tag.slice(at + q.length))}`
         : escapeHtml(it.tag);
       return `<button type="button" role="option" class="tag-suggest__item${i === active ? ' is-active' : ''}" data-tag="${escapeHtml(it.tag)}" style="--tag-h:${tagHue(it.tag)}">
-        <span class="tag-suggest__dot"></span><span class="tag-suggest__name">#${name}</span><span class="tag-suggest__count">${it.count}</span></button>`;
+        <span class="tag-suggest__dot"></span><span class="tag-suggest__name">${name}</span><span class="tag-suggest__count">${it.count}</span></button>`;
     }).join('');
   }
 

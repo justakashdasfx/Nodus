@@ -48,6 +48,8 @@
    --r-sm2: 8px;
   --r-sm: 6px;                              /* buttons, rows, inputs, menu items */
   --r-md: 12px;                             /* menus, popovers, toolbar, search window */
+  --sidebar-radius: 0 8px 8px 0px;   /* sidebar rows only: rounded top-left and bottom-left */
+  --r-callout: 0 16px 16px 0px;   /* callout  only: rounded top-right and bottom-right */
   --r-lg: 16px;                             /* gallery cards, dialogs */
   --r-card: 16px;                           /* the big writing card */
   --r-search: 8px;                          /* the sidebar's search box */
@@ -65,8 +67,8 @@
   --spot-radius: var(--r-md);
 
   /* ---- 5. LAYOUT ------------------------------------------------------ */
-  --sidebar-width: 272px;
-  --topbar-height: 56px;
+  --sidebar-width: 280px;
+  --topbar-height: 48px;
   --card-gap: 12px;                         /* space around the card */
   --editor-width: 656px;                    /* the writing column */
   --editor-pad-top: 40px;                   /* space above the first line */
@@ -75,7 +77,7 @@
   --view-max-width: 1120px;                 /* widest a gallery / list page gets */
   --handle-offset: 50px;                    /* how far left of the text the six-dot handle sits */
   --rail-width: 120px;                      /* tag column in the right margin */
-  --rail-gap: 20px;                         /* space between the text and that column */
+  --rail-gap: 40px;                         /* space between the text and that column */
   --pane-min: 320px;                        /* side pane: narrowest either side may get */
   --pane-divider-w: 16px;                   /* side pane: gap between the two cards (and the divider's grab area) */
   --tree-guide-width: 1.5px;                /* vertical guide line under an open notebook */
@@ -94,8 +96,7 @@
   --note-bar-width: 3px;                    /* notes under a notebook (and in Pinned) */
   --note-pad-left: 6px;
   --note-active-indent: 0px;
-  --sidebar-radius: 0 4px 4px 0px;   /* sidebar rows only: rounded top-left and bottom-left */
-
+  --sidebar-hover-radius: 8px;
   /* ---- 7. GALLERY ------------------------------------------------------
      Card height = preview + info + 2px of outline.  192 + 64 + 2 = 258px, as in Figma. */
   --gallery-min: 300px;                     /* narrowest a card gets (more columns appear as the page widens) */
@@ -163,6 +164,7 @@
   --grey-900:  #697177;
   --grey-1000: #787F85;
   --grey-1100: #9BA1A6;
+  --grey-1150: #CBCDD0;
   --grey-1200: #ECEDEE;
 }
 :root[data-theme="light"] {
@@ -193,6 +195,8 @@
   --c-danger: #E5736F;
   --c-ok:     #5FC08A;
   --c-warn:   #E3C25A;
+  --brand-from: #BFD3E6;      /* the app name's gradient: left … */
+--brand-to:   #95BDE5;      /* … to right (your Figma stops 0% and 100%) */
 }
 :root[data-theme="light"] {
   --c-accent: #1F78B8;
@@ -372,7 +376,7 @@
    ========================================================================== */
 :root,
 :root[data-theme="dark"] {
-  --write-text-focused:      var(--grey-1100);
+  --write-text-focused:      var(--grey-1150);
   --write-text-unfocused:    var(--grey-900);
   --write-heading-focused:   var(--grey-1100);
   --write-heading-unfocused: var(--grey-800);
@@ -383,7 +387,7 @@
   --write-dim:               var(--grey-700);    /* focus mode (Ctrl/Cmd+Alt+/): how dim the other paragraphs get */
 
   --read-text:      var(--grey-1200);
-  --read-heading:   var(--grey-1000);
+  --read-heading:   var(--grey-1100);
   --read-quote:     var(--grey-1000);
   --read-code-bg:   color-mix(in srgb, var(--grey-1200) 7%, transparent);
   --read-code-text: var(--grey-1100);
