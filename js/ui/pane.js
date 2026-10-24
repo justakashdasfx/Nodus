@@ -151,6 +151,9 @@ function draw({ keepScroll = false } = {}) {
 
 export const isOpen = () => !!state;
 
+/** Re-draw the pane as it is (after Write ⇄ Read changes how notes open). */
+export function refresh() { if (state) draw({ keepScroll: true }); }
+
 export function openNote(id, block = null, { fromPane = false } = {}) {
   if (!store.getNote(id)) return;
   const route = getRoute();

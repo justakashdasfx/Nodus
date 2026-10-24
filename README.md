@@ -1,4 +1,4 @@
-# Nodus
+# Notes
 
 A minimal personal notes app. Static front end (HTML / CSS / JS modules) plus three tiny
 Vercel serverless functions that sync to Upstash Redis with a key you type once per device.
@@ -78,7 +78,9 @@ If you add or rename a JS/CSS file, add it to the `SHELL` list in `sw.js` (and b
 - **Tag suggestions.** Type `#` and a few letters: your existing tags pop up (starts-with first, most used first). ↑/↓ choose, Tab accepts, Enter accepts after ↑/↓, Esc closes. A space still creates the tag exactly as typed.
 - **"/" menu.** Type `/` at the start of a block or after a space: the block menu opens under the caret (turn into, duplicate, move, delete). Keep typing to filter (`/h2`), ↑ ↓ choose, Enter/Tab apply, Esc closes. It is the same menu as the six-dot grip's, and its "Turn into" list is also in the selection toolbar's "…". Edit the list in `config.js` → `blockTypes`.
 - **Inbox.** Notes without a notebook live in the Inbox (sidebar). New notes start there unless created inside a notebook; choose a notebook at the top of a note to file it.
-- **About (i)** in the top bar: edit the text in `config.js` → `about`.
+- **About** is in the ⋯ menu at the right of the top bar: edit the text in `config.js` → `about`.
+- **Write | Read.** The switch in the top bar (Ctrl/Cmd+Shift+E), saved **per note**. Read opens a note read-only in proper text colours; the colours for both modes are in `css/tokens.css` section 7.
+- **Top bar and ⋯ menu.** On a note the top bar shows date created, notebook and the word count (click it for characters). The ⋯ menu holds Light | Dark and Sans | Mono | Serif side by side (the font is saved per note), Download all, As text, Copy / Export as Markdown, Move to Trash and About.
 - **Customizing:** see `CUSTOMIZE.md` for what to change and where.
 - **Side pane** (desktop). A second panel to the right of the page, with its own editor, floating toolbar, block handle and tag margin. Open it with **Shift+click** on any note link (sidebar, galleries, lists) or on a tag chip in a note (shows every block with that tag). In a thread or tag list a plain click on a block opens it in the pane, scrolled to the block with a soft highlight that stays until you click or type. Inside the pane, clicking a block of a tag list swaps it to that note; ← goes back. The header has *Open full page* and *Close*. Drag the divider to resize (double-click = 50/50, or use ←/→ when it is focused); the width is remembered, the pane itself closes on reload. A note is never open twice: if it is already the page or in the pane you are just taken to the block. The page and the pane are two cards with a gap; pointing at the gap shows a grip. On phones the pane is a full-screen sheet (tap a block in a thread or tag list); the back gesture closes it. Settings: `config.js` → `pane`, `css/tokens.css` → `--pane-*`, `--block-target-bg`.
 - **Threads** (sidebar, under Notebooks) gather blocks from all your notes by rule. Rules: **tags** (the block carries the tag), **words** (whole words, case-insensitive), **keywords** (anywhere in the text: phrases and parts of words), combined with **Any** (fits at least one rule) or **All** (fits every rule). The thread page has a renamable title, the rule editor, a **Live** switch and the list of blocks with their note names; click a block to open its note at that block. **Live** follows your notes. **Paused** freezes the list as it was (blocks keep their current text); a banner counts new matching blocks, with *Update now* and *Go live*. The tag page (`#/tag/x`) is the simplest thread; *Save as thread* turns it into a saved one. Threads sync like notebooks (`/api/threads`) and are never stored in the notes themselves.
@@ -99,7 +101,6 @@ If you add or rename a JS/CSS file, add it to the `SHELL` list in `sw.js` (and b
 | Card corner radius / gallery card radius  | `--card-radius` / `--radius-gallery`             |
 | Writing size, line height, heading sizes  | `--prose-*` in `css/tokens.css`                  |
 | Muted vs bright text while writing        | `--prose-text`, `--prose-heading`, `--prose-text-active` |
-| Side line beside the active paragraph     | `--active-marker`, `--active-marker-width`       |
 | Tag chips and the margin column           | `--tag-*`, `--rail-width`, `--rail-gap`          |
 | Which colour is used where                | the COLOUR GUIDE at the top of `css/tokens.css`  |
 | How strong the active-paragraph effect is | `defaults.focusMode` in `js/core/config.js`      |

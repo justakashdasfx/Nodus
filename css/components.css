@@ -1,32 +1,135 @@
 /* ==========================================================================
    COMPONENTS — buttons, segmented control, sync status, modal, empty state.
+   Sections: 1 Buttons · 2 Segmented control · 3 Sync status · 4 Modal · 5 Toast · 6 Empty state · 7 Switch
+             8 Search window · 9 Gallery | List switch · 10 Due dates · 11 Template picker
    ========================================================================== */
 
-/* ---------- Buttons ---------- */
 
+/* ==========================================================================
+   1. BUTTONS
+   ========================================================================== */
+
+/* ---------- Base button (.btn) and its small variants ---------- */
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   height: 32px;
-  padding: 0 10px;
-  border-radius: var(--radius-ui);
+  padding: 10px 16px 10px 12px;
+  border-radius: var(--r-sm);
   color: var(--text-muted);
   font-size: var(--fs-ui);
   white-space: nowrap;
-  transition: background var(--t-fast), color var(--t-fast);
+  /* transition: background var(--t-fast), color var(--t-fast); */
 }
 .btn:hover { background: var(--bg-hover); color: var(--text); }
 .btn--icon { width: 32px; padding: 0; justify-content: center; }
-.btn--solid { background: var(--bg-pressed); color: var(--text); }
+.btn--solid { background: var(--bg-solid); color: var(--text); }
 .btn--solid:hover { background: var(--border-strong); }
 .btn--danger { background: var(--danger); color: #fff; }
 .btn--danger:hover { background: var(--danger); filter: brightness(1.1); }
 .btn--danger-text { color: var(--danger); }
 .btn--danger-text:hover { color: var(--danger); }
 
-/* ---------- Segmented control (Sans | Mono) ---------- */
+/* ---------- Primary and secondary (colours, sheen, shadows: css/tokens.css → section 14) ---------- */
+.btn--primary, .btn--secondary { justify-content: center; padding: 0 16px; font-weight: 500; }
+.btn--primary {
+  color: var(--btn-primary-text);
+  background: var(--btn-primary-sheen), var(--btn-primary-bg);
+  box-shadow: var(--btn-primary-inner-top), var(--btn-primary-inner-bottom), var(--btn-primary-drop);
+}
+.btn--primary:hover { color: var(--btn-primary-text); background: var(--btn-primary-sheen), var(--btn-primary-bg-hover); }
+.btn--primary:active { background: var(--btn-primary-sheen), var(--btn-primary-bg-pressed); }
+.btn--secondary { color: var(--btn-secondary-text); background: var(--btn-secondary-bg); }
+.btn--secondary:hover { color: var(--btn-secondary-text); background: var(--btn-secondary-bg-hover); }
+.btn--secondary:active { background: var(--btn-secondary-bg-pressed); }
 
+/* ---------- .button — the designed button (Figma "Frame 77") ----------
+   Rest:     a dark fill with a faint blue sheen, a ring, two inner edges and a soft shadow underneath.
+   Hover:    a subtle lighter overlay.
+   Pressed:  a darker overlay, the soft shadow is gone, the top edge becomes an inner shadow, and the button sits 1px lower,
+             so it looks pushed into the page.
+   Everything you may want to tweak is in the variables right below. Keep this block AFTER the .btn rules. */
+.button {
+  /* Size and shape: auto layout, hug width, height 40, gap 8, padding 8 12 8 10, radius 8 */
+  --button-height:  40px;
+  --button-gap:      8px;
+  --button-padding:  8px 12px 8px 10px;      /* top  right  bottom  left */
+  --button-radius:   8px;
+
+  /* Fill: the Linear layer (15%) sits over the solid #26292B */
+  --button-bg:    #26292B;
+  --button-sheen: linear-gradient(180deg, rgb(126 153 179 / 6.3%) 0%, rgb(102 102 102 / 0%) 100%);
+  --button-text:  var(--text);
+
+  /* The four shadows at rest (x  y  blur  spread  colour) */
+  --button-ring:          0 0 0 6px rgb(0 0 0 / 20%);               /* flat ring, no blur */
+  --button-inner-bottom:  inset 0 -1px 1px 0 rgb(0 0 0 / 20%);      /* inner shadow from the bottom edge */
+  --button-inner-top:     inset 0 1px 1px 0 rgb(255 255 255 / 9%);  /* inner highlight from the top edge */
+  --button-drop:          0 4px 6px -2px rgb(0 0 0 / 30%);          /* soft shadow below: this is what "lifts" the button */
+
+  /* Hover and pressed */
+  --button-hover-overlay:   rgb(255 255 255 / 5%);                  /* a subtle lighter layer */
+  --button-pressed-overlay: rgb(0 0 0 / 22%);                       /* a darker layer */
+  --button-pressed-bottom:  inset 0 -1px 1px 0 rgb(255 255 255 / 6%);  /* a faint light edge at the bottom */
+  --button-pressed-top:     inset 0 2px 5px 0 rgb(0 0 0 / 45%);       /* the sunken shadow at the top */
+  --button-pressed-drop:    0 0 0 0 transparent;                       /* no soft shadow when pressed */
+  --button-pressed-shift:   1px;                                       /* how far it sinks */
+
+  position: relative;
+  isolation: isolate;                          /* keeps the overlay behind the text, above the fill */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--button-gap);
+  width: fit-content;
+  height: var(--button-height);
+  padding: var(--button-padding);
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--button-radius);
+  color: var(--button-text);
+  font-size: var(--fs-ui);
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  background: var(--button-sheen), var(--button-bg);
+  box-shadow: var(--button-ring), var(--button-inner-bottom), var(--button-inner-top), var(--button-drop);
+  transition: box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+.button .icon { flex: none; }
+
+/* The overlay layer: invisible at rest, lighter on hover, darker when pressed */
+.button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--button-hover-overlay);
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+  pointer-events: none;
+}
+
+/* .btn:hover would paint a flat grey over the button: these lines keep the designed fill (hover and pressed) */
+.button:hover,
+.button:active { color: var(--button-text); background: var(--button-sheen), var(--button-bg); }
+
+.button:hover::before { opacity: 1; }
+
+.button:active {
+  transform: translateY(var(--button-pressed-shift));
+  box-shadow: var(--button-ring), var(--button-pressed-bottom), var(--button-pressed-top), var(--button-pressed-drop);
+}
+.button:active::before { background: var(--button-pressed-overlay); opacity: 1; }
+
+.button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.button:disabled { opacity: 0.5; pointer-events: none; }
+
+
+/* ==========================================================================
+   2. SEGMENTED CONTROL (Sans | Mono · Write | Read · Gallery | List)
+   ========================================================================== */
 .seg {
   display: inline-flex;
   align-items: center;
@@ -36,12 +139,18 @@
   color: var(--text-muted);
 }
 .seg .icon { margin-right: 5px; }
-.seg__btn { height: 24px; padding: 0 8px; border-radius: 6px; color: inherit; transition: background var(--t-fast), color var(--t-fast); }
+.topbar .seg--plain { padding: 0 4px; background: var(--modeswitch-bg); border-radius: var(--toggle-radius); }   /* Write | Read in the top bar and Gallery | List. Colours: --toggle-bg in css/tokens.css */
+.seg__btn { display: flex; align-items: center; height: 24px; padding: 0 8px; border-radius: var(--r-sm); color: inherit; transition: background var(--t-fast), color var(--t-fast); }
 .seg__btn:hover { color: var(--text); }
 .seg__btn.is-on { background: var(--bg-pressed); color: var(--text); }
 
-/* ---------- Sync status ---------- */
+.seg--field { height: 38px; width: 100%; gap: 2px; padding: 3px; border: 1px solid var(--border-strong); border-radius: var(--radius-ui); background: var(--bg-card); }
+.seg--field .seg__btn { flex: 1; height: 100%; }
 
+
+/* ==========================================================================
+   3. SYNC STATUS
+   ========================================================================== */
 .status {
   display: inline-flex;
   align-items: center;
@@ -61,26 +170,26 @@
 .status[data-state="badkey"] .status__dot { background: var(--danger); }
 .status[data-state="nokey"] .status__dot { background: var(--status-busy); }
 
-/* ---------- Modal ---------- */
+@media (max-width: 760px) { .status__text { display: none; } }   /* phones: just the coloured dot */
 
+
+/* ==========================================================================
+   4. MODAL
+   ========================================================================== */
 .modal { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; }
-.modal__scrim { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.5); }
+.modal__scrim { position: absolute; inset: 0; background: var(--scrim); }
 .modal__box {
   position: relative;
   width: min(420px, calc(100vw - 32px));
   padding: 22px;
   background: var(--bg-raised);
-  border-radius: 16px;
+  border-radius: var(--r-lg);
   box-shadow: var(--shadow-pop);
 }
-.modal__box--about { width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow-y: auto; }
-.about { margin-top: 18px; display: grid; gap: 14px; }
-.about__row { display: grid; grid-template-columns: 116px 1fr; gap: 16px; }
-.about dt { color: var(--text-muted); font-size: var(--fs-small); padding-top: 1px; }
-.about dd { color: var(--text-dim); line-height: 1.55; }
-@media (max-width: 520px) { .about__row { grid-template-columns: 1fr; gap: 2px; } }
 .modal__title { font-size: 16px; font-weight: 600; color: var(--text); }
 .modal__text { margin-top: 8px; color: var(--text-dim); line-height: 1.55; }
+.modal__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
 .modal__input {
   width: 100%;
   margin-top: 16px;
@@ -92,7 +201,6 @@
   outline: none;
 }
 .modal__input:focus { border-color: var(--accent); }
-.modal__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
 
 /* Modal with several fields (Edit notebook) */
 .modal__field { display: block; margin-top: 16px; }
@@ -103,10 +211,19 @@
 .modal__select { appearance: none; }
 .modal__field.is-disabled { opacity: 0.55; }
 .modal__field.is-disabled * { cursor: not-allowed; }
-.seg--field { padding: 0; height: 38px; width: 100%; border: 1px solid var(--border-strong); border-radius: var(--radius-ui); background: var(--bg-card); gap: 2px; padding: 3px; }
-.seg--field .seg__btn { flex: 1; height: 100%; }
 
-/* Small message pill (focus mode, top bar hidden) */
+/* About window */
+.modal__box--about { width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow-y: auto; }
+.about { margin-top: 18px; display: grid; gap: 14px; }
+.about__row { display: grid; grid-template-columns: 116px 1fr; gap: 16px; }
+.about dt { color: var(--text-muted); font-size: var(--fs-small); padding-top: 1px; }
+.about dd { color: var(--text-dim); line-height: 1.55; }
+@media (max-width: 520px) { .about__row { grid-template-columns: 1fr; gap: 2px; } }
+
+
+/* ==========================================================================
+   5. TOAST (small message pill: focus mode, top bar hidden, Undo)
+   ========================================================================== */
 .toast {
   position: fixed; left: 50%; bottom: 28px; z-index: 120;
   transform: translate(-50%, 8px);
@@ -119,13 +236,23 @@
 }
 .toast.is-on { opacity: 1; transform: translate(-50%, 0); }
 
-/* ---------- Empty state ---------- */
+/* Toast with an Undo button */
+.toast--action { pointer-events: auto; display: flex; align-items: center; gap: 12px; }
+.toast__undo { padding: 0 2px; color: var(--accent); font-weight: 600; }
+.toast__undo:hover { text-decoration: underline; }
 
+
+/* ==========================================================================
+   6. EMPTY STATE
+   ========================================================================== */
 .empty { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 48px 0; }
 .empty__title { font-size: 16px; font-weight: 600; color: var(--text-dim); }
 .empty__text { color: var(--text-muted); margin-bottom: 12px; }
 
-/* On / off switch (the Live switch on a thread) */
+
+/* ==========================================================================
+   7. ON / OFF SWITCH (the Live switch on a thread)
+   ========================================================================== */
 .switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; color: var(--text-dim); font-size: var(--fs-small); }
 .switch input { position: absolute; opacity: 0; width: 0; height: 0; }
 .switch__track { position: relative; width: 32px; height: 18px; border-radius: 999px; background: var(--border-strong); transition: background var(--t-fast); flex: none; }
@@ -133,3 +260,72 @@
 .switch input:checked + .switch__track { background: var(--accent); }
 .switch input:checked + .switch__track::after { transform: translateX(14px); }
 .switch input:focus-visible + .switch__track { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+
+/* ==========================================================================
+   8. SEARCH WINDOW (js/ui/search.js · sizes: tokens.css section 10)
+   ========================================================================== */
+.modal.spot { place-items: start center; padding-top: var(--spot-top); }
+.spot__box {
+  position: relative; width: min(var(--spot-width), calc(100vw - 24px)); max-height: var(--spot-max-h);
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--bg-raised); border-radius: var(--spot-radius); box-shadow: var(--shadow-pop);
+}
+.spot__field { flex: none; display: flex; align-items: center; gap: 10px; height: var(--spot-field-h); padding: 0 16px; border-bottom: 1px solid var(--border); color: var(--text-muted); }
+.spot__input { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; outline: none; color: var(--text); font: inherit; font-size: var(--spot-fs); }
+.spot__input::placeholder { color: var(--text-faint); }
+.spot__list { flex: 1; min-height: 0; overflow-y: auto; padding: 6px; }
+.spot__group { display: flex; align-items: center; justify-content: space-between; padding: 10px 10px 4px; font-size: var(--fs-tiny); color: var(--text-faint); }
+.spot__clear { padding: 0; color: var(--text-faint); font-size: var(--fs-tiny); }
+.spot__clear:hover { color: var(--text-dim); }
+.spot__item { display: flex; align-items: center; gap: 10px; min-height: var(--spot-row-h); padding: 6px 10px; border-radius: var(--radius-ui); color: var(--text-dim); cursor: pointer; }
+.spot__item .icon { flex: none; color: var(--text-muted); }
+.spot__item.is-active { background: var(--spot-active-bg); color: var(--text); }
+.spot__title { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.spot__sub { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-faint); font-size: var(--fs-small); }
+.spot__key { margin-left: auto; flex: none; font: inherit; font-size: var(--fs-tiny); color: var(--text-faint); }
+.spot__empty { padding: 28px 12px; text-align: center; color: var(--text-muted); }
+.spot__foot { flex: none; display: flex; gap: 16px; padding: 8px 16px; border-top: 1px solid var(--border); color: var(--text-faint); font-size: var(--fs-tiny); }
+.spot__foot kbd { font: inherit; color: var(--text-muted); margin-right: 3px; }
+@media (max-width: 760px) { .modal.spot { padding-top: var(--spot-top-phone); } .spot__foot { display: none; } }
+
+
+/* ==========================================================================
+   9. GALLERY | LIST SWITCH in page headers
+   ========================================================================== */
+.seg--view { height: 32px; }
+.seg--view .seg__btn { display: inline-flex; align-items: center; justify-content: center; width: 30px; padding: 0; }
+
+
+/* ==========================================================================
+   10. DUE DATES on checklist items (js/editor/due.js · look: tokens.css section 17)
+   The date is drawn by CSS from data-due-label (worked out in due.js, never saved). Its space is kept free on the right.
+   ========================================================================== */
+.editor li[data-due] { position: relative; padding-right: var(--due-pad); }
+.editor li[data-due-label]::after {
+  content: attr(data-due-label);
+  position: absolute; right: 0;
+  top: calc((var(--prose-lh) * var(--prose-fs) - 1.4 * var(--due-fs)) / 2);   /* level with the first line */
+  font-family: var(--font-sans); font-size: var(--due-fs); font-style: normal; font-weight: 400; line-height: 1.4;
+  color: var(--due-color); white-space: nowrap; user-select: none;
+  cursor: pointer;
+}
+.editor li[data-due-state="soon"]::after { color: var(--due-soon); }
+.editor li[data-due-state="today"]::after { color: var(--due-today); }
+.editor li[data-due-state="overdue"]::after { color: var(--due-overdue); }
+.editor li[data-check="true"][data-due]::after { color: var(--due-color); text-decoration: line-through; opacity: 0.7; }
+.due-menu { min-width: 240px; }
+
+
+/* ==========================================================================
+   11. "NEW FROM TEMPLATE" LIST (modal.pick)
+   ========================================================================== */
+.modal__box--pick { width: min(460px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow-y: auto; }
+.pick__label { margin: 16px 0 6px; font-size: var(--fs-tiny); color: var(--text-faint); }
+.pick__row { display: flex; align-items: center; gap: 4px; }
+.pick__item { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px 10px; border-radius: var(--radius-ui); text-align: left; color: var(--text-dim); }
+.pick__item:hover, .pick__item:focus-visible { background: var(--bg-hover); color: var(--text); outline: none; }
+.pick__name { font-weight: 500; color: var(--text); }
+.pick__sub { font-size: var(--fs-small); color: var(--text-muted); }
+.pick__x { flex: none; width: 28px; height: 28px; border-radius: var(--r-sm); color: var(--text-faint); font-size: 16px; line-height: 1; }
+.pick__x:hover, .pick__x:focus-visible { background: var(--bg-pressed); color: var(--danger); outline: none; }

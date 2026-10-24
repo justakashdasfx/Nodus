@@ -11,7 +11,7 @@
    Bump CACHE when you add or rename files that must be available on first offline load.
    ========================================================================== */
 
-const CACHE = 'notes-app-v8';
+const CACHE = 'nodus-v9b';
 const SLOW_MS = 4000;
 
 const SHELL = [
@@ -19,13 +19,16 @@ const SHELL = [
   '/css/fonts.css', '/css/tokens.css', '/css/base.css', '/css/layout.css', '/css/components.css', '/css/gallery.css', '/css/editor.css',
   '/fonts/geist-latin-wght-normal.woff2', '/fonts/geist-latin-ext-wght-normal.woff2',
   '/fonts/geist-mono-latin-wght-normal.woff2', '/fonts/geist-mono-latin-ext-wght-normal.woff2',
+  '/fonts/merriweather-latin-400-normal.woff2', '/fonts/merriweather-latin-400-italic.woff2',
+  '/fonts/merriweather-latin-700-normal.woff2', '/fonts/merriweather-latin-700-italic.woff2',
   '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png',
+  '/icons-ui/arrowDown.svg', '/icons-ui/arrowLeft.svg', '/icons-ui/arrowUp.svg', '/icons-ui/bold.svg', '/icons-ui/brush.svg', '/icons-ui/bullets.svg', '/icons-ui/calendar.svg', '/icons-ui/callout.svg', '/icons-ui/caret.svg', '/icons-ui/check.svg', '/icons-ui/clear.svg', '/icons-ui/clock.svg', '/icons-ui/close.svg', '/icons-ui/code.svg', '/icons-ui/copy.svg', '/icons-ui/divider.svg', '/icons-ui/dividerGrip.svg', '/icons-ui/download.svg', '/icons-ui/external.svg', '/icons-ui/eye.svg', '/icons-ui/fileDown.svg', '/icons-ui/folder.svg', '/icons-ui/font.svg', '/icons-ui/grip.svg', '/icons-ui/h1.svg', '/icons-ui/h2.svg', '/icons-ui/h3.svg', '/icons-ui/h4.svg', '/icons-ui/home.svg', '/icons-ui/inbox.svg', '/icons-ui/info.svg', '/icons-ui/italic.svg', '/icons-ui/journal.svg', '/icons-ui/menu.svg', '/icons-ui/moon.svg', '/icons-ui/more.svg', '/icons-ui/note.svg', '/icons-ui/notebooks.svg', '/icons-ui/numbers.svg', '/icons-ui/pencil.svg', '/icons-ui/pencil-simple.svg', '/icons-ui/pin.svg', '/icons-ui/plus.svg', '/icons-ui/quote.svg', '/icons-ui/restore.svg', '/icons-ui/search.svg', '/icons-ui/sun.svg', '/icons-ui/tag.svg', '/icons-ui/tasks.svg', '/icons-ui/text.svg', '/icons-ui/threads.svg', '/icons-ui/toggle.svg', '/icons-ui/trash.svg', '/icons-ui/underline.svg', '/icons-ui/upload.svg',
   '/js/app.js',
   '/js/core/actions.js', '/js/core/blockindex.js', '/js/core/threads.js', '/js/core/config.js', '/js/core/icons.js', '/js/core/keys.js', '/js/core/router.js',
-  '/js/core/settings.js', '/js/core/store.js', '/js/core/sync.js', '/js/core/utils.js',
-  '/js/ui/components.js', '/js/ui/modal.js', '/js/ui/pane.js', '/js/ui/sidebar.js', '/js/ui/topbar.js',
-  '/js/views/home.js', '/js/views/inbox.js', '/js/views/journal.js', '/js/views/note.js', '/js/views/notebook.js', '/js/views/notebooks.js', '/js/views/blocklist.js', '/js/views/tag.js', '/js/views/thread.js', '/js/views/threads.js', '/js/views/trash.js',
-  '/js/editor/block-handle.js', '/js/editor/block-ops.js', '/js/editor/blocks.js', '/js/editor/editor.js', '/js/editor/history.js', '/js/editor/focus.js', '/js/editor/inline.js', '/js/editor/lists.js', '/js/editor/normalize.js',
+  '/js/core/settings.js', '/js/core/search.js', '/js/core/prefs.js', '/js/core/dates.js', '/js/core/tasks.js', '/js/core/store.js', '/js/core/sync.js', '/js/core/utils.js',
+  '/js/ui/components.js', '/js/ui/modal.js', '/js/ui/pane.js', '/js/ui/more-menu.js', '/js/ui/note-meta.js', '/js/ui/find.js', '/js/core/vendor.js', '/js/editor/code-block.js', '/js/ui/sidebar.js', '/js/ui/search.js', '/js/ui/topbar.js',
+  '/js/views/home.js', '/js/views/inbox.js', '/js/views/journal.js', '/js/views/note.js', '/js/views/notebook.js', '/js/views/notebooks.js', '/js/views/blocklist.js', '/js/views/tag.js', '/js/views/thread.js', '/js/views/threads.js', '/js/views/trash.js', '/js/views/tasks.js', '/js/views/tags.js', '/js/ui/calendar.js', '/js/editor/blocks-extra.js', '/js/editor/block-select.js',
+  '/js/editor/block-handle.js', '/js/editor/block-ops.js', '/js/editor/blocks.js', '/js/editor/editor.js', '/js/editor/history.js', '/js/editor/focus.js', '/js/editor/due.js', '/js/editor/inline.js', '/js/editor/lists.js', '/js/editor/normalize.js',
   '/js/editor/paste.js', '/js/editor/selection-toolbar.js', '/js/editor/block-menu.js', '/js/editor/slash-menu.js', '/js/editor/shortcuts.js', '/js/editor/tag-suggest.js', '/js/editor/tags.js',
 ];
 

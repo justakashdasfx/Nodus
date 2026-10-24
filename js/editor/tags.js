@@ -189,8 +189,9 @@ export function mountTagRail(root, { editable = true } = {}) {
   let frame = 0;
   const schedule = () => { if (!frame) frame = requestAnimationFrame(() => { frame = 0; layout(); }); };
 
+  const inCode = () => { const a = getSelection().anchorNode; return !!(a?.nodeType === 1 ? a : a?.parentElement)?.closest('pre'); };
   const onInput = (e) => {
-    if (editable && e.inputType === 'insertText' && e.data === ' ' && !e.isComposing && convertTagAtCaret(root)) {
+    if (editable && e.inputType === 'insertText' && e.data === ' ' && !e.isComposing && !inCode() && convertTagAtCaret(root)) {
       root.dispatchEvent(new Event('input', { bubbles: true })); // saves, and gives the block its id if it has none yet
     }
     schedule();

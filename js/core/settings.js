@@ -1,5 +1,5 @@
 /* ============================================================================
-   SETTINGS — per-device preferences (theme, font, sidebar, last-used colours).
+   SETTINGS — per-device preferences (theme, count style, sidebar, last-used colours). Write/Read mode and the font are per note (note.mode, note.font).
    Stored in localStorage; the early <script> in index.html applies them before
    first paint so there is no flash.
    ========================================================================== */
@@ -19,8 +19,31 @@ export function setTheme(theme) {
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_COLOR[theme] || THEME_COLOR.dark);
 }
 
-export const getFont = () => read(S.font, CONFIG.defaults.font);
-export function setFont(font) { write(S.font, font); root.dataset.font = font; }
+/* ---- The sidebar's Pinned section: open or collapsed ---- */
+export const getPinnedOpen = () => read(S.pinned, '1') !== '0';
+export function togglePinnedOpen() { const next = !getPinnedOpen(); write(S.pinned, next ? '1' : '0'); return next; }
+
+/* ---- What the top bar count shows: words or characters ---- */
+export const getStatsMode = () => (read(S.stats, CONFIG.defaults.statsMode) === 'chars' ? 'chars' : 'words');
+export function toggleStatsMode() {
+  const next = getStatsMode() === 'words' ? 'chars' : 'words';
+  write(S.stats, next);
+  return next;
+}
+
+/* ---- Gallery or List, remembered per page on this device (a notebook keeps its own choice on the notebook) ---- */
+export function getViewStyle(page) {
+  let saved = {};
+  try { saved = JSON.parse(read(S.views, '{}')) || {}; } catch { /* ignore */ }
+  const v = saved[page] || CONFIG.defaults.views[page];
+  return v === 'list' ? 'list' : 'gallery';
+}
+export function setViewStyle(page, style) {
+  let saved = {};
+  try { saved = JSON.parse(read(S.views, '{}')) || {}; } catch { /* ignore */ }
+  saved[page] = style === 'list' ? 'list' : 'gallery';
+  write(S.views, JSON.stringify(saved));
+}
 
 /* ---- Sidebar ---- */
 export const isSidebarCollapsed = () => root.classList.contains('sidebar-collapsed');

@@ -1,10 +1,15 @@
-/* NOTE — the writing page. Meta bar (date, notebook, delete) + editor.
-   Used twice: as the main view, and inside the side pane (render(route, { pane: true })).
-   In the pane the Trash / Restore buttons are left out — "Open full page" in the pane header is the way to those. */
+/* NOTE — the writing page: a small details bar + the editor.
+   On desktop the details (date, notebook, word count) and the Trash / Restore actions live in the top bar and its ⋯ menu,
+   so this bar is only visible on phones and in the side pane (css/editor.css hides it for the main page on desktop).
+   Read mode and notes in Trash open read-only. The note's own font (Sans / Mono / Serif) and mode are set here as data-font / data-mode
+   (css/tokens.css maps the Write / Read colours from data-mode).
+   Used twice: as the main view, and inside the side pane (render(route, { pane: true })). */
 import * as store from '../core/store.js';
 import { icon } from '../core/icons.js';
-import { button, emptyState } from '../ui/components.js';
-import { escapeHtml, formatDate } from '../core/utils.js';
+import { emptyState } from '../ui/components.js';
+import { formatDate, htmlToText, statsLabel } from '../core/utils.js';
+import { getStatsMode } from '../core/settings.js';
+import { noteLocation, noteState } from '../ui/note-meta.js';
 import { mountEditor } from '../editor/editor.js';
 
 const MODIFIERS = new Set(['Shift', 'Control', 'Alt', 'Meta']);
@@ -48,33 +53,19 @@ export function render({ id, block }, { pane = false } = {}) {
       actionHtml: pane ? '' : '<a class="btn btn--solid" href="#/home"><span class="btn__label">Back to Home</span></a>' })}</div>` };
   }
 
-  const folder = note.folderId ? store.getFolder(note.folderId) : null;
-  const folderTrashed = !!folder?.deletedAt;          // the note is fine, but its notebook is in Trash
-  const trashed = !!note.deletedAt || folderTrashed;  // either way the page is read-only
-  const location = note.type === 'journal'
-    ? `<span class="note__tag">${icon('journal', 14)}Journal</span>`
-    : `<label class="note__folder">${icon('folder', 14)}
-         <select data-change="note-move" data-id="${note.id}" aria-label="Notebook" ${trashed ? 'disabled' : ''}>
-           <option value="">Inbox</option>
-           ${store.folders().map(f => `<option value="${f.id}" ${f.id === note.folderId ? 'selected' : ''}>${escapeHtml(f.name)}</option>`).join('')}
-         </select>
-       </label>`;
-
-  const actions = pane ? '' : note.deletedAt
-    ? button({ action: 'note-restore', iconName: 'restore', label: 'Restore', data: { id } })
-      + button({ action: 'note-delete', iconName: 'close', label: 'Delete forever', variant: 'btn--danger-text', data: { id } })
-    : folderTrashed
-      ? button({ action: 'notebook-restore', iconName: 'restore', label: 'Restore notebook', data: { id: folder.id } })
-      : button({ action: 'note-trash', iconName: 'trash', label: 'Move to Trash', data: { id } });
+  const { trashed } = noteState(note); // the note or its notebook is in Trash: read-only
+  const mode = store.noteMode(note);                  // Write or Read — saved on the note
+  const readOnly = trashed || mode === 'read';
+  const stats = pane ? '' : `<button type="button" class="note__stats" data-action="stats-toggle" data-note-stats title="Click to switch between words and characters">${statsLabel(htmlToText(note.html), getStatsMode())}</button>`;
 
   const html = `
-    <div class="note${pane ? ' note--pane' : ''}">
+    <div class="note${pane ? ' note--pane' : ''}" data-font="${note.font === 'mono' || note.font === 'serif' ? note.font : 'sans'}" data-mode="${mode}">
       <div class="note__col">
         <div class="note__bar">
           <span class="note__date">${formatDate(note.createdAt)}</span>
-          ${location}
+          ${noteLocation(note, trashed)}
           <span class="note__spacer"></span>
-          ${actions}
+          ${stats}
         </div>
         ${trashed ? `<p class="note__banner">${note.deletedAt ? 'This note is in Trash.' : 'This note’s notebook is in Trash.'}</p>` : ''}
         <div class="note__body">
@@ -88,7 +79,7 @@ export function render({ id, block }, { pane = false } = {}) {
     html,
     mount: (root) => {
       const editor = root.querySelector('.editor');
-      const stop = mountEditor(editor, note, { readOnly: trashed });
+      const stop = mountEditor(editor, note, { readOnly });
       revealBlock(editor, block);
       return stop;
     },

@@ -1,7 +1,8 @@
 /* NOTEBOOK — the notes inside one notebook, as a gallery. */
 import * as store from '../core/store.js';
+import { CONFIG } from '../core/config.js';
 import { escapeHtml } from '../core/utils.js';
-import { button, viewHead, gallery, noteCard, emptyState } from '../ui/components.js';
+import { button, viewHead, gallery, noteCard, noteList, viewSwitch, emptyState } from '../ui/components.js';
 
 const notFound = (title, text, actionHtml) => ({ html: `<div class="view">${emptyState({ title, text, actionHtml })}</div>` });
 
@@ -18,11 +19,12 @@ export function render({ id }) {
 
   const notes = store.notesInFolder(id);
   const newBtn = button({ action: 'note-new', iconName: 'plus', label: 'New note', variant: 'btn--solid', data: { folder: id } });
-  const actions = newBtn
+  const style = folder.viewStyle === 'list' || folder.viewStyle === 'gallery' ? folder.viewStyle : CONFIG.defaults.views.notebook;
+  const actions = viewSwitch(style, { page: 'notebook', id }) + newBtn
     + button({ action: 'notebook-edit', iconName: 'pencil', label: 'Edit', data: { id } })
     + button({ action: 'notebook-delete', iconName: 'trash', label: 'Delete', data: { id } });
   const body = notes.length
-    ? gallery(notes.map(noteCard))
+    ? (style === 'list' ? noteList(notes) : gallery(notes.map(noteCard)))
     : emptyState({ title: 'This notebook is empty', text: 'Add the first note to get started.',
         actionHtml: button({ action: 'note-new', iconName: 'plus', label: 'Add a note', variant: 'btn--solid', data: { folder: id } }) });
   const subtitle = `${notes.length} ${notes.length === 1 ? 'note' : 'notes'}`;

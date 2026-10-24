@@ -104,6 +104,7 @@ export function mountTagSuggest(root, { counts }) {
 
   const onInput = (e) => {
     if (e.isComposing) return;
+    { const a = getSelection().anchorNode; if ((a?.nodeType === 1 ? a : a?.parentElement)?.closest('pre')) { hide(); return; } } // no tags inside code
     if (e.inputType && !/^(insertText|deleteContent|insertFromPaste)/.test(e.inputType)) { hide(); return; }
     active = 0;
     navigated = false;

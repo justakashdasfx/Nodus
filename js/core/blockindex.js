@@ -5,9 +5,10 @@
 
      note.blocks = [ { id, t, text, tags? }, … ]      in document order
        id    permanent block id
-       t     'p' | 'h1'…'h4' | 'quote' | 'li'
+       t     'p' | 'h1'…'h4' | 'quote' | 'code' | 'li'
        text  the block's own text, first 160 characters (a nested list is not included)
        tags  lower-case tags (left out when the block has none)
+     chk   checklist items only: 1 = ticked, 0 = not ticked          due  checklist items only: 'YYYY-MM-DD' (left out when there is none)
      Empty, untagged blocks are not listed.
 
    Migration: notes written before blocks existed get ids the first time they are
@@ -15,10 +16,12 @@
    produces the SAME ids for the same text and nothing needs to be synced for it.
    ========================================================================== */
 
-import { sanitizeHtml, parseTags, BID_RE } from './utils.js';
+import { sanitizeHtml, parseTags, BID_RE, DUE_RE } from './utils.js';
 
 /** Top-level paragraphs/headings/quotes (a stray <div> counts as a paragraph) and every list item. */
-export const BLOCK_SEL = ':scope > p, :scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > blockquote, :scope > div, :scope li';
+export const BLOCK_SEL = ':scope > p, :scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > blockquote, :scope > pre, :scope > div, '
+  + ':scope > details > summary, :scope > details > p, :scope > details > h1, :scope > details > h2, :scope > details > h3, :scope > details > h4, :scope > details > blockquote, :scope > details > pre, '   // a toggle's title and what is inside it
+  + ':scope li';
 
 export const blocksOf = (root) => [...root.querySelectorAll(BLOCK_SEL)];
 
@@ -27,6 +30,7 @@ export function blockType(el) {
   if (tag === 'LI') return 'li';
   if (/^H[1-4]$/.test(tag)) return tag.toLowerCase();
   if (tag === 'BLOCKQUOTE') return 'quote';
+  if (tag === 'PRE') return 'code';
   return 'p';
 }
 
@@ -51,6 +55,11 @@ export function indexRoot(root) {
     if (!text && !tags.length) continue;
     const entry = { id, t: blockType(el), text: text.slice(0, 160) };
     if (tags.length) entry.tags = tags;
+    if (el.tagName === 'LI' && el.hasAttribute('data-check')) {   // checklist item: the Tasks page reads these two
+      entry.chk = el.getAttribute('data-check') === 'true' ? 1 : 0;
+      const due = el.getAttribute('data-due');
+      if (due && DUE_RE.test(due)) entry.due = due;
+    }
     out.push(entry);
   }
   return out;

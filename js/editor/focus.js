@@ -4,7 +4,7 @@
    The class is stripped before saving (see sanitizeHtml), so it never persists.
    ========================================================================== */
 
-const BLOCKS = 'li, p, div, h1, h2, h3, h4, blockquote';
+const BLOCKS = 'li, p, div, h1, h2, h3, h4, blockquote, pre';
 
 export function initFocusTracking(root) {
   const update = () => {

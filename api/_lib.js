@@ -7,6 +7,7 @@
      notesapp:note:<id>      → JSON of one note (or a tombstone {id, purged, updatedAt})
      notesapp:folders        → JSON { folders, updatedAt }
      notesapp:threads        → JSON { threads, updatedAt }
+     notesapp:prefs          → JSON { recents, updatedAt }
    ========================================================================== */
 
 import { timingSafeEqual } from 'node:crypto';
@@ -16,6 +17,7 @@ export const KEYS = {
   note: (id) => `notesapp:note:${id}`,
   folders: 'notesapp:folders',
   threads: 'notesapp:threads',
+  prefs: 'notesapp:prefs',
 };
 
 /** Runs one Redis command, e.g. redis('SET', key, value). Returns the result. */

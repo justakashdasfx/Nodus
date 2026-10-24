@@ -121,7 +121,7 @@ export function mountSlashMenu(root, history) {
     if (at < 0 || node.data[at] !== '/') return;
     if (node.parentElement?.closest('code')) return;
     const block = caretBlock(root);
-    if (!block) return;
+    if (!block || block.tagName === 'PRE') return; // a "/" in code is just a slash
     const before = document.createRange();
     before.selectNodeContents(block);
     before.setEnd(node, at);

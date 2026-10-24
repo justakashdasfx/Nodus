@@ -30,17 +30,17 @@ h1, h2, h3, h4, p { margin: 0; }
 /* Thin scrollbars */
 * { scrollbar-width: thin; scrollbar-color: var(--scrollbar) transparent; }
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 8px; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: var(--r-sm); }
 ::-webkit-scrollbar-track { background: transparent; }
 
-/* Icons: stroke follows the text colour */
+/* Icons: each one is a file in /icons-ui/<name>.svg, drawn as a mask so it takes the text colour.
+   Colour = the element's `color`. Size = the width/height set by icon(name, size) in js/core/icons.js. */
 .icon {
   flex: none;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  display: inline-block;
+  background-color: currentColor;
+  -webkit-mask: var(--icon) center / contain no-repeat;
+          mask: var(--icon) center / contain no-repeat;
 }
 
 @media (prefers-reduced-motion: reduce) {

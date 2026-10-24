@@ -57,7 +57,7 @@
   font-family: var(--font-mono);
   font-size: 0.9em;
   padding: 0.12em 0.4em;
-  border-radius: 4px;
+  border-radius: var(--r-xs);
   background: var(--prose-code-bg);
   color: var(--prose-code-text);
 }
@@ -68,7 +68,7 @@
   color: inherit;
   padding: 0.1em 0.25em;
   margin: 0 -0.05em;
-  border-radius: 4px;
+  border-radius: var(--r-xs);
   -webkit-box-decoration-break: clone;
           box-decoration-break: clone;
 }
@@ -117,6 +117,14 @@
 .note__folder select:hover { color: var(--text); }
 .note__folder select option { background: var(--bg-raised); color: var(--text); }
 .note__banner { margin-bottom: 20px; color: var(--danger); font-size: var(--fs-small); }
+.note__stats { padding: 0; color: inherit; font: inherit; font-variant-numeric: tabular-nums; }
+.note__stats:hover { color: var(--text); }
+/* On desktop the details and actions live in the top bar and its ⋯ menu, so the bar inside the page is only for phones and the side pane */
+@media (min-width: 761px) { .note:not(.note--pane) .note__bar { display: none; } }
+
+/* A note's own writing font: Sans, Mono or Serif (⋯ menu → Font). The interface stays Sans. */
+.note[data-font="mono"] .editor { font-family: var(--font-mono); }
+.note[data-font="serif"] .editor { font-family: var(--font-serif); }
 
 /* ---------- Editor + focus effect ---------- */
 
@@ -128,36 +136,13 @@
 .editor .is-active { color: var(--prose-text-active); }
 .editor :is(h1, h2, h3, h4).is-active { color: var(--prose-heading-active); }
 
-/* Thin marker beside the active paragraph (set --active-marker to transparent to remove).
-   Distance from the text: --active-marker-offset in css/tokens.css. Thickness: --active-marker-width. */
-.editor > .is-active::after,
-.editor li.is-active::after {
-  content: "";
-  position: absolute;
-  left: calc(-1 * var(--active-marker-offset));
-  top: 0.3em; bottom: 0.3em;
-  width: var(--active-marker-width);
-  border-radius: 3px;
-  background: var(--active-marker);
-  pointer-events: none;
-}
-/* A list item sits inside its list's indent, so the line is pulled back out to the same spot as for paragraphs.
-   --li-x = how far in from the editor's edge this item starts (1.5em per list level; checklists indent 1.7em). */
-.editor li { position: relative; --li-x: 1.5em; }
-.editor > ul[data-type="todo"] > li { --li-x: 1.7em; }
-.editor :is(ul, ol) :is(ul, ol) > li { --li-x: 3em; }
-.editor :is(ul, ol) :is(ul, ol) :is(ul, ol) > li { --li-x: 4.5em; }
-.editor :is(ul, ol) :is(ul, ol) :is(ul, ol) :is(ul, ol) > li { --li-x: 6em; }
-.editor li.is-active::after { left: calc(-1 * (var(--li-x) + var(--active-marker-offset))); }
-/* An item with sub-items: the line only runs along its own first line, not down through the children */
-.editor li.is-active:has(> ul, > ol)::after { bottom: auto; height: calc(var(--prose-lh) * 1em - 0.6em); }
-@media (max-width: 760px) { .editor > .is-active::after, .editor li.is-active::after { display: none; } }
+/* (The thin line that used to sit beside the active paragraph was removed in 6A.1.) */
+.editor li { position: relative; }
 
 /* Focus modes — set in js/core/config.js → defaults.focusMode */
 .editor[data-focus="strict"] { --prose-text: var(--prose-text-strict); --prose-quote: var(--prose-text-strict); }
 .editor[data-focus="off"] .is-active { color: inherit; }
 .editor[data-focus="off"] :is(h1, h2, h3, h4).is-active { color: var(--prose-heading); }
-.editor[data-focus="off"] .is-active::after { display: none; }
 
 /* "Untitled" hint on an empty first heading */
 .editor > h1:first-child:has(> br:only-child)::before {
@@ -175,9 +160,10 @@
   z-index: 60;
   display: none;
   align-items: center;
-  gap: 2px;
-  padding: 4px;
-  background: var(--bg-raised);
+  gap: var(--toolbar-gap);
+  padding: var(--toolbar-pad);
+  background: var(--menu-bg);
+  border: 1px solid var(--menu-border);
   border-radius: var(--radius-pop);
   box-shadow: var(--shadow-pop);
 }
@@ -185,14 +171,14 @@
 
 .sel-btn {
   position: relative;
-  width: 32px; height: 32px;
+  width: var(--toolbar-btn-size); height: var(--toolbar-btn-size);
   display: grid; place-items: center;
-  border-radius: 8px;
-  color: var(--text-muted);
+  border-radius: var(--toolbar-btn-radius);
+  color: var(--toolbar-icon-color);
   transition: background var(--t-fast), color var(--t-fast);
 }
-.sel-btn:hover { background: var(--bg-hover); color: var(--text); }
-.sel-btn.is-on { color: var(--text); background: var(--bg-pressed); }
+.sel-btn:hover { background: var(--toolbar-btn-hover-bg); color: var(--text); }
+.sel-btn.is-on { color: var(--text); background: var(--toolbar-btn-on-bg); }
 .sel-btn__dot { position: absolute; right: 6px; bottom: 6px; width: 5px; height: 5px; border-radius: 50%; }
 
 /* Popovers hang below the toolbar */
@@ -202,7 +188,8 @@
   left: 0;
   min-width: 190px;
   padding: 10px;
-  background: var(--bg-raised);
+  background: var(--menu-bg);
+  border: 1px solid var(--menu-border);
   border-radius: var(--radius-pop);
   box-shadow: var(--shadow-pop);
 }
@@ -216,7 +203,7 @@
 .swatch {
   width: 26px; height: 26px;
   display: grid; place-items: center;
-  border-radius: 7px;
+  border-radius: var(--r-sm);
   font-size: 12px; font-weight: 600;
   color: var(--c);
   background: var(--bg);
@@ -263,7 +250,7 @@
 
 /* ticked item: greyed out with a see-through strike-through (stays grey even while active) */
 .prose ul[data-type="todo"] > li[data-check="true"] {
-  color: var(--text-muted);
+  color: var(--prose-checked);
   text-decoration: line-through;
   text-decoration-color: rgba(128, 128, 128, 0.45);
   text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
@@ -295,7 +282,7 @@
 
 /* Soft highlight on the block you jumped to (from a thread, a tag list or the side pane).
    It stays until you click or type in that editor. Colour: --block-target-bg in css/tokens.css. */
-.editor .is-target { background: var(--block-target-bg); box-shadow: 0 0 0 6px var(--block-target-bg); border-radius: 4px; }
+.editor .is-target { background: var(--block-target-bg); box-shadow: 0 0 0 6px var(--block-target-bg); border-radius: var(--r-xs); }
 
 /* ---------- Block handle, menu and drag line (js/editor/block-handle.js) ---------- */
 .block-handle {
@@ -303,12 +290,12 @@
   left: calc(-1 * min(var(--handle-offset), var(--view-pad) - 4px));
   width: 24px; height: 24px; padding: 0;
   display: grid; place-items: center;
-  border-radius: 6px; color: var(--handle-color);
+  border-radius: var(--r-sm); color: var(--handle-color);
   cursor: grab; touch-action: none;
   transition: background var(--t-fast), color var(--t-fast);
 }
 .block-handle[hidden] { display: none; }
-.block-handle:hover, .block-handle:focus-visible { background: var(--bg-hover); color: var(--text-dim); }
+.block-handle:hover, .block-handle:focus-visible { background: var(--bg-hover); color: var(--handle-color-hover); }
 .block-handle:active { cursor: grabbing; }
 
 .editor .is-dragging { opacity: 0.35; }
@@ -316,47 +303,182 @@
 .drop-line[hidden] { display: none; }
 body.is-block-dragging, body.is-block-dragging * { cursor: grabbing !important; user-select: none !important; }
 
+/* Slash "/" menu · six-dot menu · the ⋯ list in the selection toolbar.
+   Row height, width, spacing: css/tokens.css → section 8.   Colours (highlight, icons, hints): section 16. */
 .block-menu {
-  position: fixed; z-index: 100; width: 256px; max-height: calc(100vh - 16px); overflow-y: auto;
-  padding: 6px; border-radius: 12px;
-  background: var(--bg-raised); border: 1px solid var(--border); box-shadow: var(--shadow-pop);
-  font-size: var(--fs-small);
+  position: fixed; z-index: 100; width: var(--menu-w); max-height: calc(100vh - 16px); overflow-y: auto;
+  padding: var(--menu-pad); border-radius: var(--radius-pop);
+  background: var(--menu-bg); border: 1px solid var(--menu-border); box-shadow: var(--shadow-pop);
+  font-size: var(--fs-ui);
 }
-.block-menu__title { padding: 6px 10px 4px; font-size: var(--fs-tiny); color: var(--text-faint); }
-.block-menu__sep { height: 1px; margin: 6px 4px; background: var(--border); }
+.block-menu__title { padding: 6px var(--menu-item-pad-x) 4px; font-size: var(--fs-tiny); color: var(--menu-title-color); }
+.block-menu__sep { height: 1px; margin: 6px 4px; background: var(--menu-border); }
 .block-menu__item {
-  display: flex; align-items: center; gap: 8px; width: 100%; height: 30px; padding: 0 10px;
-  border-radius: 8px; color: var(--text-dim); text-align: left;
+  display: flex; align-items: center; gap: var(--menu-gap); width: 100%; height: var(--menu-item-h); padding: 0 var(--menu-item-pad-x);
+  border-radius: var(--menu-item-radius); color: var(--menu-item-text); text-align: left;
   transition: background var(--t-fast), color var(--t-fast);
 }
-.block-menu__item:hover, .block-menu__item:focus-visible { background: var(--bg-hover); color: var(--text); outline: none; }
+.block-menu__item:hover, .block-menu__item:focus-visible { background: var(--menu-item-hover-bg); color: var(--menu-item-hover-text); outline: none; }
 .block-menu__item[disabled] { opacity: 0.4; pointer-events: none; }
-.block-menu__item.is-current { color: var(--text); }
+.block-menu__item.is-current { color: var(--menu-item-hover-text); }
 .block-menu__item.is-danger:hover, .block-menu__item.is-danger:focus-visible { color: var(--tag-remove); }
-.block-menu__icon { width: 16px; display: grid; place-items: center; flex: none; color: var(--text-muted); }
+.block-menu__icon { width: var(--menu-icon-size); height: var(--menu-icon-size); display: grid; place-items: center; flex: none; color: var(--menu-icon-color); }
 .block-menu__label { flex: 1; white-space: nowrap; }
-.block-menu__hint { font-size: var(--fs-tiny); color: var(--text-faint); white-space: nowrap; }
+.block-menu__check { display: grid; place-items: center; flex: none; color: var(--menu-icon-color); }   /* ✓ on the block type you are in */
+.block-menu__hint { font-size: var(--fs-tiny); color: var(--menu-hint-color); white-space: nowrap; }
 
 /* The same menu inside the selection toolbar's "…", and under the caret for "/" */
-.block-menu__item.is-active { background: var(--bg-hover); color: var(--text); }
-.block-menu__empty { padding: 8px 10px; color: var(--text-faint); }
+.block-menu__item.is-active { background: var(--menu-item-hover-bg); color: var(--menu-item-hover-text); }
+.block-menu__empty { padding: 8px var(--menu-item-pad-x); color: var(--menu-hint-color); }
 .block-menu--inline { position: static; width: 240px; max-height: none; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
-.slash-menu { width: 256px; max-height: min(340px, calc(100vh - 16px)); }
-@media (pointer: coarse) { .block-menu__item { height: 38px; } }
+.slash-menu { width: var(--menu-w); max-height: min(var(--menu-max-h), calc(100vh - 16px)); }
+@media (pointer: coarse) { .block-menu__item { height: var(--menu-item-h-touch); } }
 
 /* Phones: the grip needs room beside the text, so the page's side padding grows a little */
 @media (max-width: 760px) { .note { --view-pad: 30px; } }
 
 /* ---------- #tag suggestions (js/editor/tag-suggest.js) ---------- */
 .tag-suggest {
-  position: fixed; z-index: 100; min-width: 200px; max-width: 300px; padding: 5px; border-radius: 12px;
+  position: fixed; z-index: 100; min-width: 200px; max-width: 300px; padding: 5px; border-radius: var(--r-md);
   background: var(--bg-raised); border: 1px solid var(--border); box-shadow: var(--shadow-pop);
   font-size: var(--fs-small);
 }
 .tag-suggest[hidden] { display: none; }
-.tag-suggest__item { --tag-h: 210; display: flex; align-items: center; gap: 8px; width: 100%; height: 30px; padding: 0 10px; border-radius: 8px; color: var(--text-dim); text-align: left; }
+.tag-suggest__item { --tag-h: 210; display: flex; align-items: center; gap: 8px; width: 100%; height: 30px; padding: 0 10px; border-radius: var(--r-sm); color: var(--text-dim); text-align: left; }
 .tag-suggest__item.is-active, .tag-suggest__item:hover { background: var(--bg-hover); color: var(--text); }
 .tag-suggest__dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: hsl(var(--tag-h) var(--tag-sat) var(--tag-light)); }
 .tag-suggest__name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tag-suggest__name b { font-weight: 600; color: var(--text); }
 .tag-suggest__count { font-size: var(--fs-tiny); color: var(--text-faint); font-variant-numeric: tabular-nums; }
+
+/* ---------- Notebook picker (top bar, and the note's own bar on phones and in the side pane) ---------- */
+
+.notebook-pick {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 32px; padding: 0 8px 0 9px; max-width: 220px;
+  border: 1px solid var(--border); border-radius: var(--r-sm2);
+  background: var(--grey-200);
+  color: var(--text-dim); font-size: var(--fs-small); white-space: nowrap;
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+}
+.notebook-pick:hover, .notebook-pick[aria-expanded="true"] { background: var(--bg-hover); border-color: var(--border-strong); color: var(--text); }
+.notebook-pick__name { overflow: hidden; text-overflow: ellipsis; min-width: 0; max-width: 150px; }
+.notebook-pick__caret { transform: rotate(90deg); opacity: 0.6; }
+.notebook-pick:disabled { opacity: 0.5; cursor: default; background: none; border-color: var(--border); color: var(--text-dim); }
+
+/* ---------- Side-by-side choices inside a menu (Theme: Light | Dark · Font: Sans | Mono | Serif) ---------- */
+
+.menu-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 5px 10px; }
+.menu-row__label { color: var(--text-muted); font-size: var(--fs-small); }
+.menu-row .seg { height: 28px; padding: 2px; gap: 2px; background: var(--bg-app); border-radius: var(--r-sm); }
+.menu-row .seg__btn { height: 24px; padding: 0 10px; border-radius: var(--r-sm); font-size: var(--fs-small); }
+.menu-row .seg__btn.is-on { background: var(--bg-pressed); color: var(--text); }
+
+.notebook-menu { max-height: min(60vh, 360px); overflow-y: auto; }
+
+/* ---------- Code blocks (js/editor/code-block.js) ---------- */
+
+.note__body { position: relative; }
+.prose pre {
+  margin: 0.2em 0 var(--prose-block-gap);
+  padding: 14px 16px;
+  background: var(--code-bg); border: 1px solid var(--code-border); border-radius: var(--r-md);
+  font-family: var(--font-mono); font-size: 0.875em; line-height: 1.6;
+  color: var(--code-text);
+  white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 2;
+}
+.prose pre.is-active { color: var(--code-text); }
+.prose pre::after { content: "\200B"; }          /* keeps the last (empty) line open */
+.prose--mini pre { padding: 8px 10px; font-size: 0.8em; }
+
+/* The colours are painted with CSS highlights; --code-* live in css/tokens.css section 9 */
+::highlight(code-comment)  { color: var(--code-comment); }
+::highlight(code-keyword)  { color: var(--code-keyword); }
+::highlight(code-string)   { color: var(--code-string); }
+::highlight(code-number)   { color: var(--code-number); }
+::highlight(code-function) { color: var(--code-function); }
+::highlight(code-type)     { color: var(--code-type); }
+::highlight(code-property) { color: var(--code-property); }
+::highlight(code-punct)    { color: var(--code-punct); }
+
+/* Language · Format · Copy — floats at the block's top-right */
+.code-bar {
+  position: absolute; z-index: 5; display: flex; align-items: center; gap: 2px; padding: 2px;
+  background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--r-sm); box-shadow: var(--shadow-pop);
+  font-size: var(--fs-small);
+}
+.code-bar__btn, .code-bar__label { height: 24px; padding: 0 8px; display: inline-flex; align-items: center; gap: 4px; border-radius: var(--r-sm); color: var(--text-muted); white-space: nowrap; }
+.code-bar__btn:hover { background: var(--bg-hover); color: var(--text); }
+.code-lang-menu { max-height: min(60vh, 360px); overflow-y: auto; }
+
+/* ---------- Find in note (js/ui/find.js) ---------- */
+
+::highlight(find)         { background-color: var(--find-bg); }
+::highlight(find-current) { background-color: var(--find-current-bg); }
+.find-bar {
+  position: fixed; top: 64px; right: 28px; z-index: 55; width: min(360px, calc(100vw - 24px));
+  padding: 6px; display: grid; gap: 6px; background: var(--bg-raised); border-radius: var(--r-md); box-shadow: var(--shadow-pop);
+}
+.find-bar__row { display: flex; align-items: center; gap: 4px; }
+.find-bar__input { flex: 1; min-width: 0; height: 30px; padding: 0 10px; border: 1px solid var(--border-strong); border-radius: var(--r-sm); background: var(--bg-app); color: var(--text); font-size: var(--fs-small); outline: none; }
+.find-bar__input:focus { border-color: var(--accent); }
+.find-bar__count { min-width: 56px; text-align: right; color: var(--text-muted); font-size: var(--fs-tiny); font-variant-numeric: tabular-nums; }
+.find-bar__btn { min-width: 26px; height: 26px; display: grid; place-items: center; border-radius: var(--r-sm); color: var(--text-muted); }
+.find-bar__btn:hover { background: var(--bg-hover); color: var(--text); }
+.find-bar__text { padding: 0 8px; font-size: var(--fs-small); }
+.find-bar__toggle .icon { transition: transform var(--t-fast); }
+.find-bar__toggle[aria-expanded="true"] .icon { transform: rotate(90deg); }
+
+/* ---------- Search box inside the notebook picker ---------- */
+
+.menu-search { position: sticky; top: 0; z-index: 1; padding: 6px; background: var(--bg-raised); }
+.menu-search__input { width: 100%; height: 30px; padding: 0 10px; border: 1px solid var(--border-strong); border-radius: var(--r-sm); background: var(--bg-app); color: var(--text); font-size: var(--fs-small); outline: none; }
+.menu-search__input:focus { border-color: var(--accent); }
+
+/* ==========================================================================
+   Phase 8A — divider · callout · toggle · block selection
+   Colours: --divider-*, --callout-*, --toggle-arrow, --block-select-* in css/tokens.css
+   ========================================================================== */
+.prose hr { margin: 20px 0; border: 0; border-top: 1px solid var(--divider-color); }
+.editor hr { cursor: default; }
+
+.prose p[data-callout] {
+  position: relative;
+  margin: 0 0 var(--prose-block-gap);
+  padding: 12px 16px 12px 46px;
+  border: 1px solid var(--callout-border);
+  border-radius: var(--r-sm);
+  background: var(--callout-bg);
+}
+.prose p[data-callout]::before { content: var(--callout-icon); position: absolute; left: 15px; top: 12px; line-height: inherit; }
+
+.prose details { margin: 0 0 var(--prose-block-gap); }
+.prose summary { position: relative; display: block; padding-left: 26px; list-style: none; cursor: text; }
+.prose summary::-webkit-details-marker { display: none; }
+.prose summary::before {
+  content: ''; position: absolute; left: 6px; top: 0.5em;
+  border-style: solid; border-width: 5px 0 5px 8px; border-color: transparent transparent transparent var(--toggle-arrow);
+  transition: transform var(--t-fast) var(--ease); cursor: pointer;
+}
+.prose details[open] > summary::before { transform: rotate(90deg); }
+.note[data-mode="read"] .prose summary { cursor: pointer; }
+.prose details > :not(summary) { margin-left: 26px; }
+
+/* Selected blocks (drag in the empty space beside the text) */
+.editor > .is-block-selected { background: var(--block-select-bg); box-shadow: 0 0 0 4px var(--block-select-bg); border-radius: var(--r-xs); }
+.has-block-selection .editor ::selection { background: transparent; }
+.block-band { position: fixed; z-index: 55; pointer-events: none; border: 1px solid var(--block-select-line); background: var(--block-select-bg); border-radius: var(--r-xs); }
+.block-sel-bar {
+  position: fixed; z-index: 62; display: flex; align-items: center; gap: 2px; padding: 3px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-ui);
+  background: var(--bg-raised); box-shadow: var(--shadow-pop); font-size: var(--fs-small);
+  max-width: calc(100vw - 16px); flex-wrap: wrap;
+}
+.block-sel-bar[hidden] { display: none; }
+.block-sel-bar__count { padding: 0 8px; color: var(--text-muted); white-space: nowrap; }
+.block-sel-bar button {
+  display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 8px;
+  border: 0; border-radius: var(--r-sm); background: transparent; color: var(--text-dim); font: inherit; cursor: pointer;
+}
+.block-sel-bar button:hover { background: var(--bg-hover); color: var(--text); }
+.block-sel-bar button.is-danger:hover { color: var(--danger); }

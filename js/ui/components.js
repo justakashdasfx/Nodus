@@ -25,6 +25,38 @@ export function viewHead({ title, titleStyle = '', subtitle = '', description = 
 
 export const gallery = (cards) => `<div class="gallery">${cards.join('')}</div>`;
 
+/** Gallery | List switch for a page header. page = where it is remembered; id = a notebook (its choice lives on the notebook). */
+export function viewSwitch(style, { page = '', id = '' } = {}) {
+  const btn = (s, ic, label) => `<button type="button" class="seg__btn ${style === s ? 'is-on' : ''}" data-action="view-style" data-style="${s}" data-page="${page}"${id ? ` data-id="${id}"` : ''} aria-pressed="${style === s}" title="${label} view" aria-label="${label} view">${icon(ic, 16)}</button>`;
+  return `<div class="seg seg--plain seg--view" role="group" aria-label="View style">${btn('gallery', 'notebooks', 'Gallery')}${btn('list', 'bullets', 'List')}</div>`;
+}
+
+const snippetOf = (n) => (n.blocks || []).slice(1).map(b => b.text).filter(Boolean).join(' ').slice(0, 160);
+
+/** The List view of notes: title · a line of text · notebook and date. */
+export function noteList(notes) {
+  return `<div class="list">${notes.map((n) => {
+    const folder = n.folderId ? store.getFolder(n.folderId) : null;
+    return `<a class="row" href="#/note/${n.id}">
+      <span class="row__title">${escapeHtml(n.title || 'Untitled')}</span>
+      <span class="row__text">${escapeHtml(snippetOf(n))}</span>
+      <span class="row__meta">${folder ? `<span class="row__where">${icon('folder', 12)}${escapeHtml(folder.name)}</span>` : ''}<span>${formatDate(n.updatedAt)}</span></span>
+    </a>`;
+  }).join('')}</div>`;
+}
+
+/** The List view of notebooks. */
+export function notebookList(folders) {
+  return `<div class="list">${folders.map((f) => {
+    const count = store.noteCount(f.id);
+    return `<a class="row" href="#/notebook/${f.id}">
+      <span class="row__title row__title--icon">${icon('folder', 16)}${escapeHtml(f.name)}</span>
+      <span class="row__text">${escapeHtml(f.description || '')}</span>
+      <span class="row__meta"><span>${count} ${count === 1 ? 'note' : 'notes'}</span></span>
+    </a>`;
+  }).join('')}</div>`;
+}
+
 export function emptyState({ title, text = '', actionHtml = '' }) {
   return `<div class="empty"><p class="empty__title">${escapeHtml(title)}</p>${text ? `<p class="empty__text">${escapeHtml(text)}</p>` : ''}${actionHtml}</div>`;
 }

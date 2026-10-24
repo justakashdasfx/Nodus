@@ -44,7 +44,7 @@ export function initShortcuts(root) {
     const li = anchor?.closest('li');
     const inList = !!li && root.contains(li);
     const block = inList ? li : topBlock(caret.startContainer, root);
-    if (!block || block.tagName === 'UL' || block.tagName === 'OL') return;
+    if (!block || block.tagName === 'UL' || block.tagName === 'OL' || block.tagName === 'PRE') return; // code stays code: no "# " or "- " shortcuts
 
     const before = document.createRange(); // block start → caret
     before.selectNodeContents(block);

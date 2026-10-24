@@ -60,8 +60,8 @@ export function form({ title, fields = [], confirmLabel = 'Save', cancelLabel = 
       } else if (f.type === 'select') {
         control = `<select class="modal__input modal__select"${name}${dis}>${(f.options || []).map(o => `<option>${escapeHtml(o)}</option>`).join('')}</select>`;
       } else if (f.type === 'segmented') {
-        control = `<div class="seg seg--field" role="group">${(f.options || []).map((o, i) =>
-          `<button type="button" class="seg__btn ${(f.value ? f.value === o : i === 0) ? 'is-on' : ''}"${dis}>${escapeHtml(o)}</button>`).join('')}</div>`;
+        control = `<div class="seg seg--field" role="group" data-seg="${escapeHtml(f.name || '')}">${(f.options || []).map((o, i) =>
+          `<button type="button" class="seg__btn ${(f.value ? f.value === o : i === 0) ? 'is-on' : ''}" data-value="${escapeHtml(o)}"${dis}>${escapeHtml(o)}</button>`).join('')}</div>`;
       } else {
         control = `<input class="modal__input" type="text"${name}${dis} value="${escapeHtml(f.value || '')}"
                      placeholder="${escapeHtml(f.placeholder || '')}" maxlength="${f.maxlength || 120}" autocomplete="off">`;
@@ -86,6 +86,10 @@ export function form({ title, fields = [], confirmLabel = 'Save', cancelLabel = 
     const onKey = (e) => { if (e.key === 'Escape') close(null); };
 
     wrap.addEventListener('click', (e) => { if (e.target.closest('[data-close]')) close(null); });
+    wrap.addEventListener('click', (e) => {   // a segmented field: the clicked choice turns on
+      const b = e.target.closest('.seg--field .seg__btn');
+      if (b && !b.disabled) b.parentElement.querySelectorAll('.seg__btn').forEach(x => x.classList.toggle('is-on', x === b));
+    });
     formEl.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && e.target.tagName === 'TEXTAREA') { e.preventDefault(); formEl.requestSubmit(); }
     });
@@ -94,6 +98,7 @@ export function form({ title, fields = [], confirmLabel = 'Save', cancelLabel = 
       const values = {};
       for (const f of fields) {
         if (!f.name || f.disabled) continue;
+        if (f.type === 'segmented') { values[f.name] = formEl.querySelector(`[data-seg="${f.name}"] .is-on`)?.dataset.value || ''; continue; }
         const control = formEl.elements[f.name];
         values[f.name] = control.value;
         if (f.required && !control.value.trim()) { control.focus(); return; }
@@ -106,6 +111,46 @@ export function form({ title, fields = [], confirmLabel = 'Save', cancelLabel = 
     const first = formEl.querySelector('input:not([disabled]), textarea:not([disabled])');
     first?.focus();
     first?.select?.();
+  });
+}
+
+/**
+ * A list to choose from.   const res = await pick({ title, sections: [{ label, items: [{ id, label, sub, removable }] }] })
+ * → { id } when one is chosen · { remove: id } when its × is pressed (only items with removable) · null when cancelled.
+ */
+export function pick({ title, sections = [] }) {
+  return new Promise((resolve) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'modal';
+    const row = (it) => `<div class="pick__row"><button type="button" class="pick__item" data-pick="${escapeHtml(it.id)}"><span class="pick__name">${escapeHtml(it.label)}</span>${it.sub ? `<span class="pick__sub">${escapeHtml(it.sub)}</span>` : ''}</button>`
+      + `${it.removable ? `<button type="button" class="pick__x" data-remove="${escapeHtml(it.id)}" aria-label="Move ${escapeHtml(it.label)} to Trash" title="Move to Trash">×</button>` : ''}</div>`;
+    wrap.innerHTML = `
+      <div class="modal__scrim" data-close></div>
+      <div class="modal__box modal__box--pick" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}">
+        <h2 class="modal__title">${escapeHtml(title)}</h2>
+        ${sections.map(s => `<p class="pick__label">${escapeHtml(s.label)}</p>${s.items.map(row).join('')}`).join('')}
+        <div class="modal__actions"><button type="button" class="btn" data-close>Cancel</button></div>
+      </div>`;
+    const close = (value) => { document.removeEventListener('keydown', onKey); wrap.remove(); resolve(value); };
+    const buttons = () => [...wrap.querySelectorAll('.pick__item')];
+    const onKey = (e) => {
+      if (e.key === 'Escape') { close(null); return; }
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      e.preventDefault();
+      const b = buttons();
+      const i = b.indexOf(document.activeElement);
+      b[(i + (e.key === 'ArrowDown' ? 1 : -1) + b.length) % b.length]?.focus();
+    };
+    wrap.addEventListener('click', (e) => {
+      if (e.target.closest('[data-close]')) { close(null); return; }
+      const x = e.target.closest('[data-remove]');
+      if (x) { close({ remove: x.dataset.remove }); return; }
+      const p = e.target.closest('[data-pick]');
+      if (p) close({ id: p.dataset.pick });
+    });
+    document.addEventListener('keydown', onKey);
+    document.getElementById('modal-root').append(wrap);
+    buttons()[0]?.focus();
   });
 }
 

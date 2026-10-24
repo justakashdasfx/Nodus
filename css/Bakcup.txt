@@ -1,0 +1,15 @@
+:root[data-theme="dark"] {
+  --grey-50:   #0D0E0F;   /* search box + Write|Read toggle background — nothing else */
+  --grey-100:  #151718;   /* page behind the card, sidebar */
+  --grey-200:  #1A1D1E;   /* the card */
+  --grey-300:  #202425;   /* menus, dialogs, gallery cards */
+  --grey-400:  #26292B;   /* hairlines, filled buttons */
+  --grey-500:  #2B2F31;   /* strong hairlines */
+  --grey-600:  #313538;   /* faintest text: hints, placeholders */
+  --grey-700:  #3A3F42;   /* focus-mode dimming */
+  --grey-800:  #4C5155;   /* muted text, six-dot handle, ticked items */
+  --grey-900:  #697177;   /* quotes, Write: unfocused text */
+  --grey-1000: #787F85;   /* secondary text, Read: headings */
+  --grey-1100: #9BA1A6;   /* body text while writing / reading */
+  --grey-1200: #ECEDEE;   /* main text and titles */
+}

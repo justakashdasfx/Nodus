@@ -22,12 +22,27 @@
   align-items: center;
   gap: 4px;
   padding: 0 var(--card-gap) 0 8px;
+  transition: padding-left var(--t-med) var(--ease);
 }
 .topbar__spacer { flex: 1; }
 
-/* "│ 342 words · 2 min read" beside the menu button */
-.topbar__sep { width: 1px; height: 16px; margin: 0 10px 0 6px; background: var(--border-strong); flex: none; }
-.topbar__stats { color: var(--text-muted); font-size: var(--fs-small); white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* ☰ + app name: pinned to the top-left corner of the screen. Open sidebar → it sits above the sidebar;
+   collapsed sidebar → same spot, and the rest of the top bar (word count…) moves over to make room. */
+.topbar__lead {
+  position: fixed; top: 0; left: 10px; z-index: 45;     /* above the phone sidebar (40) so ☰ can also close it */
+  height: var(--topbar-height);
+  display: flex; align-items: center; gap: 4px;
+}
+.topbar__brand { font-weight: 600; color: var(--text-dim); white-space: nowrap; }
+/* Room for the cluster when the sidebar is collapsed. Raise --topbar-lead-width (tokens.css) if the app name is longer. */
+html.sidebar-collapsed .topbar { padding-left: var(--topbar-lead-width, 120px); }
+
+/* Note details: "Oct 15, 2026 · 📁 Notebook │ 342 words · 2 min read". With the sidebar open it starts at the card's left edge.
+   Phones show these inside the note instead (css/editor.css → .note__bar), so the top bar stays short. */
+.topbar__meta { display: flex; align-items: center; gap: 12px; min-width: 0; margin-left: 4px; color: var(--text-muted); font-size: var(--fs-small); white-space: nowrap; }
+.topbar__sep { width: 1px; height: 16px; background: var(--border-strong); flex: none; }
+.topbar__stats { padding: 4px 6px; margin: 0 -6px; border-radius: var(--r-sm); color: var(--text-muted); font-size: var(--fs-small); white-space: nowrap; font-variant-numeric: tabular-nums; transition: color var(--t-fast), background var(--t-fast); }
+.topbar__stats:hover { color: var(--text); background: var(--bg-hover); }
 
 /* ---------- Card ---------- */
 
@@ -87,7 +102,7 @@
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   width: calc(var(--pane-divider-w) - 4px); height: 48px; max-width: 18px;
   display: grid; place-items: center;
-  border-radius: 8px; background: var(--pane-grip-bg); color: var(--pane-grip-color);
+  border-radius: var(--r-sm); background: var(--pane-grip-bg); color: var(--pane-grip-color);
   box-shadow: 0 0 0 1px var(--border);
   opacity: 0; pointer-events: none;
   transition: opacity var(--t-fast), color var(--t-fast);
@@ -112,17 +127,18 @@ body.is-pane-resizing, body.is-pane-resizing * { cursor: col-resize !important; 
 .sidebar__head { height: var(--topbar-height); display: flex; align-items: center; padding: 0 10px; flex: none; }
 .sidebar__brand { font-weight: 600; color: var(--text-dim); }
 
-/* Search box shell (does nothing yet) */
+/* The Search box (opens the search window). Colours: --search-bg in css/tokens.css */
 .search-box {
   display: flex; align-items: center; gap: 10px;
-  height: 44px; margin: 20px 0 12px; padding: 0 8px 0 10px;
-  border-radius: 8px;
-  background-color: var(--bg-card);
-  color: var(--text-muted); text-align: left;
+  height: 44px; margin: 16px 0 12px; padding: 0 8px 0 10px;
+  border-radius: var(--search-radius);
+  background-color: var(--search-bg);
+  color: var(--text-dim); text-align: left;
   cursor: default; flex: none;
   transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+  border: 1px solid var(--border-400);
 }
-.search-box:hover { background: var(--bg-hover); border-color: var(--border-strong); color: var(--text-dim); }
+.search-box:hover { background: var(--search-bg-hover); border-color: var(--border-strong); color: var(--text-dim); }
 .search-box__label { flex: 1; }
 .search-box__hint {
   font: inherit; font-size: var(--fs-tiny); line-height: 1;
@@ -134,22 +150,28 @@ body.is-pane-resizing, body.is-pane-resizing * { cursor: col-resize !important; 
 .sidebar__divider { height: 1px; background: var(--border); margin: 10px 8px; flex: none; }
 .sidebar__tree { flex: 1; min-height: 0; overflow-y: auto; padding-bottom: 12px; }
 .sidebar__foot { flex: none; padding-top: 8px;margin-bottom: 20px;}
-.sidebar__label { margin-top: 16px; padding: 12px 10px 4px; font-size: var(--fs-fs); color: var(--text-muted); }
+.sidebar__label { margin-top: 16px; padding: 12px 10px 4px; font-size: var(--fs-ui); color: var(--text-muted); }
 
 .nav-item {
   display: flex;
   align-items: center;
   gap: 12px;
   height: 36px;
-  padding: 0 10px;
-  border-radius: var(--radius-ui);
+  padding: 0 10px 0 calc(var(--nav-pad-left) - var(--nav-bar-width));   /* the bar's space is part of the left padding… */
+  border-left: var(--nav-bar-width) solid transparent;                   /* …so choosing a row never makes its content jump. Width: --nav-bar-width */
+  border-radius: var(--sidebar-radius);
   color: var(--nav-text);
-  transition: background var(--t-fast), color var(--t-fast);
+  transition: background var(--t-fast), color var(--t-fast), padding var(--t-fast) var(--ease);
 }
 .nav-item:hover { background: var(--nav-hover-bg); color: var(--nav-hover-text);}
-.nav-item.is-active { background: var(--nav-active-bg); color: var(--nav-active-text); border-left: 4px solid var(--border-left); }
+.nav-item.is-active {
+  background: var(--nav-active-bg); color: var(--nav-active-text); border-left-color: var(--border-left);
+  padding-left: calc(var(--nav-pad-left) - var(--nav-bar-width) + var(--nav-active-indent));   /* INDENT of the selected link: --nav-active-indent (0px = off) */
+}
 .nav-item:active { background: var(--nav-pressed-bg); }   /* last, so it shows even on the page you are on */
 .nav-item__count { margin-left: auto; font-size: var(--fs-tiny); color: var(--text-muted); }
+.nav-item__count, .tree-count, .sidebar__count { display: none; }   /* sidebar counts hidden; delete this line to bring them back */.nav-item__count { margin-left: auto; font-size: var(--fs-tiny); color: var(--text-muted); }
+.nav-item__count, .tree-count, .sidebar__count { display: none; }   /* sidebar counts hidden; delete this line to bring them back */
 
 /* Folder → notes tree */
 .tree-row {
@@ -158,22 +180,22 @@ body.is-pane-resizing, body.is-pane-resizing * { cursor: col-resize !important; 
   gap: 8px;
   height: 36px;
   padding: 0 8px;
-  border-radius: var(--radius-ui);
+  border-radius: var(--sidebar-radius);
   min-width: 0;
   transition: background var(--t-fast), color var(--t-fast);
 }
 .tree-row__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 
 /* Notebooks: their own colours (--folder-* in css/tokens.css) */
-.tree-row--folder { padding: 0 4px 0 2px; gap: 2px; color: var(--folder-text); }
+.tree-row--folder { padding: 0 4px 0 0; gap: 2px; border-left: var(--folder-bar-width) solid transparent; color: var(--folder-text); transition: background var(--t-fast), color var(--t-fast), padding var(--t-fast) var(--ease); }
 .tree-row--folder:hover { background: var(--folder-hover-bg); color: var(--folder-hover-text); }
-.tree-row--folder.is-active { background: var(--folder-active-bg); color: var(--folder-active-text); border-left: 2px solid var(--border-left); }
+.tree-row--folder.is-active { background: var(--folder-active-bg); color: var(--folder-active-text); border-left-color: var(--border-left); padding-left: var(--folder-active-indent); }   /* INDENT: --folder-active-indent (0px = off) */
 .tree-row--folder:active { background: var(--folder-pressed-bg); }
 
 /* Notes under a notebook: their own colours (--note-* in css/tokens.css) */
-.tree-note { color: var(--note-text); }
+.tree-note { padding-left: calc(var(--note-pad-left) - var(--note-bar-width) + 2px); border-left: var(--note-bar-width) solid transparent; color: var(--note-text); transition: background var(--t-fast), color var(--t-fast), padding var(--t-fast) var(--ease); }
 .tree-note:hover { background: var(--note-hover-bg); color: var(--note-hover-text);}
-.tree-note.is-active { background: var(--note-active-bg); color: var(--note-active-text); border-left: 2px solid var(--border-left); }
+.tree-note.is-active { background: var(--note-active-bg); color: var(--note-active-text); border-left-color: var(--border-left); padding-left: calc(var(--note-pad-left) - var(--note-bar-width) + 2px + var(--note-active-indent)); }   /* INDENT: --note-active-indent (0px = off) */
 .tree-note:active { background: var(--note-pressed-bg); }
 
 .tree-row--folder .tree-link { padding-left: 4px; }
@@ -181,7 +203,7 @@ body.is-pane-resizing, body.is-pane-resizing * { cursor: col-resize !important; 
 .tree-caret, .tree-add {
   width: 22px; height: 22px; flex: none;
   display: grid; place-items: center;
-  border-radius: 6px; color: var(--text-muted);
+  border-radius: var(--r-sm); color: var(--text-muted);
 }
 .tree-caret:hover, .tree-add:hover { background: var(--bg-pressed); color: var(--text); }
 .tree-caret .icon { transition: transform var(--t-fast) var(--ease); }
@@ -237,7 +259,7 @@ body.is-pane-resizing, body.is-pane-resizing * { cursor: col-resize !important; 
     transition: transform var(--t-med) var(--ease);
   }
   .sidebar-collapsed .sidebar { margin-left: 0; transform: translateX(-100%); opacity: 1; }
-  html:not(.sidebar-collapsed) .scrim { display: block; position: fixed; inset: 0; z-index: 30; background: rgba(0, 0, 0, 0.5); }
+  html:not(.sidebar-collapsed) .scrim { display: block; position: fixed; inset: 0; z-index: 30; background: var(--scrim); }
 
   .card, .sidebar-collapsed .card { margin: 0 var(--card-gap) var(--card-gap); }
   .card__scroll { border-radius: var(--card-radius); }
@@ -253,4 +275,22 @@ body.is-pane-resizing, body.is-pane-resizing * { cursor: col-resize !important; 
   .pane__head { height: 52px; }
   .topbar { padding-left: 4px; overflow-x: auto; }
   .topbar .btn__label { display: none; }
+  .topbar__meta { display: none; }
 }
+
+/* ---------- Pinned section and the pin button on note rows ---------- */
+
+.sidebar__label--toggle { display: flex; align-items: center; gap: 6px; width: 100%; margin-top: 12px; text-align: left; }
+.sidebar__label--toggle .icon { transition: transform var(--t-fast) var(--ease); }
+.sidebar__label--toggle:hover { color: var(--text-dim); }
+.sidebar__count { margin-left: auto; font-variant-numeric: tabular-nums; }
+.sidebar__pinned-list { max-height: 28vh; overflow-y: auto; margin-bottom: 4px; }
+.tree-pin { width: 22px; height: 22px; flex: none; display: grid; place-items: center; border-radius: var(--r-sm); color: var(--text-muted); opacity: 0; }
+.tree-pin:hover { background: var(--bg-pressed); color: var(--text); }
+.tree-pin.is-pinned { opacity: 0.7; }
+.tree-row:hover .tree-pin, .tree-pin:focus-visible { opacity: 1; }
+@media (hover: none) { .tree-pin { opacity: 0.7; } }
+
+/* "Notebook" above the notebooks is a button: click it to close (or open) every notebook (Phase 8A) */
+.sidebar__label--btn { display: block; width: 100%; border: 0; background: transparent; text-align: left; font: inherit; font-size: var(--fs-ui); cursor: pointer; }
+.sidebar__label--btn:hover { color: var(--text-dim); }

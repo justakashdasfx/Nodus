@@ -69,6 +69,7 @@ export function initFormatting(root, history = { commit() {}, record() {} }) {
   const currentRange = () => {
     const sel = getSelection();
     if (!sel.rangeCount || sel.isCollapsed || !root.contains(sel.anchorNode)) return null;
+    if ((sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement)?.closest('pre')) return null; // no formatting toolbar inside code
     return sel.getRangeAt(0);
   };
   const notify = () => root.dispatchEvent(new Event('input', { bubbles: true })); // triggers autosave

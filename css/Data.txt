@@ -1,0 +1,123 @@
+══ 1. ACCENT COLOURS (hex, not grey steps) ══
+accent (links, focus):      #7DB1E5
+steel (selected row bar):   #7DB1E5
+danger:                     #E5736F
+ok (saved dot):             #5FC08A
+warn (saving dot):          #E3C25A
+Light mode:                 keep current / I'll send Radix light values
+
+══ 2. SURFACES ══
+page behind card + sidebar:     100
+card (where you write):         200
+menus, dialogs, gallery cards:  300
+search box: 200
+Write|Read toggle:50
+
+══ 3. LINES ══
+hairline (card outlines,sidebar tree guide line,  section dividers, gallery outlines, all menu outlines):  500
+strong hairline (inputs, dividers):          700
+focus ring:                                  accent
+
+══ 4. INTERACTION ══
+hover background:           500
+pressed / selected bg:      600
+filled button (New note):   500 (i will design the button. for now add 2 buttons, primary and secondary)
+Primary button → add thee properties two fill below is #26292B and a gradient with 15% opacity on top (linear (0% 7E99B3 42% opacity and 100% 666666 (0% opacity))) and 2 inner shadow one with white up to down and one is black down to up and a drop shadow with no blur and 2 % expansion (I have designed it in figma)
+ticked checklist items:     900  (see section 5)
+
+══ 5. TEXT (interface) ══
+main text, titles:               1200
+secondary text:                  1100
+muted (counts, dates, labels):   1000
+faint (placeholders, hints):     900
+six-dot handle:                  900
+handle on hover:                 1200
+
+══ 6. THE NOTE ITSELF ══
+WRITE mode
+ paragraph you are in:      1100
+ other paragraphs:          900
+ heading you are in:        1100
+ other headings:            800
+ quote:                     900
+ inline code text:          1100
+ inline code background:    1200 at 7%
+ ticked items:              800
+ focus-mode dimming:        700
+READ mode
+ body text:                 1200
+ headings:                  1000
+ quote:                     1000
+ inline code text:          1100
+ ticked items:              800
+
+══ 7. SIDEBAR ROWS ══
+resting text:        1100
+hover text / bg:     1200 / 400
+selected text / bg:  1200 / 400
+bar width: nav 2px · notebook 2px · note 2px
+selected indent: 3px (0 = off) → add a note to where to change it
+
+══ 8. CODE BLOCKS ══
+background:         300
+border:             400
+plain text:         1100
+comment:            900
+punctuation:        1000
+(keyword, string, number, function, type, property stay as the current pastel hex)
+
+══ 9. TYPE SIZES ══
+UI text (buttons, sidebar, menus):  15px
+small (dates, counts):              13px
+tiny (labels, badges):              12px
+NEW title size (page titles):       28px
+writing size / line height:         16px / 1.8
+h1 / h2 / h3 / h4:                  2em / 1.5em / 1.2em / 1em
+heading weight:                     600
+paragraph gap:                      0.9em
+search window text:                 15px
+
+══ 10. RADIUS SCALE (NEW: replaces 4/6/7/8/12 scattered everywhere) ══
+xs (tags, small chips):             4px
+sm (buttons, rows, inputs):         6px
+md (menus, popovers, toolbar):      12px
+lg (gallery cards):                 16px
+card (writing card):                16px
+search box / toggle:                8px
+pill (tag pills):                   999px
+
+══ 10.1 slash menu, text heighlighted menu, and 6 dot menu (rewrite teh previous if mentioned below) ══
+icons across the app is generally 1000 and here in the case is too. also add svg for every these menus. How to tackle it. Can I put SVG to a folder to source all the icons for the UI? is it possible?
+Add notes for these menus to customize the hegiht, highlight, and colors.
+
+══ 11. SPACING SCALE (NEW) ══
+steps (I'd use):  4 · 8 · 12 · 16 · 24 · 32 · 40 · 48
+(tell me if you want a different base unit, e.g. 4px vs 8px)
+
+══ 12. LAYOUT ══
+sidebar width:              280px
+top bar height:             56px
+gap around the card:        12px
+writing column width:       656px
+space above text:           40px
+space inside card (sides):  40px
+widest gallery/list page:   1120px
+handle distance from text:  50px
+tag column width / gap:     120px / 20px
+side pane: min width / divider  320px / 16px
+
+══ 13. GALLERY ══
+card min width:             300px
+gap between cards:          16px
+preview height:             168px (I dont understand but Total heigh for my gallery in figma is 258px and preview height is 192px and info height below preview is 64 px and note name is 15px and notebook and date info is 13px )
+preview text size:          10px
+card radius:                lg (16px)
+
+══ 14. SEARCH WINDOW ══
+width:                      640px
+distance from top:          14vh
+max height:                 64vh
+typing row / result row:    52px / 38px
+
+══ 15. MOTION ══
+fast (hover) / medium (panels) / focus fade:  120ms / 220ms / 160ms

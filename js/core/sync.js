@@ -13,6 +13,7 @@
 import { CONFIG } from './config.js';
 import * as store from './store.js';
 import { debounce } from './utils.js';
+import * as prefs from './prefs.js';
 
 let status = 'idle';
 let running = false;
@@ -70,6 +71,7 @@ async function push() {
     if (out.conflict) store.adoptRemoteThreads(out);
     else store.clearThreadsDirty(threads.updatedAt);
   }
+  await prefs.push(request);   // recent searches (skipped when nothing changed)
 }
 
 async function pull() {
@@ -78,6 +80,7 @@ async function pull() {
     request('GET', CONFIG.api.folders),
     request('GET', CONFIG.api.threads).catch(() => ({ threads: undefined, updatedAt: 0 })), // older server without /api/threads
   ]);
+  await prefs.pull(request);
   store.applyRemote({ notes: n.notes, folders: f.folders, foldersUpdatedAt: f.updatedAt, threads: t.threads, threadsUpdatedAt: t.updatedAt });
 }
 
@@ -111,6 +114,7 @@ export function startSync() {
   store.subscribe((kind) => {
     if (kind === 'dirty') { if (getKey() && navigator.onLine) setStatus('saving'); schedulePush(); }
   });
+  prefs.subscribe(() => schedulePush());
   window.addEventListener('online', syncNow);
   window.addEventListener('offline', () => setStatus('offline'));
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncNow(); });

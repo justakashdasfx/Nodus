@@ -29,7 +29,7 @@ export function caretBlock(root) {
   let node = range.startContainer;
   if (node === root) node = root.childNodes[range.startOffset] || root.lastChild;
   const el = node && (node.nodeType === 1 ? node : node.parentElement);
-  const block = el && el.closest('li, p, h1, h2, h3, h4, blockquote, div');
+  const block = el && el.closest('li, p, h1, h2, h3, h4, blockquote, pre, summary, div');
   return block && block !== root && root.contains(block) ? block : null;
 }
 

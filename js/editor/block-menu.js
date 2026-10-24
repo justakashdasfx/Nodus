@@ -11,8 +11,10 @@ import { icon } from '../core/icons.js';
 import { CONFIG } from '../core/config.js';
 import { comboLabel } from '../core/keys.js';
 import { escapeHtml } from '../core/utils.js';
-import { snapshotCaret } from './normalize.js';
+import { snapshotCaret, caretBlock } from './normalize.js';
+import { toCode, codeToParagraph } from './code-block.js';
 import { setBlock } from './blocks.js';
+import { insertDivider, toCallout, toToggle, unwrapToggle } from './blocks-extra.js';
 import { toggleList } from './lists.js';
 import { stepBlock, canStep, duplicateBlock, deleteBlock, blockKind } from './block-ops.js';
 
@@ -43,6 +45,20 @@ export const restoreSel = (k) => { if (k?.a?.isConnected && k.f?.isConnected) ge
 export function turnInto(root, block, kind, { place = true } = {}) {
   if (blockKind(block) === kind) return;
   if (place) placeCaret(root, block);   // the existing commands work on the block holding the caret
+  if (blockKind(block) === 'code') {    // leave the code block first: it becomes a text block, then takes the new type
+    block = codeToParagraph(root, block);
+    if (kind === 'p') return;
+  }
+  if (block.tagName === 'P' && block.hasAttribute('data-callout')) { block.removeAttribute('data-callout'); if (kind === 'p') return; } // callout → normal text first
+  if (block.tagName === 'SUMMARY') { block = unwrapToggle(root, block); placeCaret(root, block); if (kind === 'p') return; }   // toggle → its title becomes text, its content stays
+  if (kind === 'divider') { insertDivider(root, block); return; }
+  if (kind === 'toggle')  { toToggle(root, block); return; }
+  if (kind === 'callout') { toCallout(root, block); return; }
+  if (kind === 'code') {
+    if (block.tagName === 'LI') { snapshotCaret(root); setBlock(root, 'p', false); block = caretBlock(root) || block; } // out of the list first
+    toCode(root, block);
+    return;
+  }
   if (kind === 'ul' || kind === 'ol' || kind === 'todo') { snapshotCaret(root); toggleList(root, kind); }
   else setBlock(root, kind === 'quote' ? 'blockquote' : kind, false);
 }
@@ -62,7 +78,7 @@ export function menuModel(block, { turnOnly = false, extra = [] } = {}) {
   const kind = blockKind(block);
   const turn = {
     title: 'Turn into',
-    items: CONFIG.blockTypes.map(([k, label, sk, words]) => ({ act: 'turn:' + k, label, hint: hintFor(sk), current: k === kind, words })),
+    items: CONFIG.blockTypes.filter(([k]) => !(turnOnly && k === 'divider')).map(([k, label, sk, words, ic]) => ({ act: 'turn:' + k, label, ic, hint: hintFor(sk), current: k === kind, words })),
   };
   if (turnOnly) return [turn, ...extra];
   const tagged = !!block.getAttribute('data-tags');
@@ -81,7 +97,7 @@ export function menuModel(block, { turnOnly = false, extra = [] } = {}) {
 
 const itemHtml = (it) =>
   `<button type="button" role="menuitem" class="block-menu__item${it.danger ? ' is-danger' : ''}${it.current ? ' is-current' : ''}" data-act="${it.act}"${it.disabled ? ' disabled' : ''}>
-     <span class="block-menu__icon">${it.ic ? icon(it.ic, 16) : (it.current ? '✓' : '')}</span><span class="block-menu__label">${escapeHtml(it.label)}</span>${it.hint ? `<span class="block-menu__hint">${escapeHtml(it.hint)}</span>` : ''}
+     <span class="block-menu__icon">${it.ic ? icon(it.ic, 16) : ''}</span><span class="block-menu__label">${escapeHtml(it.label)}</span>${it.hint ? `<span class="block-menu__hint">${escapeHtml(it.hint)}</span>` : ''}${it.current ? `<span class="block-menu__check">${icon('check', 14)}</span>` : ''}
    </button>`;
 
 /** Markup for the sections. filter: only items whose name or keywords contain every typed word. Returns { html, count }. */

@@ -17,7 +17,7 @@
    ========================================================================== */
 
 import { CONFIG } from './config.js';
-import { uid, deriveTitle, formatJournalDate, escapeHtml } from './utils.js';
+import { uid, deriveTitle, formatJournalDate, escapeHtml, sanitizeHtml, todayKey } from './utils.js';
 import { indexHtml, migrateHtml } from './blockindex.js';
 import { matchBlocks, normalizeRules } from './threads.js';
 
@@ -43,7 +43,11 @@ const emit = (kind, detail = {}) => listeners.forEach(fn => fn(kind, detail));
 
 /** Notes without a block index (older notes, or older server copies) get block ids + an index. In memory only. */
 function ensureBlocks(note) {
-  if (Array.isArray(note.blocks)) return;
+  if (Array.isArray(note.blocks)) {
+    // Indexes written before checklists were indexed lack the tick state the Tasks page reads → rebuild them (in memory).
+    if (note.html && note.html.includes('data-check') && note.blocks.some(b => b.t === 'li') && !note.blocks.some(b => b.chk !== undefined)) note.blocks = indexHtml(note.html);
+    return;
+  }
   const migrated = migrateHtml(note.html || '', note.id);
   note.html = migrated.html;
   note.blocks = migrated.blocks;
@@ -115,7 +119,7 @@ export const trashedNotes = () =>
 export function tagCounts() {
   const counts = new Map();
   for (const note of state.notes) {
-    if (!live(note) || folderTrashed(note)) continue;
+    if (!live(note) || folderTrashed(note) || note.type === 'template') continue;
     for (const block of note.blocks || []) for (const t of block.tags || []) counts.set(t, (counts.get(t) || 0) + 1);
   }
   return counts;
@@ -163,6 +167,37 @@ export function moveNote(id, folderId) {
   touch(note);
 }
 
+/** The writing font of one note: 'sans' (the default, stored as nothing), 'mono' or 'serif'. Syncs with the note. */
+export function setNoteFont(id, font) {
+  const note = getNote(id);
+  if (!note) return;
+  const next = font === 'mono' || font === 'serif' ? font : null;
+  if ((note.font || null) === next) return;
+  if (next) note.font = next; else delete note.font;
+  touch(note, 'content'); // the page is not redrawn; the caller updates the editor's font in place
+}
+
+/** Pinned notes sit in the sidebar's Pinned section and lead Home. note.pinned = when it was pinned (newest first); it syncs with the note. */
+export const pinnedNotes = () =>
+  state.notes.filter(n => live(n) && !folderTrashed(n) && n.pinned).sort((a, b) => b.pinned - a.pinned);
+export function setNotePinned(id, on) {
+  const note = getNote(id);
+  if (!note) return;
+  if (on) note.pinned = Date.now(); else delete note.pinned;
+  touch(note, 'content'); // the sidebar redraws; the caller redraws Home if that is the page
+}
+
+/** Write ('edit') or Read for one note. The default (config.js → defaults.mode) is stored as nothing. Syncs with the note. */
+export const noteMode = (note) => (note?.mode === 'read' || note?.mode === 'edit' ? note.mode : CONFIG.defaults.mode);
+export function setNoteMode(id, mode) {
+  const note = getNote(id);
+  if (!note) return;
+  const next = mode === CONFIG.defaults.mode ? null : mode;
+  if ((note.mode || null) === next) return;
+  if (next) note.mode = next; else delete note.mode;
+  touch(note, 'content'); // the caller rebuilds the page so the editor opens editable or read-only
+}
+
 export const trashNote = (id) => { const n = getNote(id); if (n) { n.deletedAt = Date.now(); touch(n); } };
 
 export function restoreNote(id) {
@@ -194,13 +229,38 @@ export function getOrCreateJournal(dateKey) {
   return createNote({ type: 'journal', date: dateKey, html: `<h1>${escapeHtml(formatJournalDate(dateKey))}</h1><p><br></p>` });
 }
 
+/* ---------- Templates ---------- */
+/* Your own templates are notes of type 'template': they sync like notes, but lists, search and threads leave them out.
+   The built-in ones live in config.js → templates. "{date}" in a template becomes today's date when it is used. */
+
+export const templates = () =>
+  state.notes.filter(n => n.type === 'template' && live(n)).sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+
+function templateBody(html, fill) {
+  const body = new DOMParser().parseFromString(`<body>${sanitizeHtml(html || '')}</body>`, 'text/html').body;
+  body.querySelectorAll('[data-bid]').forEach(el => el.removeAttribute('data-bid'));        // the new note gets its own block ids
+  body.querySelectorAll('[data-due]').forEach(el => el.removeAttribute('data-due'));        // old dates would be wrong
+  body.querySelectorAll('li[data-check]').forEach(el => el.setAttribute('data-check', 'false'));   // checklist items start unticked (tags stay)
+  const out = body.innerHTML;
+  return fill ? out.split('{date}').join(escapeHtml(formatJournalDate(todayKey()))) : out;
+}
+
+/** A new note from template HTML. */
+export const createFromTemplate = (html, { folderId = null } = {}) => createNote({ folderId, html: templateBody(html, true) });
+
+/** Saves a copy of a note as one of your templates. */
+export function saveAsTemplate(id) {
+  const note = getNote(id);
+  return note ? createNote({ type: 'template', html: templateBody(note.html, false) }) : null;
+}
+
 /* ---------- Threads ---------- */
 
 export const threads = () => state.threads.filter(t => !t.deletedAt).sort((a, b) => b.updatedAt - a.updatedAt);
 export const getThread = (id) => state.threads.find(t => t.id === id && !t.deletedAt) || null;
 
 /** Notes that searches and threads look at: not in Trash, not in a notebook that is in Trash. */
-export const searchableNotes = () => state.notes.filter(n => live(n) && !folderTrashed(n));
+export const searchableNotes = () => state.notes.filter(n => live(n) && !folderTrashed(n) && n.type !== 'template');
 
 function touchThreads() {
   state.threadsUpdatedAt = Date.now();
@@ -255,15 +315,17 @@ export function createFolder(name) {
   return folder;
 }
 
-/** Edit panel: name + description. */
-export function updateFolder(id, { name, description } = {}) {
+/** Edit panel: name, description and how the notebook's notes are shown ('gallery' | 'list'). */
+export function updateFolder(id, { name, description, viewStyle } = {}) {
   const f = getFolder(id);
   if (!f) return;
   const nextName = (name ?? f.name).trim() || f.name;
   const nextDesc = (description ?? f.description ?? '').trim();
-  if (nextName === f.name && nextDesc === (f.description || '')) return;
+  const nextView = viewStyle === 'list' || viewStyle === 'gallery' ? viewStyle : (f.viewStyle || '');
+  if (nextName === f.name && nextDesc === (f.description || '') && nextView === (f.viewStyle || '')) return;
   f.name = nextName;
   f.description = nextDesc;
+  if (nextView) f.viewStyle = nextView;
   touchFolders();
 }
 

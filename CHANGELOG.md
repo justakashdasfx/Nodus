@@ -1,5 +1,60 @@
 # Changelog
 
+## Phase 8A — Block selection, new blocks, and four small wishes
+
+- **Double-click below the last block** → a new empty block appears there (or the empty one at the end gets the cursor). No need to go back and press Enter.
+- **Click "Notebook"** above the notebooks → every notebook closes; click again when none is open → all open.
+- **Calendar date picker**: "Pick a date…" in the due-date menu opens a month calendar (Today, Clear, month arrows, Esc). Typing `@fri` etc. still works.
+- **Tags page** (sidebar, above Threads): every #tag in alphabetical sections (P under P), as coloured pills with a count. Click a pill → the side pane opens with all blocks carrying that tag.
+- **Block selection**: drag in the empty space beside the text to select whole blocks (a plain click there selects the block at that height; Shift+click extends). A bar offers Copy · Cut · Duplicate · Turn into · Tag · move up/down as a group · Delete. Keys: Ctrl/Cmd+C/X/D, Delete, Alt+Shift+↑↓, Esc. Dragging inside text still selects text.
+- **New blocks** (in "/" and the six-dot menu): **Divider**, **Callout**, **Toggle** (collapsible; the folded state is saved). Markdown export: divider → `---`, callout → quote, toggle → bold title + content.
+- Files: new `js/editor/block-select.js`, `blocks-extra.js`, `js/ui/calendar.js`, `js/views/tags.js`; changed `app.js`, `config.js`, `icons.js`, `utils.js`, `blockindex.js`, `block-ops.js`, `block-menu.js`, `normalize.js`, `editor.js`, `due.js`, `sidebar.js`, the CSS files and `sw.js`.
+
+## Phase 6B — Code block, find in note, pinned, undo
+
+- **Code block** (`/code`, the six-dot menu, the selection “…”, or type ``` + Enter): Enter keeps the indent (a second Enter on an empty last line leaves the block, Ctrl/Cmd+Enter leaves at once), Tab / Shift+Tab indent, pasted code keeps its layout, a language dropdown (11 languages), **Format** with Prettier (JS, TS, JSON, CSS, HTML, Markdown, YAML), **Copy**, subtle pastel syntax colours (`--code-*`, tokens section 9). Works in Read mode too (colours + Copy). Text export and Markdown export write fenced code.
+- **Find in note** (Ctrl/Cmd+F): highlights every match, count, next / previous, Replace and Replace all.
+- **Pinned**: a collapsible Pinned section above the notebooks; pin from the ⋯ menu or the pin button on a note row; pinned notes also lead Home.
+- **Undo toast** after Move to Trash (note or notebook) and after moving a note to another notebook.
+- **Notebook picker** has a search box (type to filter, Enter picks the first match).
+- Third-party files in `vendor/` (Prism for colours, Prettier for Format), loaded only when needed, with their licences.
+- New: `js/editor/code-block.js`, `js/ui/find.js`, `js/core/vendor.js`, `vendor/*`. Changed: tokens, editor, layout, components CSS; app, config, store, settings, icons, utils, blockindex; editor modules (normalize, block-ops, block-menu, focus, shortcuts, slash-menu, tags, tag-suggest, selection-toolbar, editor); sidebar, more-menu, home; sw.js.
+
+## Phase 6A.1 — Fixes after 6A
+
+- **Notebook picker restyled.** It is now a bordered button (icon, name, small arrow) that opens a menu listing the Inbox and every notebook, with the current one ticked. It appears in the top bar and in the note's own bar (phone, side pane).
+- **Write | Read is saved per note** (like the font), syncs with the note, and the switch shows only on note pages. A note opens in `defaults.mode` until you choose.
+- **Writing colours organized:** `tokens.css` section 7 is now four groups with identical names and order (dark/light × Write/Read), plus a ticked-items colour. See CUSTOMIZE.md section B.
+- **⋯ menu:** Light | Dark and the font choice sit side by side like Write | Read, and stay open so you see the highlight move.
+- **New font: Serif (Merriweather)**, bundled for offline use. Fonts are Sans / Mono / Serif per note.
+- **Removed the thin line beside the paragraph you are writing in** (CSS, tokens and docs). The brighter active paragraph stays.
+- **Files:** new `fonts/merriweather-*.woff2`, `fonts/MERRIWEATHER-LICENSE.txt`; changed `css/tokens.css`, `css/editor.css`, `css/fonts.css`, `js/app.js`, `js/core/config.js`, `js/core/settings.js`, `js/core/store.js`, `js/ui/topbar.js`, `js/ui/more-menu.js`, `js/ui/note-meta.js`, `js/views/note.js`, `index.html`, `sw.js`, docs.
+
+## Phase 6A — Modes, top bar and a calmer colour system
+
+**Write and Read**
+- A **Write | Read** switch in the top bar (Ctrl/Cmd+Shift+E). Write is the focused writing you know. Read opens notes read-only, in proper text colours with slightly softer headings and no dimming. The last mode you used is remembered.
+- A new colour section in `tokens.css` (7. Writing colours) with `--edit-*` and `--read-*` tokens, so every writing colour can be mapped by hand for each mode.
+
+**Top bar**
+- Date created, the notebook picker and the word count moved from the page into the top bar. **Click the count** to switch between words and characters (remembered).
+- A **⋯ menu** at the right: Light / Dark, Font for this note, Download all, Download as text, Copy as Markdown, Export as Markdown (.md), Move to Trash (or Restore / Delete forever, Restore notebook), About. The Font, Theme, Download and (i) buttons left the bar.
+- On phones the note's details (date, notebook, count) sit at the top of the page instead, and the sync chip shows just its dot.
+- **Fonts are per note.** Sans or Mono is saved on the note and syncs with it; the interface itself is always Sans.
+
+**Colours**
+- One **base palette** per theme (`--p-*` in `tokens.css`). Hover, pressed, grip, marker, selection, scrollbar, tag-remove and the highlight tints are now mixed from it, so each colour is typed once. Look is unchanged except the fixes below.
+- Fixed: hover and pressed were the same colour (pressed is now one step stronger; selected rows keep their old look).
+- Fixed: the grip dots vanished on hover in dark mode.
+- Fixed: `.sidebar__label` used a token that does not exist (`--fs-fs`).
+- Fixed: choosing a sidebar row moved its text 2–4px (the selected bar's space is now reserved).
+- Fixed: filled buttons used a hard-coded dark colour (also in light mode) and an invalid border colour.
+- The light theme now has a selected-row bar colour (`--p-steel`).
+
+**Files**
+- New: `js/ui/more-menu.js`, `js/ui/note-meta.js`
+- Changed: `css/tokens.css`, `css/layout.css`, `css/components.css`, `css/editor.css`, `js/app.js`, `js/core/config.js`, `js/core/settings.js`, `js/core/utils.js`, `js/core/store.js`, `js/editor/editor.js`, `js/ui/topbar.js`, `js/ui/pane.js`, `js/views/note.js`, `index.html`, `sw.js`
+
 ## Phase 5B — Menus, phone sheet, touch, Inbox, About
 
 **Menus**

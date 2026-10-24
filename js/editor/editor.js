@@ -12,14 +12,22 @@
 import { CONFIG } from '../core/config.js';
 import * as store from '../core/store.js';
 import { debounce, escapeHtml, sanitizeHtml, statsLabel } from '../core/utils.js';
+import { getStatsMode } from '../core/settings.js';
 import { initFormatting } from './selection-toolbar.js';
 import { initShortcuts } from './shortcuts.js';
 import { initFocusTracking } from './focus.js';
 import { initTodoInteractions } from './lists.js';
+import { mountDue } from './due.js';
 import { cleanPastedHtml } from './paste.js';
 import { reconcile, snapshotCaret } from './normalize.js';
 import { mountTagRail } from './tags.js';
 import { mountHistory } from './history.js';
+import { mountCode } from './code-block.js';
+import { mountExtraBlocks } from './blocks-extra.js';
+import { mountBlockSelect } from './block-select.js';
+import { idFactory } from './block-ops.js';
+import { ownText } from '../core/blockindex.js';
+import { placeCaret } from './block-menu.js';
 import { mountBlockHandle } from './block-handle.js';
 import { mountSlashMenu } from './slash-menu.js';
 import { mountTagSuggest } from './tag-suggest.js';
@@ -27,6 +35,17 @@ import { mountTagSuggest } from './tag-suggest.js';
 /** The editor that last had the cursor. The top bar's word count and "As text" follow it when two editors are open. */
 let lastFocused = null;
 export const focusedEditor = () => (lastFocused?.isConnected ? lastFocused : null);
+
+/** Writes "342 words · 2 min read" into every count on screen (top bar, and the note's own bar on phones). */
+function writeStats(el) {
+  const label = statsLabel(el.innerText, getStatsMode());
+  document.querySelectorAll('[data-note-stats]').forEach((t) => { t.textContent = label; });
+}
+/** Re-draws the count for the editor you last used (after switching words ⇄ characters). */
+export function refreshStats() {
+  const el = focusedEditor() || document.querySelector('#view .editor');
+  if (el) writeStats(el);
+}
 
 function placeCaretAtEnd(el) {
   const last = el.lastElementChild;
@@ -55,14 +74,16 @@ export function mountEditor(el, note, { readOnly = false } = {}) {
   const updateStats = () => {
     const other = focusedEditor();
     if (other && other !== el) return; // the cursor is in the other editor: its numbers are the ones showing
-    const target = document.getElementById('note-stats');
-    if (target) target.textContent = statsLabel(el.innerText);
+    writeStats(el);
   };
   updateStats();
 
   if (readOnly) {
     el.contentEditable = 'false';
-    return mountTagRail(el, { editable: false });
+    const stopCodeRO = mountCode(el, null, { readOnly: true }); // colours and a Copy button, no editing
+    const stopRail = mountTagRail(el, { editable: false });
+    const stopDueRO = mountDue(el, { editable: false });   // the dates next to checklist items
+    return () => { stopCodeRO(); stopRail?.(); stopDueRO(); };
   }
 
   el.contentEditable = 'true';
@@ -79,6 +100,10 @@ export function mountEditor(el, note, { readOnly = false } = {}) {
 
   /* ---- Undo / redo (our own, so moves and menu actions undo too), block handle, #tag suggestions ---- */
   const history = mountHistory(el);
+  const stopCode = mountCode(el, history);   // code blocks: Enter / Tab / paste, the language bar, colours
+  const stopExtra = mountExtraBlocks(el, { history });   // callout, toggle behaviour
+  const stopSelect = mountBlockSelect(el, { history });  // drag in the empty space beside the text to select whole blocks
+  const stopDue = mountDue(el);              // due dates: "@" in a checklist item (registered early so its menu keys come first)
 
   /* ---- Autosave ---- */
   const save = debounce(() => store.updateNoteContent(note.id, sanitizeHtml(el.innerHTML)), CONFIG.timing.saveDebounce);
@@ -125,6 +150,28 @@ export function mountEditor(el, note, { readOnly = false } = {}) {
   const stopSlash = mountSlashMenu(el, history);
   const stopSuggest = mountTagSuggest(el, { counts: store.tagCounts });
 
+  /* Double-click in the empty space below the last block → a new block there (no need to go back and press Enter) */
+  const host = el.closest('.note') || el;
+  const onDblClick = (e) => {
+    if (e.target.closest('button, a, input, select, .tag-rail, .note__bar, .block-handle')) return;
+    if (e.target !== el && el.contains(e.target)) return;      // inside the text: a double-click selects a word as usual
+    const last = el.lastElementChild;
+    if (last && e.clientY < last.getBoundingClientRect().bottom) return;
+    e.preventDefault();
+    history.commit();
+    let p = last && last.tagName === 'P' && !ownText(last) && !last.hasAttribute('data-callout') ? last : null;
+    if (!p) {
+      p = document.createElement('p');
+      p.setAttribute('data-bid', idFactory(el)());
+      p.innerHTML = '<br>';
+      el.append(p);
+    }
+    placeCaret(el, p);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    history.record();
+  };
+  host.addEventListener('dblclick', onDblClick);
+
   /* Brand-new note → start typing straight away. */
   if (Date.now() - note.createdAt < 3000) { el.focus(); placeCaretAtEnd(el); }
 
@@ -142,6 +189,6 @@ export function mountEditor(el, note, { readOnly = false } = {}) {
     el.removeEventListener('beforeinput', onBeforeInput);
     el.removeEventListener('input', onInputBlocks);
     el.removeEventListener('compositionend', onCompositionEnd);
-    stopFormatting(); stopShortcuts(); stopFocus(); stopTodos(); stopTags(); stopHandle(); stopSlash(); stopSuggest(); history.stop();
+    stopFormatting(); stopShortcuts(); stopFocus(); stopTodos(); stopTags(); stopHandle(); stopSlash(); stopSuggest(); stopCode(); stopDue(); stopExtra(); stopSelect(); host.removeEventListener('dblclick', onDblClick); history.stop();
   };
 }

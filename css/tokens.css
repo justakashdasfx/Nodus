@@ -1,227 +1,544 @@
 /* ==========================================================================
-   COLOUR GUIDE — which variable changes what.  Each colour exists twice:
-   once in the DARK block (:root, [data-theme="dark"]) and once in the LIGHT block below it.
-   Change it in both, or only in the theme you use.
+   TOKENS — every colour, size and gap of the app lives in this file.
+   Edit here first. Nothing else in the app needs to change for a new look.
 
-   WRITING (the note itself)
-     --prose-text            body text of paragraphs you are NOT in (the dimmer grey)
-     --prose-text-active     body text of the paragraph you ARE in (the brighter one)
-     --prose-text-strict     dim level used by focus mode
-     --prose-heading         headings you are not in          --prose-heading-active   heading you are in
-     --prose-quote           quote text                       --prose-code-bg / --prose-code-text   inline code
-     --active-marker         the line beside the active paragraph   (--active-marker-width = thickness, --active-marker-offset = distance from the text)
-     --hl-*                  highlight + text colour palette
-   APP
-     --text                  main UI text, titles             --text-dim     secondary text
-     --text-muted            counts, dates, labels            --text-faint   hints, placeholders, ticked checklist items
-     --bg-app                page background behind the card  --bg-card      the rounded writing card
-     --bg-raised             menus, dialogs                   --bg-hover     hover / selected rows
-     --border / --border-strong   hairlines                   --accent       links, focus, active items
-   TAGS
-     --tag-sat, --tag-light   each tag's hue comes from its name, so the same tag is always the same colour
-     --tag-remove            the × on a tag
-     --handle-*              the six-dot block handle and its menu
-   SIDEBAR ROWS
-     --nav-*  --folder-*  --note-*   resting text, hover, pressed (mouse down) and active (current page) colours for each kind of row
-   SIDE PANE
-     --pane-min              narrowest the page or the pane may get when you drag the divider
-     --pane-divider-w        the gap between the page and the pane, and the grab area of the divider (wider on touch screens)
-     --pane-grip-bg / --pane-grip-color / --pane-grip-color-hover   the little grip that appears in the gap
-     --block-target-bg       soft highlight on the block you jumped to (stays until you click or type)
+   MAP
+     PART A · SIZES     1 Fonts · 2 Type · 3 Spacing scale · 4 Radius scale · 5 Layout
+                        6 Sidebar rows · 7 Gallery · 8 Menus & toolbar · 9 Search window · 10 Motion
+     PART B · COLOURS   11 Greys (dark, light) · 12 Accent colours · 13 Roles (which grey does what)
+                        14 Buttons · 15 Sidebar row colours · 16 Menus & toolbar colours
+     PART C · THE NOTE  17 Write + Read mode · 18 Tags & highlights · 19 Code · 20 Tasks · 21 Extra blocks
+
+   TWO RULES
+     • Colours are written as grey STEPS (--grey-50 … --grey-1200), never as hex, except in section 12.
+       To recolour something, change which step a role points at (section 13), not the hex values.
+     • After editing, hard refresh (Ctrl/Cmd+Shift+R) — the browser may keep an old copy.
    ========================================================================== */
 
-/* ==========================================================================
-   TOKENS — every visual decision lives in this file. Edit here first.
-
-   1. Fonts            5. Colour — dark (default)
-   2. Type scale       6. Colour — light
-   3. Layout & radii   7. Highlight / text colour palette
-   4. Gallery & motion
-   ========================================================================== */
-
+/* ##########################################################################
+   PART A · SIZES
+   ########################################################################## */
 :root {
-  /* ---- 1. Fonts ------------------------------------------------------- */
+  /* ---- 1. FONTS ------------------------------------------------------- */
   --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --font-active: var(--font-sans);                 /* flipped by [data-font="mono"] below */
+  --font-serif: "Merriweather", Georgia, ui-serif, "Times New Roman", serif;
+  --font-active: var(--font-sans);          /* the interface is always Sans; a note's own font is chosen in its ⋯ menu */
 
-  /* ---- 2. Type scale -------------------------------------------------- */
-  --fs-ui: 13px;                                   /* buttons, sidebar, menus */
-  --fs-small: 12px;
-  --fs-tiny: 11px;
-
-  --prose-fs: 16px;                                /* writing size */
-  --prose-lh: 1.8;                                 /* writing line height */
-  --prose-h1: 2em;                                 /* heading sizes are relative to --prose-fs */
+  /* ---- 2. TYPE -------------------------------------------------------- */
+  --fs-ui: 14px;                            /* buttons, sidebar, menus */
+  --fs-small: 13px;                         /* dates, counts, hints */
+  --fs-tiny: 12px;                          /* labels, badges */
+  --fs-title: 28px;                         /* page titles (Home, Notebooks, a notebook's name…) */
+  --prose-fs: 16px;                         /* writing size */
+  --prose-lh: 1.8;                          /* writing line height */
+  --prose-h1: 2em;                          /* heading sizes are relative to --prose-fs */
   --prose-h2: 1.5em;
   --prose-h3: 1.2em;
   --prose-h4: 1em;
   --prose-heading-weight: 600;
-  --prose-block-gap: 0.9em;                        /* space between paragraphs */
+  --prose-block-gap: 0.9em;                 /* space between paragraphs */
 
-  /* ---- 3. Layout & radii ---------------------------------------------- */
-  --sidebar-width: 257px;
+  /* ---- 3. SPACING SCALE (use these for new gaps and paddings) ---------- */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px;  --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 40px;  --space-8: 48px;
+
+  /* ---- 4. RADIUS SCALE ------------------------------------------------- */
+  --r-xs: 4px;                              /* tags, small chips */
+   --r-sm2: 8px;
+  --r-sm: 6px;                              /* buttons, rows, inputs, menu items */
+  --r-md: 12px;                             /* menus, popovers, toolbar, search window */
+  --r-lg: 16px;                             /* gallery cards, dialogs */
+  --r-card: 16px;                           /* the big writing card */
+  --r-search: 8px;                          /* the sidebar's search box */
+  --r-toggle: 8px;                          /* Write | Read toggle, Gallery | List switch */
+  --r-pill: 999px;                          /* tag pills */
+  /* older names the CSS files still use — they just point at the scale above */
+  --radius-ui: var(--r-sm);
+  --radius-pop: var(--r-md);
+  --radius-gallery: var(--r-lg);
+  --card-radius: var(--r-card);
+  --search-radius: var(--r-search);
+  --toggle-radius: var(--r-toggle);
+  --tagpill-radius: var(--r-pill);
+  --task-box-radius: var(--r-sm);
+  --spot-radius: var(--r-md);
+
+  /* ---- 5. LAYOUT ------------------------------------------------------ */
+  --sidebar-width: 272px;
   --topbar-height: 56px;
-  --card-radius: 24px;                             /* the big rounded writing card */
-  --card-gap: 12px;                                /* space around the card */
-  --editor-width: 656px;                           /* reading column */
-  --editor-pad-top: 40px;
-  --editor-pad-bottom: 40vh;                       /* lets the last line scroll to mid-screen */
-  --view-pad: 40px;                                /* padding inside the card */
+  --card-gap: 12px;                         /* space around the card */
+  --editor-width: 656px;                    /* the writing column */
+  --editor-pad-top: 40px;                   /* space above the first line */
+  --editor-pad-bottom: 40vh;                /* lets the last line scroll to mid-screen */
+  --view-pad: 40px;                         /* padding inside the card, left and right */
+  --view-max-width: 1120px;                 /* widest a gallery / list page gets */
+  --handle-offset: 50px;                    /* how far left of the text the six-dot handle sits */
+  --rail-width: 120px;                      /* tag column in the right margin */
+  --rail-gap: 20px;                         /* space between the text and that column */
+  --pane-min: 320px;                        /* side pane: narrowest either side may get */
+  --pane-divider-w: 16px;                   /* side pane: gap between the two cards (and the divider's grab area) */
+  --tree-guide-width: 1.5px;                /* vertical guide line under an open notebook */
+  --tree-guide-indent: 12px;                /* its distance from the sidebar's left edge */
 
-  /* ---- Sidebar rows: three kinds, each with its own colours ----
-     text = resting · hover-* = pointer over it · pressed-bg = while the mouse button is down · active-* = the page you are on
-     By default they all follow the theme's hover / pressed greys; type your own colours to make them different. */
-  --nav-text: var(--text-dim);          /* Home, Inbox, Journal, Notebooks, Threads, Trash */
-  --nav-hover-bg: var(--bg-hover);      --nav-hover-text: var(--text);
-  --nav-pressed-bg: var(--bg-pressed);
-  --nav-active-bg: var(--bg-pressed);   --nav-active-text: var(--text);
+  /* ---- 6. SIDEBAR ROWS: BAR WIDTH AND SELECTED INDENT ------------------
+     A selected row gets a thin bar on its left (colour: --border-left).
+     BAR WIDTH = how thick the bar is (space is always reserved, rows never jump).
+     INDENT    = how far the row's content moves IN when selected.  0px = indent OFF.   ← change it here
+     Three kinds of row, each with its own settings. */
+  --nav-bar-width: 3px;                     /* Home, Inbox, Journal, Notebooks, Threads, Trash */
+  --nav-pad-left: 10px;                     /*   resting space left of the icon (includes the bar) */
+  --nav-active-indent: 0px;                 /*   indent when selected */
+  --folder-bar-width: 3px;                  /* notebooks in the tree */
+  --folder-active-indent: 0px;
+  --note-bar-width: 3px;                    /* notes under a notebook (and in Pinned) */
+  --note-pad-left: 6px;
+  --note-active-indent: 0px;
+  --sidebar-radius: 0 4px 4px 0px;   /* sidebar rows only: rounded top-left and bottom-left */
 
-  --folder-text: var(--text-dim);       /* notebooks in the tree */
-  --folder-hover-bg: var(--bg-hover);   --folder-hover-text: var(--text);
-  --folder-pressed-bg: var(--bg-pressed);
-  --folder-active-bg: var(--bg-pressed); --folder-active-text: var(--text);
+  /* ---- 7. GALLERY ------------------------------------------------------
+     Card height = preview + info + 2px of outline.  192 + 64 + 2 = 258px, as in Figma. */
+  --gallery-min: 300px;                     /* narrowest a card gets (more columns appear as the page widens) */
+  --gallery-gap: 16px;
+  --gallery-preview-h: 192px;               /* the page glimpse */
+  --gallery-meta-h: 64px;                   /* the info strip under it (name + notebook · date) */
+  --gallery-preview-fs: 10px;               /* text size inside the glimpse */
+  --gallery-title-fs: 15px;                 /* note name */
+  --gallery-sub-fs: 13px;                   /* notebook and date */
 
-  --note-text: var(--text-dim);         /* notes under a notebook */
-  --note-hover-bg: var(--bg-hover);     --note-hover-text: var(--text);
-  --note-pressed-bg: var(--bg-pressed);
-  --note-active-bg: var(--bg-pressed);  --note-active-text: var(--text);
+  /* ---- 8. MENUS & TOOLBAR (slash "/" menu, six-dot menu, selection toolbar) ---
+     Height of a row, width, spacing, icon size. Colours are in section 16. */
+  --menu-w: 256px;                          /* width of the slash and six-dot menus */
+  --menu-max-h: 340px;                      /* tallest the slash menu gets; it scrolls inside */
+  --menu-pad: 6px;                          /* space between the menu edge and its rows */
+  --menu-item-h: 32px;                      /* ← height of one row */
+  --menu-item-h-touch: 40px;                /*   the same on phones / tablets */
+  --menu-item-pad-x: 10px;                  /*   space left and right inside a row */
+  --menu-gap: 8px;                          /*   space between icon and label */
+  --menu-icon-size: 16px;
+  --menu-item-radius: var(--r-sm);          /*   corner of the highlight */
+  --toolbar-btn-size: 32px;                 /* selection toolbar buttons (B I U …) */
+  --toolbar-btn-radius: var(--r-sm);
+  --toolbar-pad: 4px;
+  --toolbar-gap: 2px;
 
-  --view-max-width: 1120px;
+  /* ---- 9. SEARCH WINDOW (Ctrl/Cmd+K) ---------------------------------- */
+  --spot-width: 640px;
+  --spot-top: 14vh;                         /* distance from the top of the screen */
+  --spot-top-phone: 8vh;
+  --spot-max-h: 64vh;                       /* tallest the window grows; results scroll inside */
+  --spot-field-h: 52px;                     /* the typing row */
+  --spot-fs: 15px;                          /* typed text */
+  --spot-row-h: 38px;                       /* one result */
 
-  --handle-offset: 50px;                           /* how far left of the text the six-dot handle sits */
-  --active-marker-width: 3px;                      /* thickness of the line beside the active paragraph */
-  --active-marker-offset: 8px;                     /* how far left of the text that line sits (the six-dot handle lives further out) */
-  --pane-min: 320px;                               /* side pane: narrowest either side may get */
-  --pane-divider-w: 16px;                          /* side pane: the gap between the two cards (and the divider's grab area) */
-  --rail-width: 120px;                             /* tag column in the right margin */
-  --rail-gap: 20px;                                /* space between the text and that column */
-  --tree-guide-width: 1.5px;                       /* vertical guide line under an open notebook in the sidebar */
-  --tree-guide-indent: 12px;                       /* distance of that line from the sidebar's left edge (under the chevron) */
-
-  --radius-gallery: 16px;                           /* gallery cards */
-  --radius-ui: 0px;                                /* buttons, rows */
-  --radius-pop: 12px;                              /* popovers, floating toolbar */
-
-  /* ---- 4. Gallery & motion -------------------------------------------- */
-  --gallery-min: 220px;                            /* min card width */
-  --gallery-gap: 12px;
-  --gallery-preview-h: 168px;                      /* height of the page glimpse */
-  --gallery-preview-fs: 10px;                      /* text size inside the glimpse */
-
+  /* ---- 10. MOTION ----------------------------------------------------- */
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --t-fast: 120ms;
-  --t-med: 220ms;
-  --t-focus: 160ms;                                /* active-paragraph fade */
+  --t-fast: 120ms;                          /* hover and press */
+  --t-med: 220ms;                           /* panels sliding */
+  --t-focus: 160ms;                         /* the fade of the paragraph you are in */
 }
+@media (pointer: coarse) { :root { --pane-divider-w: 22px; } }   /* a wider grab area for fingers */
 
-:root[data-font="mono"] { --font-active: var(--font-mono); }
-@media (pointer: coarse) { :root { --pane-divider-w: 22px; } }   /* easier to grab with a finger */
 
-/* ---- 5. Colour — dark (default) ---------------------------------------- */
+/* ##########################################################################
+   PART B · COLOURS
+   ########################################################################## */
+
+/* ==========================================================================
+   11. GREYS — the Radix gray scale (50 = darkest … 1200 = lightest in the dark theme)
+   The only place greys are typed. Everything else points at these steps.
+   Light theme: same names, flipped values (1200 = darkest). Light is the previous palette until you send new values.
+   ========================================================================== */
 :root,
 :root[data-theme="dark"] {
-  --bg-app: #111214;                               /* page behind the card */
-  --bg-card: #191A1C;                              /* the writing card */
-  --bg-raised: #202124;                            /* gallery cards, popovers */
-  --bg-hover: #191C21;
-  --bg-pressed: #191C21;
-  --border-left: #566584;
-
-  --border: #28292B;
-  --border-strong: #3E3F42;
-  --tree-guide: #292A2C;        /* the sidebar guide line */
-
-  --text: #FBFCFD;
-  --text-dim: #9E9FA3;
-  --text-muted: #6C6D70;
-  --text-faint: #414246;
-
- /* Writing colours */
-  --prose-text: #78797A;                           /* paragraphs */
-  --prose-text-active: #D3D5D7;                    /* the paragraph you're in */
-  --prose-text-strict: #5c5c5c;                    /* inactive paragraphs in 'strict' focus mode */
-  --prose-heading: #78797A;                        /* headings stay muted… */
-  --prose-heading-active: #D3D5D7;                 /* …until you write in them */
-  --prose-quote: #8a8a8a;
-  --prose-code-bg: rgba(255, 255, 255, 0.07);
-  --prose-code-text: #d0d0d0;
-  --active-marker: #252B35;       /* line beside the active paragraph */
-  --handle-color: #5f5f5c;                         /* six-dot handle (brighter on hover) */
-  --block-target-bg: rgba(130, 138, 155, 0.08);     /* soft highlight on the block you jumped to */
-  --pane-grip-bg: #1F2123;                         /* the grip in the gap between page and pane… */
-  --pane-grip-color: #686A72;
-  --pane-grip-color-hover: #1F2123;                /* …while hovering or dragging */
-  --tag-sat: 30%;                                  /* every tag gets its own hue (from its name); these set how vivid… (pastel, muted) */
-  --tag-light: 70%;                                /* …and how light the tag text is */
-  --tag-remove: #f0a0a0;                                        /* the × while hovering (click = remove the tag) */
-
-  --accent: #4aa8e8;
-  --danger: #e5736f;
-  --selection: rgba(74, 168, 232, 0.3);
-  --scrollbar: rgba(255, 255, 255, 0.12);
-  --shadow-pop: 0 10px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.07);
-
-  /* ---- 7. Palette (dark) — bg = highlight tint, fg = text on tint / text colour */
-  --hl-blue-bg: rgba(74, 168, 232, 0.16);    --hl-blue-fg: #4aa8e8;
-  --hl-green-bg: rgba(95, 192, 138, 0.16);   --hl-green-fg: #5fc08a;
-  --hl-yellow-bg: rgba(227, 194, 90, 0.16);  --hl-yellow-fg: #e3c25a;
-  --hl-orange-bg: rgba(232, 152, 90, 0.16);  --hl-orange-fg: #e8985a;
-  --hl-pink-bg: rgba(226, 125, 156, 0.16);   --hl-pink-fg: #e27d9c;
-  --hl-purple-bg: rgba(169, 139, 232, 0.16); --hl-purple-fg: #a98be8;
-
-  --status-ok: #5fc08a;
-  --status-busy: #e3c25a;
+  --grey-50:   #0D0E0F;
+  --grey-100:  #151718;
+  --grey-200:  #1A1D1E;
+  --grey-300:  #202425;
+  --grey-400:  #26292B;
+  --grey-500:  #2B2F31;
+  --grey-600:  #313538;
+  --grey-700:  #3A3F42;
+  --grey-800:  #4C5155;
+  --grey-900:  #697177;
+  --grey-1000: #787F85;
+  --grey-1100: #9BA1A6;
+  --grey-1200: #ECEDEE;
+}
+:root[data-theme="light"] {
+  --grey-50:   #FFFFFF;
+  --grey-100:  #EFEFED;
+  --grey-200:  #FFFFFF;
+  --grey-300:  #F6F6F4;
+  --grey-400:  #E4E4E1;
+  --grey-500:  #D2D2CF;
+  --grey-600:  #C2C2C2;
+  --grey-700:  #B0B0B0;
+  --grey-800:  #8A8A8A;
+  --grey-900:  #6B6B6B;
+  --grey-1000: #555555;
+  --grey-1100: #2E2E2E;
+  --grey-1200: #1B1B1B;
 }
 
-/* ---- 6. Colour — light -------------------------------------------------- */
+/* ==========================================================================
+   12. ACCENT COLOURS — the few real colours of the interface (hex)
+   accent: links, focus rings        steel: the bar on the selected sidebar row
+   danger: delete, errors            ok / warn: the sync status dot
+   ========================================================================== */
+:root,
+:root[data-theme="dark"] {
+  --c-accent: #7DB1E5;
+  --c-steel:  #7DB1E5;
+  --c-danger: #E5736F;
+  --c-ok:     #5FC08A;
+  --c-warn:   #E3C25A;
+}
 :root[data-theme="light"] {
-  --bg-app: #efefed;
-  --bg-card: #ffffff;
-  --bg-raised: #f6f6f4;
-  --bg-hover: rgba(0, 0, 0, 0.05);
-  --bg-pressed: rgba(0, 0, 0, 0.09);
+  --c-accent: #1F78B8;
+  --c-steel:  #1F78B8;
+  --c-danger: #C94B47;
+  --c-ok:     #2F8F5B;
+  --c-warn:   #9A7A12;
+}
 
-  --border: rgba(0, 0, 0, 0.08);
-  --border-strong: rgba(0, 0, 0, 0.16);
-  --tree-guide: rgba(0, 0, 0, 0.13);
+/* ==========================================================================
+   13. ROLES — which grey does which job.   ← the main place to restyle the app
+   Dark theme first; the light theme re-points the roles that need a different step.
+   ========================================================================== */
+:root,
+:root[data-theme="dark"] {
+  /* Surfaces */
+  --bg-app:    var(--grey-100);             /* page behind the card, the sidebar */
+  --bg-card:   var(--grey-200);             /* the card you write on, the side pane */
+  --bg-raised: var(--grey-300);             /* menus, dialogs, gallery cards, toasts */
+  --search-bg: var(--grey-200);             /* the sidebar's search box */
+  --search-bg-hover: var(--grey-300);
+  --toggle-bg: var(--grey-100);              /* the Write | Read toggle (and Gallery | List) */
 
-  --text: #1b1b1b;
-  --text-dim: #555555;
-  --text-muted: #8a8a8a;
-  --text-faint: #c2c2c2;
+  /* Interaction */
+  --bg-hover:   var(--grey-500);            /* pointer over a row or button */
+  --bg-pressed: var(--grey-600);            /* mouse down · the "on" side of a toggle · selected */
+  --bg-solid:   var(--grey-500);            /* filled button (section 14 has primary / secondary) */
 
-  --prose-text: #5a5a5a;
-  --prose-text-active: #111111;
-  --prose-text-strict: #b4b4b4;
-  --prose-heading: #b3b3b3;
-  --prose-heading-active: #2a2a2a;
-  --prose-quote: #777777;
-  --prose-code-bg: rgba(0, 0, 0, 0.06);
-  --prose-code-text: #333333;
-  --active-marker: rgba(31, 120, 184, 0.9);
-  --handle-color: #a5a5a1;
-  --block-target-bg: rgba(31, 120, 184, 0.09);
-  --pane-grip-bg: #ffffff;
-  --pane-grip-color: #a5a5a1;
-  --pane-grip-color-hover: #2a2a28;
+  /* Lines */
+  --border:        var(--grey-500);         /* card outlines, sidebar guide, dividers, gallery + menu outlines */
+--border-400:        var(--grey-500);
+--border-strong: var(--grey-700);         /* inputs, strong dividers */
+  --border-left:   var(--c-steel);          /* the bar on the selected sidebar row */
+  --tree-guide:    var(--border);           /* the guide line under an open notebook */
+  --focus-ring:    var(--accent);
+
+  /* Text */
+  --text:       var(--grey-1200);           /* main text, titles */
+  --text-dim:   var(--grey-1100);           /* secondary text */
+  --text-muted: var(--grey-1000);           /* counts, dates, labels, icons */
+  --text-faint: var(--grey-900);            /* placeholders, hints */
+
+  /* Small things */
+  --handle-color:       var(--grey-900);    /* the six-dot block handle … */
+  --handle-color-hover: var(--grey-1200);   /* … and while hovering it */
+  --pane-grip-bg: var(--grey-300);          /* the grip between the page and the side pane */
+  --pane-grip-color: var(--grey-900);
+  --pane-grip-color-hover: var(--grey-1200);
+  --block-target-bg: color-mix(in srgb, var(--grey-1000) 8%, transparent);   /* the block you jumped to */
+  --scrim: rgba(0, 0, 0, 0.5);              /* the dim layer behind dialogs */
+  --shadow-pop: 0 10px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px color-mix(in srgb, var(--grey-1200) 7%, transparent);
+}
+
+:root {
+  --accent: var(--c-accent);                /* links, focus, active items */
+  --danger: var(--c-danger);
+  --status-ok: var(--c-ok);                 /* sync status: saved */
+  --status-busy: var(--c-warn);             /* sync status: saving */
+  --selection: color-mix(in srgb, var(--c-accent) 30%, transparent);   /* selected text */
+  --scrollbar: color-mix(in srgb, var(--grey-1200) 12%, transparent);
+}
+
+/* LIGHT theme: the same roles, pointed at the steps the previous light palette was built for. */
+:root[data-theme="light"] {
+  --search-bg: var(--grey-50);
+  --search-bg-hover: color-mix(in srgb, var(--grey-1200) 5%, var(--grey-50));
+  --bg-hover:   var(--grey-400);
+  --bg-pressed: var(--grey-500);
+  --bg-solid:   var(--grey-500);
+  --border:        var(--grey-400);
+  --border-strong: var(--grey-500);
+  --text-dim:   var(--grey-1000);
+  --text-muted: var(--grey-800);
+  --text-faint: var(--grey-600);
+  --handle-color: var(--grey-800);
+  --pane-grip-color: var(--grey-800);
+  --block-target-bg: color-mix(in srgb, var(--c-accent) 9%, transparent);
+  --scrim: rgba(0, 0, 0, 0.4);
+  --shadow-pop: 0 10px 32px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+/* ==========================================================================
+   14. BUTTONS — .btn--primary and .btn--secondary  (styles in css/components.css)
+   PRIMARY = dark fill + a faint blue sheen on top + an inner highlight (from the top) and inner shade
+   (from the bottom) + a thin dark ring.
+   Sheen: #7E99B3 at 42% → #666666 at 0%, on a layer at 15% opacity, so 42% × 15% = 6.3% at the top.
+   ========================================================================== */
+:root,
+:root[data-theme="dark"] {
+  --btn-primary-bg:         var(--grey-400);
+  --btn-primary-bg-hover:   var(--grey-500);
+  --btn-primary-bg-pressed: var(--grey-300);
+  --btn-primary-text:       var(--grey-1200);
+  --btn-primary-sheen:      linear-gradient(180deg, rgb(126 153 179 / 6.3%) 0%, rgb(102 102 102 / 0%) 100%);
+  --btn-primary-inner-top:    inset 0 1px 0 rgb(255 255 255 / 10%);   /* white, from the top edge down */
+  --btn-primary-inner-bottom: inset 0 -1px 0 rgb(0 0 0 / 40%);        /* black, from the bottom edge up */
+  --btn-primary-drop:         0 0 0 2px rgb(0 0 0 / 40%);             /* no blur; the last size is the spread */
+
+  --btn-secondary-bg:         var(--grey-500);
+  --btn-secondary-bg-hover:   var(--grey-600);
+  --btn-secondary-bg-pressed: var(--grey-700);
+  --btn-secondary-text:       var(--grey-1200);
+}
+:root[data-theme="light"] {
+  --btn-primary-bg:         var(--grey-1200);
+  --btn-primary-bg-hover:   var(--grey-1100);
+  --btn-primary-bg-pressed: var(--grey-1000);
+  --btn-primary-text:       var(--grey-50);
+  --btn-primary-sheen:      linear-gradient(transparent, transparent);
+  --btn-primary-inner-top:    inset 0 0 0 0 transparent;
+  --btn-primary-inner-bottom: inset 0 0 0 0 transparent;
+  --btn-primary-drop:         0 0 0 0 transparent;
+
+  --btn-secondary-bg:         var(--grey-400);
+  --btn-secondary-bg-hover:   var(--grey-500);
+  --btn-secondary-bg-pressed: var(--grey-600);
+  --btn-secondary-text:       var(--grey-1200);
+}
+
+/* ==========================================================================
+   15. SIDEBAR ROW COLOURS
+   One set for all three kinds of row (nav links, notebooks, notes). To make one kind different,
+   type its own value on its --nav-* / --folder-* / --note-* line below.
+   text = resting · hover = pointer over · pressed = mouse down · active = the page you are on.
+   (Bar width and the selected indent are in section 6.)
+   ========================================================================== */
+:root,
+:root[data-theme="dark"] {
+  --row-text:        var(--grey-1100);
+  --row-hover-bg:    var(--grey-400);   --row-hover-text:  var(--grey-1200);
+  --row-pressed-bg:  var(--grey-500);
+  --row-active-bg:   var(--grey-400);   --row-active-text: var(--grey-1200);
+}
+:root[data-theme="light"] {
+  --row-text:        var(--text-dim);
+  --row-hover-bg:    var(--bg-hover);   --row-hover-text:  var(--text);
+  --row-pressed-bg:  var(--bg-pressed);
+  --row-active-bg:   var(--bg-hover);   --row-active-text: var(--text);
+}
+:root {
+  --nav-text: var(--row-text);               --nav-hover-bg: var(--row-hover-bg);       --nav-hover-text: var(--row-hover-text);
+  --nav-pressed-bg: var(--row-pressed-bg);   --nav-active-bg: var(--row-active-bg);     --nav-active-text: var(--row-active-text);
+  --folder-text: var(--row-text);            --folder-hover-bg: var(--row-hover-bg);    --folder-hover-text: var(--row-hover-text);
+  --folder-pressed-bg: var(--row-pressed-bg);--folder-active-bg: var(--row-active-bg);  --folder-active-text: var(--row-active-text);
+  --note-text: var(--row-text);              --note-hover-bg: var(--row-hover-bg);      --note-hover-text: var(--row-hover-text);
+  --note-pressed-bg: var(--row-pressed-bg);  --note-active-bg: var(--row-active-bg);    --note-active-text: var(--row-active-text);
+}
+
+/* ==========================================================================
+   16. MENU & TOOLBAR COLOURS (slash "/" menu · six-dot menu · selection toolbar · its ⋯ list)
+   Icons across the app use --text-muted (grey 1000); menus do too.
+   ========================================================================== */
+:root {
+  --menu-bg:               var(--bg-raised);      /* the menu's background */
+  --menu-border:           var(--border);         /* its outline */
+  --menu-item-text:        var(--text-dim);       /* a row's label */
+  --menu-item-hover-bg:    var(--bg-hover);       /* ← the highlight under the pointer / arrow keys */
+  --menu-item-hover-text:  var(--text);
+  --menu-icon-color:       var(--text-muted);     /* the small icon in front of each row */
+  --menu-hint-color:       var(--text-faint);     /* shortcut hints on the right */
+  --menu-title-color:      var(--text-faint);     /* the "Turn into" heading */
+  --toolbar-icon-color:    var(--text-muted);     /* B I U icons in the selection toolbar */
+  --toolbar-btn-hover-bg:  var(--bg-hover);
+  --toolbar-btn-on-bg:     var(--bg-pressed);     /* a format that is switched on */
+}
+
+
+/* ##########################################################################
+   PART C · THE NOTE ITSELF
+   ########################################################################## */
+
+/* ==========================================================================
+   17. WRITE MODE and READ MODE
+   Write: the paragraph (or heading) you are in is FOCUSED and brighter; the rest is UNFOCUSED.
+   Read:  nothing is dimmed; one colour for the body, another for headings.
+   Grey steps, so they follow the palette. Dark and light are set separately.
+   ========================================================================== */
+:root,
+:root[data-theme="dark"] {
+  --write-text-focused:      var(--grey-1100);
+  --write-text-unfocused:    var(--grey-900);
+  --write-heading-focused:   var(--grey-1100);
+  --write-heading-unfocused: var(--grey-800);
+  --write-quote:             var(--grey-900);
+  --write-code-bg:           color-mix(in srgb, var(--grey-1200) 7%, transparent);   /* `inline code` */
+  --write-code-text:         var(--grey-1100);
+  --write-checked:           var(--grey-800);    /* ticked checklist items */
+  --write-dim:               var(--grey-700);    /* focus mode (Ctrl/Cmd+Alt+/): how dim the other paragraphs get */
+
+  --read-text:      var(--grey-1200);
+  --read-heading:   var(--grey-1000);
+  --read-quote:     var(--grey-1000);
+  --read-code-bg:   color-mix(in srgb, var(--grey-1200) 7%, transparent);
+  --read-code-text: var(--grey-1100);
+  --read-checked:   var(--grey-800);
+}
+:root[data-theme="light"] {
+  --write-text-focused:      var(--grey-1200);
+  --write-text-unfocused:    var(--grey-1000);
+  --write-heading-focused:   var(--grey-1200);
+  --write-heading-unfocused: var(--grey-700);
+  --write-quote:             var(--grey-900);
+  --write-code-bg:           color-mix(in srgb, var(--grey-1200) 6%, transparent);
+  --write-code-text:         var(--grey-1200);
+  --write-checked:           var(--grey-800);
+  --write-dim:               var(--grey-700);
+
+  --read-text:      var(--grey-1200);
+  --read-heading:   var(--grey-1000);
+  --read-quote:     var(--grey-800);
+  --read-code-bg:   color-mix(in srgb, var(--grey-1200) 6%, transparent);
+  --read-code-text: var(--grey-1200);
+  --read-checked:   var(--grey-800);
+}
+
+/* Which set a note uses right now — do not edit.
+   The editor reads --prose-*. Write mode copies the --write-* set into it; a note in Read mode copies --read-*. */
+:root {
+  --prose-text:           var(--write-text-unfocused);
+  --prose-text-active:    var(--write-text-focused);
+  --prose-text-strict:    var(--write-dim);
+  --prose-heading:        var(--write-heading-unfocused);
+  --prose-heading-active: var(--write-heading-focused);
+  --prose-quote:          var(--write-quote);
+  --prose-code-bg:        var(--write-code-bg);
+  --prose-code-text:      var(--write-code-text);
+  --prose-checked:        var(--write-checked);
+}
+.note[data-mode="read"] {
+  --prose-text:           var(--read-text);
+  --prose-text-active:    var(--read-text);
+  --prose-text-strict:    var(--read-text);       /* no dimming while reading, even in focus mode */
+  --prose-heading:        var(--read-heading);
+  --prose-heading-active: var(--read-heading);
+  --prose-quote:          var(--read-quote);
+  --prose-code-bg:        var(--read-code-bg);
+  --prose-code-text:      var(--read-code-text);
+  --prose-checked:        var(--read-checked);
+}
+
+/* ==========================================================================
+   18. TAGS AND HIGHLIGHTS
+   Each tag gets its own hue from its name; you set how vivid it is (lower saturation = greyer).
+   Highlight / text-colour palette: only the text colour (-fg) is typed, the tint (-bg) is mixed from it.
+   To add a colour, see CUSTOMIZE.md.
+   ========================================================================== */
+:root,
+:root[data-theme="dark"] {
+  --tag-sat: 30%;
+  --tag-light: 70%;
+  --tag-remove: color-mix(in srgb, var(--c-danger) 65%, white);    /* the × while hovering */
+
+  --hl-blue-fg: #4AA8E8;      --hl-blue-bg: color-mix(in srgb, var(--hl-blue-fg) 16%, transparent);
+  --hl-green-fg: #5FC08A;     --hl-green-bg: color-mix(in srgb, var(--hl-green-fg) 16%, transparent);
+  --hl-yellow-fg: #E3C25A;    --hl-yellow-bg: color-mix(in srgb, var(--hl-yellow-fg) 16%, transparent);
+  --hl-orange-fg: #E8985A;    --hl-orange-bg: color-mix(in srgb, var(--hl-orange-fg) 16%, transparent);
+  --hl-pink-fg: #E27D9C;      --hl-pink-bg: color-mix(in srgb, var(--hl-pink-fg) 16%, transparent);
+  --hl-purple-fg: #A98BE8;    --hl-purple-bg: color-mix(in srgb, var(--hl-purple-fg) 16%, transparent);
+}
+:root[data-theme="light"] {
   --tag-sat: 26%;
   --tag-light: 44%;
-  --tag-remove: #b23a3a;
+  --tag-remove: color-mix(in srgb, var(--c-danger) 90%, black);
 
-  --accent: #1f78b8;
-  --danger: #c94b47;
-  --selection: rgba(31, 120, 184, 0.22);
-  --scrollbar: rgba(0, 0, 0, 0.16);
-  --shadow-pop: 0 10px 32px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(0, 0, 0, 0.08);
-
-  --hl-blue-bg: rgba(31, 120, 184, 0.13);    --hl-blue-fg: #1f78b8;
-  --hl-green-bg: rgba(47, 143, 91, 0.14);    --hl-green-fg: #2f8f5b;
-  --hl-yellow-bg: rgba(154, 122, 18, 0.16);  --hl-yellow-fg: #8a6d10;
-  --hl-orange-bg: rgba(181, 101, 29, 0.14);  --hl-orange-fg: #b5651d;
-  --hl-pink-bg: rgba(194, 69, 111, 0.13);    --hl-pink-fg: #c2456f;
-  --hl-purple-bg: rgba(122, 85, 201, 0.13);  --hl-purple-fg: #7a55c9;
-
-  --status-ok: #2f8f5b;
-  --status-busy: #9a7a12;
+  --hl-blue-fg: #1F78B8;      --hl-blue-bg: color-mix(in srgb, var(--hl-blue-fg) 14%, transparent);
+  --hl-green-fg: #2F8F5B;     --hl-green-bg: color-mix(in srgb, var(--hl-green-fg) 14%, transparent);
+  --hl-yellow-fg: #8A6D10;    --hl-yellow-bg: color-mix(in srgb, var(--hl-yellow-fg) 16%, transparent);
+  --hl-orange-fg: #B5651D;    --hl-orange-bg: color-mix(in srgb, var(--hl-orange-fg) 14%, transparent);
+  --hl-pink-fg: #C2456F;      --hl-pink-bg: color-mix(in srgb, var(--hl-pink-fg) 14%, transparent);
+  --hl-purple-fg: #7A55C9;    --hl-purple-bg: color-mix(in srgb, var(--hl-purple-fg) 14%, transparent);
 }
+
+/* ==========================================================================
+   19. CODE BLOCKS AND FIND IN NOTE
+   Syntax groups: comment · keyword · string · number · function · type · property · punctuation.
+   ========================================================================== */
+:root,
+:root[data-theme="dark"] {
+  --code-bg:       var(--grey-300);                 /* the block's background */
+  --code-border:   var(--grey-400);
+  --code-text:     var(--grey-1100);                /* plain code text */
+  --code-comment:  var(--grey-900);
+  --code-punct:    var(--grey-1000);
+  --code-keyword:  #C4A7E7;
+  --code-string:   #9FD3AE;
+  --code-number:   #EDB98A;
+  --code-function: #8FC1E8;
+  --code-type:     #E4CB86;
+  --code-property: #E7A6BC;
+  --find-bg:         color-mix(in srgb, var(--c-warn) 26%, transparent);     /* every match */
+  --find-current-bg: color-mix(in srgb, var(--c-accent) 45%, transparent);   /* the match you are on */
+}
+:root[data-theme="light"] {
+  --code-bg:       color-mix(in srgb, var(--grey-1200) 4%, var(--grey-200));
+  --code-border:   var(--grey-400);
+  --code-text:     var(--grey-1200);
+  --code-comment:  var(--grey-800);
+  --code-punct:    var(--grey-1000);
+  --code-keyword:  #8663C9;
+  --code-string:   #3F8F5F;
+  --code-number:   #B8703A;
+  --code-function: #3A82B5;
+  --code-type:     #9A7B1E;
+  --code-property: #B84F78;
+  --find-bg:         color-mix(in srgb, var(--c-warn) 30%, transparent);
+  --find-current-bg: color-mix(in srgb, var(--c-accent) 40%, transparent);
+}
+
+/* ==========================================================================
+   20. TASKS AND DUE DATES — the date at the right end of a checklist item, and the Tasks page.
+   ========================================================================== */
+:root {
+  --due-pad: 104px;                         /* room kept free on the right of a dated item */
+  --due-fs: var(--fs-small);
+  --due-color: var(--text-muted);           /* more than a week away (and every ticked item) */
+  --due-soon: var(--text-dim);              /* within the next week */
+  --due-today: var(--accent);
+  --due-overdue: var(--danger);
+  --task-box-size: 18px;                    /* the tick box on the Tasks page */
+}
+
+/* ==========================================================================
+   21. TAGS PAGE · EXTRA BLOCKS (divider, callout, toggle) · BLOCK SELECTION · CALENDAR · SEARCH ROW
+   ========================================================================== */
+:root {
+  --tagpill-bg-alpha:     0.16;
+  --tagpill-border-alpha: 0.32;
+  --tagpill-count-alpha:  0.22;
+  --divider-color:   var(--border-strong);
+  --callout-icon:    '💡';
+  --toggle-arrow:    var(--text-muted);
+  --calendar-bg:     var(--bg-raised);
+  --spot-active-bg:  var(--bg-pressed);     /* search window: the row ↑ ↓ is on */
+  --block-select-bg:   color-mix(in srgb, var(--c-accent) 16%, transparent);
+  --block-select-line: color-mix(in srgb, var(--c-accent) 55%, transparent);
+}
+:root[data-theme="dark"] {
+  --callout-bg:     color-mix(in srgb, var(--grey-1000) 6%, transparent);
+  --callout-border: color-mix(in srgb, var(--grey-1000) 14%, transparent);
+}
+:root[data-theme="light"] {
+  --callout-bg:     color-mix(in srgb, var(--c-accent) 8%, transparent);
+  --callout-border: color-mix(in srgb, var(--c-accent) 22%, transparent);
+  --block-select-bg:   color-mix(in srgb, var(--c-accent) 14%, transparent);
+  --block-select-line: color-mix(in srgb, var(--c-accent) 50%, transparent);
+}
+
+
+:root { --modeswitch-bg: var(--grey-50); }   /* the Write | Read pill */
