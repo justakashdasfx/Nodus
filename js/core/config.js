@@ -210,7 +210,7 @@ export const CONFIG = {
     ['todo',  'Checklist',     'list.todo',   'todo task check checkbox', 'checklists'],
     ['task',  'Task',          '',            'tasks todo due date action item reminder', 'tasks'],
     ['quote', 'Quote',         '',            'blockquote citation', 'quote'],
-    ['code',  'Code Block',          '',            'snippet pre monospace programming', 'codeblock'],
+    ['code',  'Code Block',          '',            'snippet pre monospace programming', 'code-block'],
     ['divider', 'Divider',     '',            'line rule separator hr horizontal', 'divider'],
     ['callout', 'Callout',     '',            'note tip info box highlight alert', 'callout'],
     ['toggle',  'Toggle',      '',            'collapsible details fold accordion expand', 'toggle'],
