@@ -111,6 +111,7 @@
      Height of a row, width, spacing, icon size. Colours are in section 16. */
   --menu-w: 256px;                          /* width of the slash and six-dot menus */
   --menu-max-h: 340px;                      /* tallest the slash menu gets; it scrolls inside */
+  --menu-six-max-h: 600px;
   --menu-pad: 6px;                          /* space between the menu edge and its rows */
   --menu-item-h: 32px;                      /* ← height of one row */
   --menu-item-h-touch: 40px;                /*   the same on phones / tablets */

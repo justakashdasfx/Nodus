@@ -106,7 +106,7 @@ export function mountBlockHandle(root, history) {
   function openMenu(block) {
     closeMenu();
     menu = document.createElement('div');
-    menu.className = 'block-menu';
+    menu.className = 'block-menu block-menu--handle';
     menu.setAttribute('role', 'menu');
     menu.innerHTML = renderMenu(menuModel(block)).html;
     document.body.append(menu);

@@ -332,6 +332,7 @@ body.is-block-dragging, body.is-block-dragging * { cursor: grabbing !important; 
 .block-menu__empty { padding: 8px var(--menu-item-pad-x); color: var(--menu-hint-color); }
 .block-menu--inline { position: static; width: 240px; max-height: none; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
 .slash-menu { width: var(--menu-w); max-height: min(var(--menu-max-h), calc(100vh - 16px)); }
+.block-menu--handle { max-height: min(var(--menu-six-max-h), calc(100vh - 16px)); }
 @media (pointer: coarse) { .block-menu__item { height: var(--menu-item-h-touch); } }
 
 /* Phones: the grip needs room beside the text, so the page's side padding grows a little */
