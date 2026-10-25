@@ -375,6 +375,7 @@ export function mountCode(root, history, { readOnly = false } = {}) {
   const stop = (e) => { e.preventDefault(); e.stopImmediatePropagation(); };
 
   const onKeyDown = (e) => {
+    if (e.target.closest?.('[data-thread-block]')) return;      // typing inside a thread block is not typing in the note
     const mod = e.ctrlKey || e.metaKey;
     const pre = caretPre();
     if (!pre) {
@@ -398,6 +399,9 @@ export function mountCode(root, history, { readOnly = false } = {}) {
     if (e.key === 'Enter') { stop(e); if (mod) exitCode(pre, false); else onEnter(pre); return; }
     if (e.key === 'Tab' && !mod && !e.altKey) { stop(e); onTab(pre, e.shiftKey); return; }
     const sel = selectionIn(pre);
+    if (e.key === 'Backspace' && !mod && sel && sel[0] === sel[1] && sel[0] === pre.textContent.length && pre.textContent.endsWith('\n')) {
+      stop(e); exitCode(pre, true); return;                  // Backspace on the empty last line → that line becomes Text below
+    }
     if (e.key === 'Backspace' && !mod && sel && sel[0] === 0 && sel[1] === 0) {   // at the very start: never merge into the block above
       stop(e);
       if (!pre.textContent) edit(() => codeToParagraph(root, pre));
@@ -407,6 +411,7 @@ export function mountCode(root, history, { readOnly = false } = {}) {
   };
 
   const onBeforeInput = (e) => {                    // phone keyboards: Enter arrives here instead of as a key press
+    if (e.target.closest?.('[data-thread-block]')) return;      // typing inside a thread block is not typing in the note
     if (e.inputType !== 'insertParagraph' && e.inputType !== 'insertLineBreak') return;
     const pre = caretPre();
     if (!pre) return;

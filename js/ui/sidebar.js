@@ -18,7 +18,7 @@ const navItem = ({ href, iconName, label, active, count }) =>
 /** A note in the tree or in Pinned. Only the Pinned list gets a button: Unpin, shown on hover. */
 const noteRow = (note, activeId, unpin = false) =>
   `<div class="tree-row tree-note ${note.id === activeId ? 'is-active' : ''}">
-    <a class="tree-link" href="#/note/${note.id}">${icon('note', 16)}<span class="tree-row__label">${escapeHtml(note.title || 'Untitled')}</span></a>
+    <a class="tree-link" draggable="true" href="#/note/${note.id}">${icon('note', 16)}<span class="tree-row__label">${escapeHtml(note.title || 'Untitled')}</span></a>
     ${unpin ? `<button type="button" class="tree-pin" data-action="note-pin" data-id="${note.id}" aria-label="Unpin" title="Unpin">${icon('unpin', 14)}</button>` : ''}
   </div>`;
 
@@ -71,7 +71,10 @@ export function renderSidebar(route) {
       <button type="button" class="sidebar__label sidebar__label--toggle" data-action="pinned-toggle" aria-expanded="${pinnedOpen}"><span>Pinned</span><span class="sidebar__count">${pinned.length}</span></button>
       ${pinnedOpen ? `<div class="sidebar__pinned-list">${pinned.map(n => noteRow(n, route.id, true)).join('')}</div>` : ''}
     </div>` : ''}
-   <button type="button" class="sidebar__label sidebar__label--btn" data-action="folders-toggle-all" title="Collapse or expand all notebooks">Notebook</button>
+   <div class="sidebar__label-row">
+      <button type="button" class="sidebar__label sidebar__label--btn" data-action="folders-toggle-all" title="Collapse or expand all notebooks">Notebook</button>
+      <button type="button" class="sidebar__label-add" data-action="notebook-new" aria-label="New notebook" title="New notebook">${icon('plus', 14)}</button>
+    </div>
     <div class="sidebar__tree" aria-label="Notebooks and notes">
       ${folders.map(f => folderBlock(f, route, expanded)).join('')}
     </div>

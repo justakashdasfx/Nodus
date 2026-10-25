@@ -8,13 +8,14 @@
    ========================================================================== */
 
 import { icon } from '../core/icons.js';
+import { insertThreadBlock } from './thread-block.js';
 import { CONFIG } from '../core/config.js';
 import { comboLabel } from '../core/keys.js';
 import { escapeHtml } from '../core/utils.js';
 import { snapshotCaret, caretBlock } from './normalize.js';
 import { toCode, codeToParagraph } from './code-block.js';
 import { setBlock } from './blocks.js';
-import { insertDivider, toCallout, toToggle, unwrapToggle } from './blocks-extra.js';
+import { insertDivider, toCallout, toToggle, unwrapToggle, toTask } from './blocks-extra.js';
 import { toggleList } from './lists.js';
 import { stepBlock, canStep, duplicateBlock, deleteBlock, blockKind } from './block-ops.js';
 
@@ -49,8 +50,11 @@ export function turnInto(root, block, kind, { place = true } = {}) {
     block = codeToParagraph(root, block);
     if (kind === 'p') return;
   }
+  if (block.tagName === 'LI' && block.hasAttribute('data-task')) { block.removeAttribute('data-task'); if (kind === 'todo') return; }   // Task → plain checklist item
   if (block.tagName === 'P' && block.hasAttribute('data-callout')) { block.removeAttribute('data-callout'); if (kind === 'p') return; } // callout → normal text first
   if (block.tagName === 'SUMMARY') { block = unwrapToggle(root, block); placeCaret(root, block); if (kind === 'p') return; }   // toggle → its title becomes text, its content stays
+  if (kind === 'thread') { insertThreadBlock(root, block); return; }
+  if (kind === 'task') { toTask(root, block); return; }
   if (kind === 'divider') { insertDivider(root, block); return; }
   if (kind === 'toggle')  { toToggle(root, block); return; }
   if (kind === 'callout') { toCallout(root, block); return; }
@@ -78,7 +82,7 @@ export function menuModel(block, { turnOnly = false, extra = [] } = {}) {
   const kind = blockKind(block);
   const turn = {
     title: 'Turn into',
-    items: CONFIG.blockTypes.filter(([k]) => !(turnOnly && k === 'divider')).map(([k, label, sk, words, ic]) => ({ act: 'turn:' + k, label, ic, hint: hintFor(sk), current: k === kind, words })),
+    items: CONFIG.blockTypes.filter(([k]) => !(turnOnly && (k === 'divider' || k === 'thread'))).map(([k, label, sk, words, ic]) => ({ act: 'turn:' + k, label, ic, hint: hintFor(sk), current: k === kind, words })),
   };
   if (turnOnly) return [turn, ...extra];
   const tagged = !!block.getAttribute('data-tags');

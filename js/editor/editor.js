@@ -11,6 +11,7 @@
 
 import { CONFIG } from '../core/config.js';
 import * as store from '../core/store.js';
+import { matches } from '../core/keys.js';
 import { debounce, escapeHtml, sanitizeHtml, statsLabel } from '../core/utils.js';
 import { getStatsMode } from '../core/settings.js';
 import { initFormatting } from './selection-toolbar.js';
@@ -23,6 +24,8 @@ import { reconcile, snapshotCaret } from './normalize.js';
 import { mountTagRail } from './tags.js';
 import { mountHistory } from './history.js';
 import { mountCode } from './code-block.js';
+import { mountBlockRules } from './block-rules.js';
+import { mountThreadBlocks } from './thread-block.js';
 import { mountExtraBlocks } from './blocks-extra.js';
 import { mountBlockSelect } from './block-select.js';
 import { idFactory } from './block-ops.js';
@@ -83,7 +86,8 @@ export function mountEditor(el, note, { readOnly = false } = {}) {
     const stopCodeRO = mountCode(el, null, { readOnly: true }); // colours and a Copy button, no editing
     const stopRail = mountTagRail(el, { editable: false });
     const stopDueRO = mountDue(el, { editable: false });   // the dates next to checklist items
-    return () => { stopCodeRO(); stopRail?.(); stopDueRO(); };
+    const stopThreadsRO = mountThreadBlocks(el, { readOnly: true });   // Threads blocks, read-only
+    return () => { stopCodeRO(); stopRail?.(); stopDueRO(); stopThreadsRO(); };
   }
 
   el.contentEditable = 'true';
@@ -100,6 +104,8 @@ export function mountEditor(el, note, { readOnly = false } = {}) {
 
   /* ---- Undo / redo (our own, so moves and menu actions undo too), block handle, #tag suggestions ---- */
   const history = mountHistory(el);
+  const stopThreads = mountThreadBlocks(el, { history });   // Threads blocks ("/" → Threads)
+  const stopRules = mountBlockRules(el, { history });   // Enter / Backspace / Ctrl+D rules per block type (registered before the handlers below so it runs first)
   const stopCode = mountCode(el, history);   // code blocks: Enter / Tab / paste, the language bar, colours
   const stopExtra = mountExtraBlocks(el, { history });   // callout, toggle behaviour
   const stopSelect = mountBlockSelect(el, { history });  // drag in the empty space beside the text to select whole blocks
@@ -108,6 +114,16 @@ export function mountEditor(el, note, { readOnly = false } = {}) {
   /* ---- Autosave ---- */
   const save = debounce(() => store.updateNoteContent(note.id, sanitizeHtml(el.innerHTML)), CONFIG.timing.saveDebounce);
   const flushOnHide = () => { if (document.visibilityState === 'hidden') save.flush(); };
+  /* Ctrl/Cmd+S: save this note right now (and keep the browser's own "save page" away) */
+  const onSaveKey = (e) => {
+    if (!matches(e, CONFIG.shortcuts['save.now'])) return;
+    const f = focusedEditor();
+    if (f && f !== el) return;
+    e.preventDefault();
+    save.flush();
+    window.dispatchEvent(new CustomEvent('app-toast', { detail: 'Saved' }));
+  };
+  document.addEventListener('keydown', onSaveKey);
 
   /* ---- Paste ---- */
   let plainNext = false; // set by Ctrl/Cmd+Shift+V
@@ -185,10 +201,11 @@ export function mountEditor(el, note, { readOnly = false } = {}) {
     el.removeEventListener('keydown', onKeydownPaste);
     el.removeEventListener('keyup', onKeyupPaste);
     document.removeEventListener('visibilitychange', flushOnHide);
+    document.removeEventListener('keydown', onSaveKey);
     window.removeEventListener('pagehide', save.flush);
     el.removeEventListener('beforeinput', onBeforeInput);
     el.removeEventListener('input', onInputBlocks);
     el.removeEventListener('compositionend', onCompositionEnd);
-    stopFormatting(); stopShortcuts(); stopFocus(); stopTodos(); stopTags(); stopHandle(); stopSlash(); stopSuggest(); stopCode(); stopDue(); stopExtra(); stopSelect(); host.removeEventListener('dblclick', onDblClick); history.stop();
+    stopFormatting(); stopShortcuts(); stopFocus(); stopTodos(); stopTags(); stopHandle(); stopSlash(); stopSuggest(); stopThreads(); stopRules(); stopCode(); stopDue(); stopExtra(); stopSelect(); host.removeEventListener('dblclick', onDblClick); history.stop();
   };
 }

@@ -36,6 +36,8 @@ import * as thread from './views/thread.js';
 import * as inbox from './views/inbox.js';
 import * as tasks from './views/tasks.js';
 import * as tags from './views/tags.js';
+import { openPopMenu } from './ui/popmenu.js';
+import { initSidebarDnd } from './ui/sidebar-dnd.js';
 
 const VIEWS = { home, inbox, notebooks, notebook, journal, trash, note, tag, threads, thread, tasks, tags };
 const els = { sidebar: $('#sidebar'), topbar: $('#topbar'), view: $('#view'), card: $('#card'), pane: $('#pane'), divider: $('#divider') };
@@ -229,7 +231,7 @@ registerActions({
 
   'notebook-new': async () => {
     const name = await modal.prompt({ title: 'New notebook', label: 'Notebook name', placeholder: 'Notebook name', confirmLabel: 'Create' });
-    if (name && name.trim()) go(`#/notebook/${store.createFolder(name).id}`);
+    if (name && name.trim()) { store.createFolder(name); go('#/notebooks'); }   // stay on the Notebooks page; the new notebook appears there
   },
   'notebook-edit': async (el) => {
     const folder = store.getFolder(el.dataset.id);
@@ -277,6 +279,27 @@ registerActions({
   },
 
   /* Gallery | List switch in a page header (a notebook keeps its choice on the notebook, other pages on this device) */
+  /* Notebook page header: sort menu and the ⋯ menu */
+  'notebook-sort': (el) => {
+    const f = store.getFolder(el.dataset.id);
+    const now = CONFIG.notebookSorts.some(([k]) => k === f?.sort) ? f.sort : CONFIG.notebookSorts[0][0];
+    openPopMenu(el, CONFIG.notebookSorts.map(([k, label]) => ({ label, action: 'notebook-sort-set', data: { id: el.dataset.id, sort: k }, check: k === now })));
+  },
+  'notebook-sort-set': (el) => store.setFolderSort(el.dataset.id, el.dataset.sort),
+  'notebook-more': (el) => {
+    const id = el.dataset.id;
+    const f = store.getFolder(id);
+    const style = f?.viewStyle === 'list' || f?.viewStyle === 'gallery' ? f.viewStyle : CONFIG.defaults.views.notebook;
+    openPopMenu(el, [
+      { label: 'Edit notebook', ic: 'pencil', action: 'notebook-edit', data: { id } },
+      { sep: true },
+      { label: 'Gallery view', ic: 'notebooks', action: 'view-style', data: { style: 'gallery', page: 'notebook', id }, check: style === 'gallery' },
+      { label: 'List view', ic: 'bullets', action: 'view-style', data: { style: 'list', page: 'notebook', id }, check: style === 'list' },
+      { sep: true },
+      { label: 'Delete notebook', ic: 'trash', action: 'notebook-delete', data: { id }, danger: true },
+    ]);
+  },
+
   'view-style': (el) => {
     const style = el.dataset.style === 'list' ? 'list' : 'gallery';
     if (el.dataset.page === 'notebook') store.updateFolder(el.dataset.id, { viewStyle: style });
@@ -420,6 +443,16 @@ function toastUndo(message, onUndo) {
   el.querySelector('.toast__undo').onclick = () => { done(); clearTimeout(toast.timer); onUndo(); };
   toast.timer = setTimeout(done, 6000);
 }
+/** Moves a note to a notebook ('' / null = Inbox) with an Undo toast. Used by dragging a note in the sidebar. */
+function moveNoteWithUndo(id, to) {
+  const n = store.getNote(id);
+  if (!n) return;
+  const was = n.folderId || null;
+  if (was === (to || null)) return;
+  store.moveNote(id, to || null);
+  toastUndo(`Moved to ${to ? (store.getFolder(to)?.name || 'notebook') : 'Inbox'}`, () => store.moveNote(id, was));
+}
+initSidebarDnd(moveNoteWithUndo);
 window.addEventListener('app-toast', (e) => toast(String(e.detail || ''))); // messages from the editor modules (code blocks)
 
 function toast(message) {
@@ -452,6 +485,10 @@ document.addEventListener('keydown', (e) => {
   if (matches(e, SK['find.open'])) {   // only on a page that has a note in it; elsewhere the browser's own find stays
     if (route.view === 'note' || document.querySelector('.pane .editor')) { e.preventDefault(); openFind(); }
     return;
+  }
+  if (!document.querySelector('.modal')) {
+    if (matches(e, SK['note.new'])) { e.preventDefault(); go(`#/note/${store.createNote({ folderId: null }).id}`); return; }   // a new note in the Inbox
+    if (matches(e, SK['journal.today'])) { e.preventDefault(); openToday(); return; }                                         // today's entry (created if it does not exist)
   }
   if (matches(e, SK['mode.toggle'])) {
     e.preventDefault();

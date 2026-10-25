@@ -2,7 +2,13 @@
 import * as store from '../core/store.js';
 import { CONFIG } from '../core/config.js';
 import { escapeHtml } from '../core/utils.js';
-import { button, viewHead, gallery, noteCard, noteList, viewSwitch, emptyState } from '../ui/components.js';
+import { icon } from '../core/icons.js';
+import { button, viewHead, gallery, noteCard, noteList, emptyState } from '../ui/components.js';
+
+/** Sorts the notes of a notebook: 'edited' (newest edit first), 'created' (newest first) or 'name' (A–Z). */
+const sortNotes = (notes, mode) => [...notes].sort(mode === 'name'
+  ? (a, b) => (a.title || 'Untitled').localeCompare(b.title || 'Untitled', undefined, { sensitivity: 'base' })
+  : mode === 'created' ? (a, b) => b.createdAt - a.createdAt : (a, b) => b.updatedAt - a.updatedAt);
 
 const notFound = (title, text, actionHtml) => ({ html: `<div class="view">${emptyState({ title, text, actionHtml })}</div>` });
 
@@ -17,12 +23,15 @@ export function render({ id }) {
       button({ action: 'notebook-restore', iconName: 'restore', label: 'Restore notebook', variant: 'btn--solid', data: { id } }));
   }
 
-  const notes = store.notesInFolder(id);
+  const sortMode = CONFIG.notebookSorts.some(([k]) => k === folder.sort) ? folder.sort : CONFIG.notebookSorts[0][0];
+  const notes = sortNotes(store.notesInFolder(id), sortMode);
   const newBtn = button({ action: 'note-new', iconName: 'plus', label: 'New note', variant: 'btn--solid', data: { folder: id } });
   const style = folder.viewStyle === 'list' || folder.viewStyle === 'gallery' ? folder.viewStyle : CONFIG.defaults.views.notebook;
-  const actions = viewSwitch(style, { page: 'notebook', id }) + newBtn
-    + button({ action: 'notebook-edit', iconName: 'pencil', label: 'Edit', data: { id } })
-    + button({ action: 'notebook-delete', iconName: 'trash', label: 'Delete', data: { id } });
+  // [Sort ▾]  [+ New note]  [⋯]   — Edit, Gallery | List and Delete live in the ⋯ menu (js/app.js → 'notebook-more')
+  const sortLabel = CONFIG.notebookSorts.find(([k]) => k === sortMode)[1];
+  const sortBtn = button({ action: 'notebook-sort', iconName: 'sort', label: sortLabel, data: { id } });
+  const moreBtn = `<button type="button" class="btn btn--icon" data-action="notebook-more" data-id="${id}" aria-label="More" aria-haspopup="menu" title="More">${icon('more')}</button>`;
+  const actions = sortBtn + newBtn + moreBtn;
   const body = notes.length
     ? (style === 'list' ? noteList(notes) : gallery(notes.map(noteCard)))
     : emptyState({ title: 'This notebook is empty', text: 'Add the first note to get started.',

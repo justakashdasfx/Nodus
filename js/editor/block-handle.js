@@ -16,7 +16,9 @@ import { CONFIG } from '../core/config.js';
 import { matches } from '../core/keys.js';
 import { blocksOf } from '../core/blockindex.js';
 import { caretBlock } from './normalize.js';
-import { placeBlock, stepBlock, canStep, dropTargets } from './block-ops.js';
+import { placeBlock, stepBlock, canStep, dropTargets, deleteBlock } from './block-ops.js';
+import * as store from '../core/store.js';
+import { sanitizeHtml } from '../core/utils.js';
 import { menuModel, renderMenu, placeMenu, runAction, placeCaret, saveSel, restoreSel } from './block-menu.js';
 
 export function mountBlockHandle(root, history) {
@@ -191,7 +193,30 @@ export function mountBlockHandle(root, history) {
     scrollFrame = requestAnimationFrame(autoScroll);
   }
 
+  /* Dragging a block onto a note in the sidebar moves the block into that note (at its end) */
+  let hoverRow = null;
+  const noteRowAt = (x, y) => {
+    const row = document.elementFromPoint(x, y)?.closest('#sidebar .tree-note');
+    const id = row?.querySelector('a.tree-link')?.getAttribute('href')?.match(/^#\/note\/([^/]+)/)?.[1];
+    return id ? { row, id } : null;
+  };
+  function moveBlockToNote(block, noteId) {
+    const target = store.getNote(noteId);
+    if (!target || location.hash.startsWith(`#/note/${noteId}`)) return;
+    const holder = document.createElement('div');
+    if (block.tagName === 'LI') { const list = block.parentElement.cloneNode(false); list.append(block.cloneNode(true)); holder.append(list); }
+    else holder.append((block.tagName === 'SUMMARY' ? block.parentElement : block).cloneNode(true));
+    holder.querySelectorAll('[class]').forEach((n) => n.removeAttribute('class'));
+    history.commit();
+    store.updateNoteContent(noteId, sanitizeHtml(target.html || '') + sanitizeHtml(holder.innerHTML));
+    deleteBlock(root, block);
+    finish(null);
+    window.dispatchEvent(new CustomEvent('app-toast', { detail: `Moved to “${target.title || 'Untitled'}”` }));
+  }
+
   function endDrag() {
+    hoverRow?.classList.remove('is-drop-target');
+    hoverRow = null;
     cancelAnimationFrame(scrollFrame);
     document.removeEventListener('keydown', onDragKey, true);
     document.body.classList.remove('is-block-dragging');
@@ -217,6 +242,10 @@ export function mountBlockHandle(root, history) {
       startDrag();
     }
     updateSlot();
+    const over = noteRowAt(e.clientX, e.clientY);                 // over a note in the sidebar?
+    if (hoverRow !== (over?.row || null)) { hoverRow?.classList.remove('is-drop-target'); hoverRow = over?.row || null; hoverRow?.classList.add('is-drop-target'); }
+    drag.toNote = over?.id || null;
+    if (over) { drag.slot = null; if (line) line.hidden = true; }
   };
   const onPointerUp = () => {
     if (!drag) return;
@@ -224,6 +253,7 @@ export function mountBlockHandle(root, history) {
     endDrag();
     drag = null;
     if (!d.active) { openMenu(d.block); return; }
+    if (d.toNote) { moveBlockToNote(d.block, d.toNote); handle.hidden = true; return; }
     if (!d.slot) { handle.hidden = true; return; }
     history.commit();
     const sel = saveSel();

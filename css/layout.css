@@ -299,3 +299,21 @@ body.is-pane-resizing, body.is-pane-resizing * { cursor: col-resize !important; 
 /* "Notebook" above the notebooks is a button: click it to close (or open) every notebook (Phase 8A) */
 .sidebar__label--btn { display: block; width: 100%; border: 0; background: transparent; text-align: left; font: inherit; font-size: var(--fs-ui); cursor: pointer; }
 .sidebar__label--btn:hover { color: var(--text-dim); }
+
+/* "Notebook" heading in the sidebar: a "+" that only appears when you hover the heading */
+.sidebar__label-row { position: relative; display: flex; align-items: center; }
+.sidebar__label-row .sidebar__label--btn { flex: 1; min-width: 0; }
+.sidebar__label-add {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  width: 22px; height: 22px; display: grid; place-items: center; border: 0; border-radius: var(--r-sm);
+  background: transparent; color: var(--text-muted); cursor: pointer; opacity: 0; transition: opacity var(--t-fast);
+}
+.sidebar__label-row:hover .sidebar__label-add, .sidebar__label-add:focus-visible { opacity: 1; }
+.sidebar__label-add:hover { background: var(--bg-hover); color: var(--text); }
+@media (hover: none) { .sidebar__label-add { opacity: 0.7; } }
+
+/* Drag a note or a block onto a sidebar notebook / note: the target lights up */
+.tree-note.is-dragging { opacity: 0.45; }
+.tree-folder.is-drop-target > .tree-row, .tree-row.is-drop-target, .nav-item.is-drop-target, .tree-note.is-drop-target {
+  background: var(--bg-hover); box-shadow: inset 0 0 0 1px var(--accent);
+}

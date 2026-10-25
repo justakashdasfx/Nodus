@@ -8,7 +8,7 @@
        t     'p' | 'h1'…'h4' | 'quote' | 'code' | 'li'
        text  the block's own text, first 160 characters (a nested list is not included)
        tags  lower-case tags (left out when the block has none)
-     chk   checklist items only: 1 = ticked, 0 = not ticked          due  checklist items only: 'YYYY-MM-DD' (left out when there is none)
+     task  checklist items only: 1 = a Task block (always on the Tasks page)   chk   checklist items only: 1 = ticked, 0 = not ticked          due  checklist items only: 'YYYY-MM-DD' (left out when there is none)
      Empty, untagged blocks are not listed.
 
    Migration: notes written before blocks existed get ids the first time they are
@@ -57,6 +57,7 @@ export function indexRoot(root) {
     if (tags.length) entry.tags = tags;
     if (el.tagName === 'LI' && el.hasAttribute('data-check')) {   // checklist item: the Tasks page reads these two
       entry.chk = el.getAttribute('data-check') === 'true' ? 1 : 0;
+      if (el.hasAttribute('data-task')) entry.task = 1;      // a Task block: it always shows on the Tasks page
       const due = el.getAttribute('data-due');
       if (due && DUE_RE.test(due)) entry.due = due;
     }

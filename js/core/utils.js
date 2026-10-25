@@ -44,7 +44,7 @@ export function todayKey() {
 
 const ALLOWED_TAGS = new Set(['P', 'DIV', 'BR', 'H1', 'H2', 'H3', 'H4', 'UL', 'OL', 'LI',
   'B', 'STRONG', 'I', 'EM', 'U', 'BLOCKQUOTE', 'PRE', 'CODE', 'MARK', 'SPAN', 'HR', 'DETAILS', 'SUMMARY']);
-const ALLOWED_ATTRS = new Set(['data-hl', 'data-tc', 'data-type', 'data-check', 'data-bid', 'data-tags', 'data-lang', 'data-due', 'data-callout', 'open']);
+const ALLOWED_ATTRS = new Set(['data-hl', 'data-tc', 'data-type', 'data-check', 'data-bid', 'data-tags', 'data-lang', 'data-due', 'data-callout', 'open', 'data-task', 'data-thread-block', 'data-limit']);
 
 /* Block ids (data-bid) and tags (data-tags) — see core/blockindex.js */
 export const BID_RE = /^[a-z0-9]{6,16}$/;
@@ -112,6 +112,12 @@ function clean(node) {
     if (lang !== null && (child.tagName !== 'PRE' || !/^[a-z]{2,10}$/.test(lang))) child.removeAttribute('data-lang');
     const callout = child.getAttribute('data-callout');
     if (callout !== null && (child.tagName !== 'P' || !/^[a-z]{3,10}$/.test(callout))) child.removeAttribute('data-callout');
+    if (child.hasAttribute('data-task') && child.tagName !== 'LI') child.removeAttribute('data-task');   // a Task is a checklist item
+    const tb = child.getAttribute('data-thread-block');            // a Threads block: an empty shell that points at a thread (js/editor/thread-block.js)
+    if (tb !== null && (child.tagName !== 'DIV' || !/^[a-z0-9]{0,24}$/.test(tb))) child.removeAttribute('data-thread-block');
+    if (child.hasAttribute('data-thread-block')) child.textContent = '';
+    const lim = child.getAttribute('data-limit');
+    if (lim !== null && (!child.hasAttribute('data-thread-block') || !['10', '20', '30', 'all'].includes(lim))) child.removeAttribute('data-limit');
     if (child.hasAttribute('open')) { if (child.tagName === 'DETAILS') child.setAttribute('open', ''); else child.removeAttribute('open'); }
     const bid = child.getAttribute('data-bid');
     if (bid !== null && !BID_RE.test(bid)) child.removeAttribute('data-bid');

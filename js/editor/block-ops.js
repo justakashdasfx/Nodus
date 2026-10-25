@@ -29,7 +29,7 @@ export function blockKind(el) {
   if (el.tagName === 'P' && el.hasAttribute('data-callout')) return 'callout';
   if (el.tagName === 'LI') {
     const list = el.parentElement;
-    if (list.dataset.type === 'todo') return 'todo';
+    if (list.dataset.type === 'todo') return el.hasAttribute('data-task') ? 'task' : 'todo';
     return list.tagName === 'OL' ? 'ol' : 'ul';
   }
   if (/^H[1-4]$/.test(el.tagName)) return el.tagName.toLowerCase();

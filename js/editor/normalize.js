@@ -53,11 +53,11 @@ const isLoose = (n) =>
   (n.nodeType === 3 && n.nodeValue.trim() !== '') ||
   (n.nodeType === 1 && /^(B|I|U|EM|STRONG|CODE|MARK|SPAN|BR|A)$/.test(n.tagName));
 
-/** Loose text and top-level <div>s become paragraphs. */
+/** Loose text and top-level <div>s become paragraphs (a Threads block is a div on purpose: it stays one). */
 function structure(root) {
   let changed = false;
   if ([...root.childNodes].some(isLoose)) { tidyBlocks(root); changed = true; }
-  for (const div of root.querySelectorAll(':scope > div')) {
+  for (const div of root.querySelectorAll(':scope > div:not([data-thread-block])')) {
     const keep = saveSel();
     const p = document.createElement('p');
     for (const { name, value } of [...div.attributes]) p.setAttribute(name, value);

@@ -546,3 +546,7 @@
 
 
 :root { --modeswitch-bg: var(--grey-50); }   /* the Write | Read pill */
+
+/* ---------- Task block (/Task): the text colour of a checklist item that is a Task ---------- */
+:root[data-theme="dark"]  { --task-block-color: hsl(145 42% 66%); }
+:root[data-theme="light"] { --task-block-color: hsl(145 46% 28%); }

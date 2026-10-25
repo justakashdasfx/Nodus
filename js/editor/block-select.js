@@ -200,7 +200,7 @@ export function mountBlockSelect(root, { history }) {
 
   /* The highlight class is not part of the note: take it off while the undo history looks at the page */
   const marks = (on) => { for (const u of sel) u.classList.toggle(SELECTED, on); };
-  const commit = () => { marks(false); commit(); marks(true); };
+  const commit = () => { marks(false); history.commit(); marks(true); };
   const finish = () => { marks(false); notify(); history.record(); marks(true); };
 
   function remove() {
@@ -363,7 +363,7 @@ export function mountBlockSelect(root, { history }) {
 
   function openTurnMenu(button) {
     if (menu) { closeMenu(); return; }
-    const items = CONFIG.blockTypes.filter(([k]) => k !== 'divider' && k !== 'toggle').map(([k, label, , words, ic]) => ({ act: 'turn:' + k, label, words, ic }));
+    const items = CONFIG.blockTypes.filter(([k]) => k !== 'divider' && k !== 'toggle' && k !== 'thread').map(([k, label, , words, ic]) => ({ act: 'turn:' + k, label, words, ic }));
     menu = document.createElement('div');
     menu.className = 'block-menu';
     menu.setAttribute('role', 'menu');
@@ -420,6 +420,8 @@ export function mountBlockSelect(root, { history }) {
     getSelection().removeAllRanges(); getSelection().addRange(r);
   }
 
+  const onSelectUnit = (e) => { const u = e.detail; if (u?.parentElement === root) { anchor = u; setSel([u]); focusQuietly(); } };
+  root.addEventListener('select-unit', onSelectUnit);
   const onScroll = () => placeBar();
   document.addEventListener('mousedown', onDocDown, true);
   document.addEventListener('keydown', onKey, true);
@@ -431,6 +433,7 @@ export function mountBlockSelect(root, { history }) {
     cancelAnimationFrame(raf);
     document.removeEventListener('mousedown', onDocDown, true);
     document.removeEventListener('keydown', onKey, true);
+    root.removeEventListener('select-unit', onSelectUnit);
     scroller.removeEventListener('scroll', onScroll);
     window.removeEventListener('resize', onScroll);
     window.removeEventListener('mousemove', onMove);

@@ -59,9 +59,10 @@ export function render({ id }) {
 
 function mountThread(root, id) {
   const $ = (sel) => root.querySelector(sel);
+  const hostNote = root.dataset?.hostNote || '';   // set when this thread sits inside a note (js/editor/thread-block.js)
 
   function hitsFor(thread) {
-    const notes = store.searchableNotes();
+    const notes = store.searchableNotes().filter((n) => n.id !== hostNote);   // a thread inside a note never lists that note's own blocks
     const current = matchBlocks(notes, thread.rules);
     return thread.live
       ? { hits: current, fresh: 0 }
@@ -206,7 +207,7 @@ function mountThread(root, id) {
   root.addEventListener('focusin', (e) => { if (e.target.closest?.('.rule-input[data-kind="tags"]')) { pickActive = 0; openPick(); } });
   root.addEventListener('input', (e) => { if (e.target.closest?.('.rule-input[data-kind="tags"]')) { pickActive = 0; openPick(); } });
   root.addEventListener('mousedown', (e) => { if (e.target.closest?.('.tr-pick')) e.preventDefault(); });   // clicking a tag must not take focus away from the field
-  const outside = (e) => { if (!e.target.closest?.('.tr-box[data-box="tags"]')) closePick(); };
+  const outside = (e) => { if (!e.composedPath().some((n) => n.matches?.('.tr-box[data-box="tags"]'))) closePick(); };
   document.addEventListener('pointerdown', outside, true);
 
   root.addEventListener('click', (e) => {

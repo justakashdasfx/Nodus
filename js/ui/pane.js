@@ -27,6 +27,7 @@ import { registerActions } from '../core/actions.js';
 import { debounce, escapeHtml, tagHue } from '../core/utils.js';
 import * as noteView from '../views/note.js';
 import * as tagView from '../views/tag.js';
+import * as threadView from '../views/thread.js';
 
 let els = null;                    // { card, view, pane, divider }
 let getRoute = () => ({});
@@ -119,6 +120,9 @@ function draw({ keepScroll = false } = {}) {
   if (state.kind === 'note') {
     out = noteView.render({ id: state.id, block: state.block }, { pane: true });
     title = store.getNote(state.id)?.title || 'Untitled';
+  } else if (state.kind === 'thread') {
+    out = threadView.render({ id: state.id });
+    title = store.getThread(state.id)?.title || 'Thread';
   } else {
     out = tagView.render({ id: state.id });
     title = state.id;
@@ -164,6 +168,14 @@ export function openNote(id, block = null, { fromPane = false } = {}) {
   pushSheet();
 }
 
+export function openThread(id) {
+  if (!store.getThread(id)) return;
+  if (state?.kind === 'thread' && state.id === id) return;
+  state = { kind: 'thread', id, prev: null };
+  draw();
+  pushSheet();
+}
+
 export function openTag(tag, { fromPane = false } = {}) {
   const id = String(tag || '').toLowerCase();
   if (!id) return;
@@ -193,6 +205,7 @@ const refreshTag = debounce(() => { if (state?.kind === 'tag') draw({ keepScroll
 export function onStore(kind, detail) {
   if (!state || kind === 'dirty' || kind === 'thread') return;
 
+  if (state.kind === 'thread') return;                // the thread repaints itself
   if (state.kind === 'tag') { refreshTag(); return; } // typing a #tag elsewhere updates the list a moment later
 
   if (kind === 'content') {                           // the note in the pane is being typed in (or the page's copy of it)
@@ -270,7 +283,7 @@ export function initPane({ card, view, pane, divider, route }) {
     'pane-full': () => {
       if (!state) return;
       const s = state;
-      const target = s.kind === 'note' ? `#/note/${s.id}${s.block ? '/' + s.block : ''}` : `#/tag/${encodeURIComponent(s.id)}`;
+      const target = s.kind === 'note' ? `#/note/${s.id}${s.block ? '/' + s.block : ''}` : s.kind === 'thread' ? `#/thread/${s.id}` : `#/tag/${encodeURIComponent(s.id)}`;
       if (pushed) { // phones: let go of the sheet's history entry, then open the page
         pushed = false;
         state = null; draw();

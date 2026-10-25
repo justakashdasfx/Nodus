@@ -329,6 +329,16 @@ export function updateFolder(id, { name, description, viewStyle } = {}) {
   touchFolders();
 }
 
+/** How the notes of one notebook are sorted: 'edited' (the default, stored as nothing), 'created' or 'name'. Syncs with the notebook. */
+export function setFolderSort(id, sort) {
+  const f = getFolder(id);
+  if (!f) return;
+  const next = sort === 'created' || sort === 'name' ? sort : '';
+  if ((f.sort || '') === next) return;
+  if (next) f.sort = next; else delete f.sort;
+  touchFolders();
+}
+
 export function renameFolder(id, name) {
   const f = getFolder(id);
   if (f && name.trim()) { f.name = name.trim(); touchFolders(); }

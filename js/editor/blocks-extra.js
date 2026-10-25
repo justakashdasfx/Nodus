@@ -12,6 +12,7 @@
 import { ownText } from '../core/blockindex.js';
 import { idFactory } from './block-ops.js';
 import { setBlock } from './blocks.js';
+import { toggleList, currentLi } from './lists.js';
 import { snapshotCaret, caretBlock } from './normalize.js';
 
 const notify = (root) => root.dispatchEvent(new Event('input', { bubbles: true }));
@@ -59,6 +60,21 @@ export function insertDivider(root, block) {
   let next = hr.nextElementSibling;
   if (!next || next.tagName !== 'P' || ownText(next) || next.hasAttribute('data-callout')) { next = newPara(root); hr.after(next); }
   caretIn(next);
+}
+
+/* ---------- Task ---------- */
+
+/** A Task is a checklist item with data-task: it always shows on the Tasks page, with or without a date. */
+export function toTask(root, block) {
+  let li = block.tagName === 'LI' && block.parentElement.dataset.type === 'todo' ? block : null;
+  if (!li) {
+    toPlain(root, block);                      // the caret is in the block; this makes it a plain line first
+    toggleList(root, 'todo');
+    li = currentLi(root);
+  }
+  if (!li) return;
+  li.setAttribute('data-task', '');
+  if (!li.hasAttribute('data-check')) li.setAttribute('data-check', 'false');
 }
 
 /* ---------- Callout ---------- */
@@ -128,6 +144,10 @@ export function mountExtraBlocks(root, { history = null, readOnly = false } = {}
   }
 
   const onClick = (e) => {
+    if (e.target.tagName === 'HR' && root.contains(e.target)) {      // click a divider: it gets selected, then Delete removes it
+      root.dispatchEvent(new CustomEvent('select-unit', { detail: e.target }));
+      return;
+    }
     const s = e.target.closest?.('summary');
     if (!s || !root.contains(s)) return;
     e.preventDefault();                                           // clicking the title must not fold it; only the arrow does
@@ -141,6 +161,7 @@ export function mountExtraBlocks(root, { history = null, readOnly = false } = {}
   const onKeyUp = (e) => { if (e.key === ' ' && e.target.closest?.('summary')) e.preventDefault(); };   // Firefox folds on Space
 
   const onKeyDown = (e) => {
+    if (e.target.closest?.('[data-thread-block]')) return;      // typing inside a thread block is not typing in the note
     if (e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key !== 'Enter' && e.key !== 'Backspace') return;
     const sel = getSelection();
@@ -194,15 +215,109 @@ export function mountExtraBlocks(root, { history = null, readOnly = false } = {}
 
   const onInput = () => { if (repair()) notify(root); };
 
+  /* Typing --- on an empty line makes a divider there; typing it after some text ("Hello ---") puts the divider on the next line */
+  const onDashes = (e) => {
+    if (e.inputType !== 'insertText' || e.data !== '-') return;
+    const b = caretBlock(root);
+    if (!b || b.hasAttribute('data-callout')) return;
+    if (!/^(P|H[1-4]|LI|BLOCKQUOTE)$/.test(b.tagName)) return;
+    const typed = ownText(b).replace(/\u00a0/g, ' ');
+    if (typed.trim() !== '---') {                                  // text before it ("Hello ---"): the --- goes, the divider appears on the next line
+      const n = getSelection().anchorNode;
+      if (b.tagName === 'LI' || !/\S\s---$/.test(typed) || n?.nodeType !== 3 || !/---$/.test(n.nodeValue)) return;
+      history?.commit();
+      n.nodeValue = n.nodeValue.replace(/[\s\u00a0]*---$/, '');
+      insertDivider(root, b);                                     // divider below this line, caret on the line under it
+      done(); return;
+    }
+    if (b === root.firstElementChild) return;                      // an empty first line stays a line
+    if (b.tagName === 'LI') {
+      const list = b.parentElement;
+      if (list.parentElement !== root) return;                     // inside a nested list: leave it as typed
+      history?.commit();
+      const rest = [...list.children].slice([...list.children].indexOf(b) + 1);
+      const hr = document.createElement('hr');
+      let tail = null;
+      if (rest.length) { tail = list.cloneNode(false); tail.append(...rest); }
+      b.remove();
+      list.after(hr);
+      if (tail) hr.after(tail); else { const p = newPara(root); hr.after(p); caretIn(p); }
+      if (!list.children.length) list.remove();
+      if (tail) caretIn(tail.firstElementChild);
+      done(); return;
+    }
+    history?.commit();
+    b.innerHTML = '<br>';
+    b.removeAttribute('data-tags');
+    insertDivider(root, b);
+    done();
+  };
+
+  /* Select a divider by dragging over it and press Delete / Backspace: the divider goes too */
+  const onDeleteDivider = (e) => {
+    if (e.target.closest?.('[data-thread-block]')) return;      // typing inside a thread block is not typing in the note
+    if ((e.key !== 'Delete' && e.key !== 'Backspace') || e.ctrlKey || e.metaKey || e.altKey) return;
+    const sel = getSelection();
+    if (sel.rangeCount && sel.isCollapsed && root.contains(sel.anchorNode)) {   // caret right after / before a divider
+      const blk = caretBlock(root);
+      const top = blk && (blk.parentElement === root ? blk : blk.closest('ul, ol'));
+      if (top && top.parentElement === root) {
+        const r = document.createRange();
+        r.selectNodeContents(top);
+        r.setEnd(sel.anchorNode, sel.anchorOffset);
+        const atStart = r.toString() === '' && e.key === 'Backspace' && top.previousElementSibling?.tagName === 'HR';
+        const r2 = document.createRange();
+        r2.selectNodeContents(top);
+        r2.setStart(sel.anchorNode, sel.anchorOffset);
+        const atEnd = r2.toString() === '' && e.key === 'Delete' && top.nextElementSibling?.tagName === 'HR';
+        if (atStart || atEnd) {
+          e.preventDefault();
+          history?.commit();
+          (atStart ? top.previousElementSibling : top.nextElementSibling).remove();
+          done();
+        }
+      }
+      return;
+    }
+    if (!sel.rangeCount || sel.isCollapsed || !root.contains(sel.anchorNode)) return;
+    const range = sel.getRangeAt(0);
+    const hrs = [...root.querySelectorAll(':scope > hr')].filter((h) => range.intersectsNode(h));
+    if (!hrs.length) return;
+    history?.commit();
+    hrs.forEach((h) => h.remove());
+    if (!root.children.length) root.append(newPara(root));
+    if (getSelection().isCollapsed) e.preventDefault();       // nothing else was selected: the divider was all
+    done();
+  };
+
+  /* Enter after highlighted / coloured / bold text: the new empty line starts clean, without that formatting */
+  const onEnterReset = (e) => {
+    if (e.key !== 'Enter' || e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return;
+    setTimeout(() => {
+      const b = caretBlock(root);
+      if (!b || b.tagName === 'PRE' || b.tagName === 'SUMMARY' || ownText(b)) return;
+      if (b.querySelector(':scope > ul, :scope > ol')) return;
+      if (!b.querySelector('mark, span, b, strong, i, em, u, code, a')) return;   // nothing was carried over
+      b.innerHTML = '<br>';
+      caretIn(b);
+    }, 0);
+  };
+
   root.addEventListener('click', onClick);
   root.addEventListener('keyup', onKeyUp);
   root.addEventListener('keydown', onKeyDown, true);
   root.addEventListener('input', onInput);
+  root.addEventListener('input', onDashes);
+  root.addEventListener('keydown', onDeleteDivider, true);
+  root.addEventListener('keydown', onEnterReset);
   repair();
   return () => {
     root.removeEventListener('click', onClick);
     root.removeEventListener('keyup', onKeyUp);
     root.removeEventListener('keydown', onKeyDown, true);
     root.removeEventListener('input', onInput);
+    root.removeEventListener('input', onDashes);
+    root.removeEventListener('keydown', onDeleteDivider, true);
+    root.removeEventListener('keydown', onEnterReset);
   };
 }

@@ -15,7 +15,8 @@ export function allTasks() {
   const out = [];
   for (const note of store.searchableNotes()) {
     for (const block of note.blocks || []) {
-      if (block.t === 'li' && (block.chk === 0 || block.chk === 1)) out.push({ note, block, done: block.chk === 1, due: block.due || '' });
+      // only Task blocks and checklist items with a date show here; a plain checklist item stays in its note
+      if (block.t === 'li' && (block.chk === 0 || block.chk === 1) && (block.task || block.due)) out.push({ note, block, done: block.chk === 1, due: block.due || '' });
     }
   }
   return out;

@@ -51,7 +51,8 @@ export function mountDue(root, { editable = true } = {}) {
 
   function setDue(li, iso) {
     if (!li?.isConnected) return;
-    if (iso) li.setAttribute('data-due', iso); else li.removeAttribute('data-due');
+    if (iso) { li.setAttribute('data-due', iso); li.setAttribute('data-task', ''); }   // a date turns the item into a Task
+    else li.removeAttribute('data-due');
     refreshDue(root);
     notify();
   }

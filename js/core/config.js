@@ -59,6 +59,9 @@ export const CONFIG = {
     textColor: 'blue',
   },
 
+  /* ---- Notebook page: ways to sort the notes ([id, label]); the first is the default ---- */
+  notebookSorts: [['edited', 'Last edited'], ['created', 'Date created'], ['name', 'Name (A–Z)']],
+
   /* ---- Keyboard shortcuts — edit combos here. Format: Mod+Shift+1 (Mod = Ctrl or Cmd) ----
      Note: on layouts where "/" needs Shift (e.g. German), Mod+/ and Mod+Shift+/ collide — remap here. */
   shortcuts: {
@@ -66,6 +69,9 @@ export const CONFIG = {
     'select.all':            'Mod+A',       // selects the text of the block you are in
     'topbar.toggle':         'Mod+Shift+/',
     'mode.toggle':           'Mod+Shift+E', // Write ⇄ Read
+    'note.new':              'Mod+N',       // new note in the Inbox (browsers keep Ctrl+N for a new window; it works in the installed app)
+    'journal.today':         'Mod+Shift+D', // open today's entry, created if needed
+    'save.now':              'Mod+S',       // save this note right now
     'find.open':             'Mod+F',       // find in this note
     'focus.toggle':          'Mod+Alt+/',   // on some European layouts Ctrl+Alt = AltGr — remap here if it clashes
     'search.open':           'Mod+K',       // the search window (also the sidebar's Search box)
@@ -202,11 +208,13 @@ export const CONFIG = {
     ['ul',    'Bulleted list', 'list.bullet', 'bullets unordered ul', 'bullets'],
     ['ol',    'Numbered list', 'list.number', 'numbers ordered ol', 'numbers'],
     ['todo',  'Checklist',     'list.todo',   'todo task check checkbox', 'checklists'],
+    ['task',  'Task',          '',            'tasks todo due date action item reminder', 'tasks'],
     ['quote', 'Quote',         '',            'blockquote citation', 'quote'],
     ['code',  'Code Block',          '',            'snippet pre monospace programming', 'codeblock'],
     ['divider', 'Divider',     '',            'line rule separator hr horizontal', 'divider'],
     ['callout', 'Callout',     '',            'note tip info box highlight alert', 'callout'],
     ['toggle',  'Toggle',      '',            'collapsible details fold accordion expand', 'toggle'],
+    ['thread',  'Threads',     '',            'thread gather collect tag rule search board', 'threads'],
   ],
 
   /* ---- The (i) button in the top bar opens this. Edit the words freely — it is all plain text.

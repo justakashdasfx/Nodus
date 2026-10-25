@@ -62,7 +62,7 @@
 
 /* ---------- List rows (Journal, Trash) ---------- */
 
-.list { display: flex; flex-direction: column; border-top: 1px solid var(--border); }
+.list { display: flex; flex-direction: column; }
 
 .row {
   display: grid;
@@ -71,12 +71,11 @@
   gap: 24px;
   min-height: 52px;
   padding: 10px 8px;
-  border-bottom: 1px solid var(--border);
   transition: background var(--t-fast);
 }
-a.row:hover, .row--static:hover { background: var(--bg-hover); }
+a.row:hover, .row--static:hover { background: var(--bg-hover); border-radius: var(--r-sm); }
 .row__title { color: var(--text); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.row__text { color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.row__text { color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .row__actions { display: flex; gap: 2px; }
 .row__meta { display: flex; align-items: center; gap: 16px; color: var(--text-muted); font-size: var(--fs-small); white-space: nowrap; }
 .row__where { display: inline-flex; align-items: center; gap: 5px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
@@ -93,57 +92,26 @@ a.row:hover, .row--static:hover { background: var(--bg-hover); }
 .list-label:first-of-type { margin-top: 0; }
 .row__title--icon { display: flex; align-items: center; gap: 10px; }
 .row__title--icon .icon { color: var(--text-muted); }
-
-/* ---------- Tag page: the blocks that carry one tag ---------- */
-.block-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 20px; }   /* text first, note name after it — wraps under the text when the page is narrow (e.g. beside the side pane) */
-.block-row__text { flex: 1 1 240px; min-width: 0; white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; font-weight: 400; }
+/* ---------- Tag page / Thread page: the blocks that carry one tag ----------
+   Text on the first line; under it "Note name · Notebook" in small, muted type (same idea as the Tasks page). */
+.block-row {
+  display: flex; flex-direction: column; align-items: flex-start; flex-wrap: nowrap;
+  gap: 8px; padding-block: 12px;
+}
+.block-row__text {
+  flex: none; width: 100%; min-width: 0; color: var(--grey-1150); font-weight: 400; line-height: 1.5;
+  white-space: normal; overflow-wrap: anywhere;
+}
 .block-row__text--heading { font-weight: 600; }
 .block-row__text--empty { color: var(--text-faint); font-style: italic; }
-.block-row__where { flex: 0 1 auto; max-width: 100%; display: inline-flex; align-items: center; gap: 6px; text-align: left; }
+.block-row__where {
+  flex: none; max-width: 100%; display: inline-flex; align-items: center; gap: 6px; text-align: left;
+  font-size: var(--fs-ui); color: var(--text-muted);
+}
 .where__item { display: inline-flex; align-items: center; gap: 5px; min-width: 0; }
 .where__item .icon { flex: none; opacity: 0.8; }
-.where__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; }
+.where__name { overflow-wrap: anywhere; }
 .where__sep { color: var(--text-faint); }
-
-/* ---------- Threads ---------- */
-.thread-row { grid-template-columns: minmax(140px, 260px) 1fr auto; }
-.thread-row__rules { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
-.thread-row__meta { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
-.badge { padding: 2px 8px; border-radius: 999px; font-size: var(--fs-tiny); color: var(--text-muted); background: var(--bg-hover); }
-@media (max-width: 760px) { .thread-row { grid-template-columns: 1fr; } }
-
-.thread__titlewrap { min-width: 0; flex: 1; }
-.thread__title {
-  width: 100%; padding: 0; border: 0; background: transparent; outline: none;
-  font: inherit; font-size: var(--fs-title, 28px); font-weight: 650; letter-spacing: -0.01em; color: var(--text);
-}
-.thread__title:focus { box-shadow: 0 1px 0 var(--accent); }
-
-.thread__rules { margin: 4px 0 18px; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-ui); display: grid; gap: 12px; }
-.thread__rules[hidden] { display: none; }
-.rule-actions { display: flex; justify-content: flex-end; padding-top: 2px; }
-.rule-row { display: grid; grid-template-columns: 78px 1fr; align-items: center; gap: 4px 12px; }
-.rule-row__label { color: var(--text-muted); font-size: var(--fs-small); }
-.rule-row__field { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
-.rule-row__help { grid-column: 2; margin-top: -2px; font-size: var(--fs-tiny); color: var(--text-faint); }
-.rule-input { flex: 1; min-width: 120px; height: 26px; padding: 0 4px; border: 0; background: transparent; color: var(--text); font: inherit; font-size: var(--fs-small); outline: none; }
-.rule-input::placeholder { color: var(--text-faint); }
-
-.rule-chip {
-  --tag-h: 210;
-  display: inline-flex; align-items: center; gap: 2px; height: 22px; padding: 0 8px; border-radius: var(--r-sm);
-  background: var(--bg-hover); color: var(--text-dim); font-size: 11.5px; white-space: nowrap;
-}
-.rule-chip--tag { background: transparent; color: hsl(var(--tag-h) var(--tag-sat) var(--tag-light)); }
-.rule-chip__x { padding: 0 0 0 4px; font-size: 13px; line-height: 1; color: inherit; opacity: 0.6; cursor: pointer; }
-.rule-chip__x:hover, .rule-chip__x:focus-visible { opacity: 1; color: var(--tag-remove); }
-
-.thread__banner {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding: 10px 14px;
-  border-radius: var(--radius-ui); background: var(--bg-hover); color: var(--text-dim); font-size: var(--fs-small);
-}
-.thread__banner strong { color: var(--text); font-weight: 600; }
-.thread__banner-actions { margin-left: auto; display: flex; gap: 8px; }
 
 /* ---------- Tasks page (js/views/tasks.js · sizes and date colours: tokens.css section 17) ---------- */
 .list-label__n { margin-left: 8px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
@@ -197,7 +165,45 @@ a.row:hover, .row--static:hover { background: var(--bg-hover); }
   border-radius: 999px; font-size: var(--fs-tiny);
   background: hsl(var(--tag-h) var(--tag-sat) var(--tag-light) / var(--tagpill-count-alpha));
 }
+/* ---------- Threads ---------- */
+.thread-row { grid-template-columns: minmax(140px, 260px) 1fr auto; }
+.thread-row__rules { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+.thread-row__meta { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+.badge { padding: 2px 8px; border-radius: 999px; font-size: var(--fs-tiny); color: var(--text-muted); background: var(--bg-hover); }
+@media (max-width: 760px) { .thread-row { grid-template-columns: 1fr; } }
 
+.thread__titlewrap { min-width: 0; flex: 1; }
+.thread__title {
+  width: 100%; padding: 0; border: 0; background: transparent; outline: none;
+  font: inherit; font-size: var(--fs-title, 28px); font-weight: 650; letter-spacing: -0.01em; color: var(--text);
+}
+.thread__title:focus { box-shadow: 0 1px 0 var(--accent); }
+
+.thread__rules { margin: 4px 0 18px; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-ui); display: grid; gap: 12px; }
+.thread__rules[hidden] { display: none; }
+.rule-actions { display: flex; justify-content: flex-end; padding-top: 2px; }
+.rule-row { display: grid; grid-template-columns: 78px 1fr; align-items: center; gap: 4px 12px; }
+.rule-row__label { color: var(--text-muted); font-size: var(--fs-small); }
+.rule-row__field { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+.rule-row__help { grid-column: 2; margin-top: -2px; font-size: var(--fs-tiny); color: var(--text-faint); }
+.rule-input { flex: 1; min-width: 120px; height: 26px; padding: 0 4px; border: 0; background: transparent; color: var(--text); font: inherit; font-size: var(--fs-small); outline: none; }
+.rule-input::placeholder { color: var(--text-faint); }
+
+.rule-chip {
+  --tag-h: 210;
+  display: inline-flex; align-items: center; gap: 2px; height: 22px; padding: 0 8px; border-radius: var(--r-sm);
+  background: var(--bg-hover); color: var(--text-dim); font-size: 11.5px; white-space: nowrap;
+}
+.rule-chip--tag { background: transparent; color: hsl(var(--tag-h) var(--tag-sat) var(--tag-light)); }
+.rule-chip__x { padding: 0 0 0 4px; font-size: 13px; line-height: 1; color: inherit; opacity: 0.6; cursor: pointer; }
+.rule-chip__x:hover, .rule-chip__x:focus-visible { opacity: 1; color: var(--tag-remove); }
+
+.thread__banner {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding: 10px 14px;
+  border-radius: var(--radius-ui); background: var(--bg-hover); color: var(--text-dim); font-size: var(--fs-small);
+}
+.thread__banner strong { color: var(--text); font-weight: 600; }
+.thread__banner-actions { margin-left: auto; display: flex; gap: 8px; }
 /* ---------- Calendar (Phase 8A) ---------- */
 .calendar {
   position: fixed; z-index: 90; width: 268px; padding: 10px;

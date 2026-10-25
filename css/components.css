@@ -171,7 +171,8 @@
 .status[data-state="badkey"] .status__dot { background: var(--danger); }
 .status[data-state="nokey"] .status__dot { background: var(--status-busy); }
 
-@media (max-width: 760px) { .status__text { display: none; } }   /* phones: just the coloured dot */
+.status__text { display: none; }          /* minimal: only the coloured dot (the words are still in the tooltip) */
+.status { padding: 0 8px; }
 
 
 /* ==========================================================================

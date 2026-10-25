@@ -28,10 +28,11 @@ h1, h2, h3, h4, p { margin: 0; }
 [hidden] { display: none !important; }
 
 /* Thin scrollbars */
-* { scrollbar-width: thin; scrollbar-color: var(--scrollbar) transparent; }
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: var(--r-sm); }
 ::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-button { display: none; width: 0; height: 0; }   /* no arrow buttons at the ends: they were being cut off by the card's corners */
+@supports not selector(::-webkit-scrollbar) { * { scrollbar-width: thin; scrollbar-color: var(--scrollbar) transparent; } }   /* Firefox */
 
 /* Icons: each one is a file in /icons-ui/<name>.svg, drawn as a mask so it takes the text colour.
    Colour = the element's `color`. Size = the width/height set by icon(name, size) in js/core/icons.js. */
