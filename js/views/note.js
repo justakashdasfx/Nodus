@@ -11,6 +11,7 @@ import { formatDate, htmlToText, statsLabel } from '../core/utils.js';
 import { getStatsMode } from '../core/settings.js';
 import { noteLocation, noteState } from '../ui/note-meta.js';
 import { mountEditor } from '../editor/editor.js';
+import { mountRelated } from '../ui/related.js';
 
 const MODIFIERS = new Set(['Shift', 'Control', 'Alt', 'Meta']);
 
@@ -72,6 +73,7 @@ export function render({ id, block }, { pane = false } = {}) {
           <div class="prose editor" spellcheck="true" aria-label="Note"></div>
           <div class="tag-rail" aria-label="Tags"></div>
         </div>
+        <div class="rel" hidden></div>
       </div>
     </div>`;
 
@@ -81,7 +83,8 @@ export function render({ id, block }, { pane = false } = {}) {
       const editor = root.querySelector('.editor');
       const stop = mountEditor(editor, note, { readOnly });
       revealBlock(editor, block);
-      return stop;
+      const stopRel = mountRelated(root.querySelector('.rel'), note.id);   // "Related notes" footer (backlinks)
+      return () => { stop?.(); stopRel(); };
     },
   };
 }

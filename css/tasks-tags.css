@@ -204,3 +204,66 @@
 .tr-pick__meta { flex: none; font-size: var(--fs-tiny); color: var(--text-faint); }
 
 .tr-foot { display: flex; justify-content: flex-end; }
+
+
+/* ==========================================================================
+   NOTE LINKS — "[[" in a note (js/editor/note-link.js)
+   The colour is one token: --link-note (green by default = --c-ok). Change it here or in tokens.css.
+   ========================================================================== */
+:root { --link-note: var(--link-backlink); }
+.prose span[data-note-link] { color: var(--link-note); cursor: pointer; border-radius: 3px; transition: background var(--t-fast); }
+.prose span[data-note-link]:hover { background: color-mix(in srgb, var(--link-note) 14%, transparent); text-decoration: underline; text-underline-offset: 3px; }
+.prose span[data-note-link].is-missing { color: var(--text-faint); text-decoration: line-through; cursor: default; }
+
+.link-suggest {                             /* the list under "[[" */
+  position: fixed; z-index: 110; min-width: 260px; max-width: 380px; padding: 6px;
+  border: 1px solid var(--menu-border, var(--border)); border-radius: var(--r-md); background: var(--menu-bg, var(--bg-raised)); box-shadow: var(--shadow-pop);
+  font-size: var(--fs-ui);
+}
+.link-suggest[hidden] { display: none; }
+.link-suggest__item { display: flex; align-items: center; gap: 8px; width: 100%; height: 34px; padding: 0 10px; border-radius: var(--r-sm); color: var(--text-dim); text-align: left; }
+.link-suggest__item.is-active, .link-suggest__item:hover { background: var(--bg-hover); color: var(--text); }
+.link-suggest__item .icon { flex: none; color: var(--text-muted); }
+.link-suggest__name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.link-suggest__name b { color: var(--link-note); font-weight: 600; }
+.link-suggest__where { flex: none; font-size: var(--fs-tiny); color: var(--text-faint); }
+
+.link-alias {                               /* Alt+click on a link: its short name */
+  position: fixed; z-index: 120; display: grid; gap: 6px; width: 280px; padding: 8px;
+  border: 1px solid var(--menu-border, var(--border)); border-radius: var(--r-md); background: var(--menu-bg, var(--bg-raised)); box-shadow: var(--shadow-pop);
+}
+.link-alias__input { height: 34px; padding: 0 10px; border: 1px solid var(--border-strong); border-radius: var(--r-sm); background: var(--bg-card); color: var(--text); outline: none; font: inherit; font-size: var(--fs-ui); }
+.link-alias__input:focus { border-color: var(--link-note); }
+.link-alias__hint { padding: 0 2px; font-size: var(--fs-tiny); color: var(--text-faint); }
+
+
+/* ==========================================================================
+   RELATED NOTES — a toggle at the end of the note (js/ui/related.js). It sits in the page after the last line, and the list opens below it.
+   --rel-gap = the space above it.
+   ========================================================================== */
+:root { --rel-gap: 40px; }
+.rel { margin-top: var(--rel-gap); padding-bottom: 48px; }
+.rel[hidden] { display: none; }
+.rel__inner { border-top: 0px solid var(--border); }
+.rel__bar { display: flex; align-items: center; gap: 8px; width: 100%; height: 40px; color: var(--text-muted); font-size: var(--fs-small); }
+.rel__bar:hover { color: var(--text); }
+.rel__bar .icon { transition: transform var(--t-fast); }
+.rel__bar[aria-expanded="true"] .icon { transform: rotate(90deg); }
+.rel__n { color: var(--text-faint); font-variant-numeric: tabular-nums; }
+.rel__panel { padding: 4px 0 4px; }
+.rel__panel[hidden] { display: none; }
+.rel__group + .rel__group { margin-top: 14px; }
+.rel__label { margin-bottom: 4px; font-size: var(--fs-tiny); color: var(--text-faint); }
+.rel__item { display: flex; flex-direction: column; gap: 2px; margin: 0 -10px; padding: 8px 10px; border-radius: var(--r-sm); }
+.rel__item:hover { background: var(--bg-hover); }
+.rel__title { color: var(--link-mention); }
+.rel__snip { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-small); color: var(--text-muted); }
+
+/* ==========================================================================
+   NOTE MENTIONS — "@" in a note (js/editor/note-mention.js). A mention only points at a note: no backlink, no Related notes.
+   The colour is one token: --mention-note (blue by default = --accent). Its list uses the same look as "[[" (.link-suggest).
+   ========================================================================== */
+:root { --mention-note: var(--link-mention); }
+.prose span[data-note-mention] { color: var(--mention-note); cursor: pointer; border-radius: 3px; transition: background var(--t-fast); }
+.prose span[data-note-mention]:hover { background: color-mix(in srgb, var(--mention-note) 14%, transparent); text-decoration: underline; text-underline-offset: 3px; }
+.prose span[data-note-mention].is-missing { color: var(--text-faint); text-decoration: line-through; cursor: default; }

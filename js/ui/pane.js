@@ -63,7 +63,7 @@ function setFrac(f) {
 
 function initDivider() {
   const { card, divider } = els;
-  divider.innerHTML = `<span class="divider__grip">${icon('dividerGrip', 12)}</span>`; // appears when you point at the gap (css/layout.css)
+  divider.innerHTML = `<span class="divider__grip">${icon('dividerGrip', 0)}</span>`; // appears when you point at the gap (css/layout.css)
   let dragging = false;
   const fromX = (x) => { const r = card.getBoundingClientRect(); return (r.right - x) / r.width; };
 

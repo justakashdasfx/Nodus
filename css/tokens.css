@@ -65,6 +65,8 @@
   --tagpill-radius: var(--r-pill);
   --task-box-radius: var(--r-sm);
   --spot-radius: var(--r-md);
+--card-border: 1px solid var(--grey-300);
+--card-shadow: 0 0 0 2px #141414;
 
   /* ---- 5. LAYOUT ------------------------------------------------------ */
   --sidebar-width: 280px;
@@ -79,7 +81,7 @@
   --rail-width: 120px;                      /* tag column in the right margin */
   --rail-gap: 40px;                         /* space between the text and that column */
   --pane-min: 320px;                        /* side pane: narrowest either side may get */
-  --pane-divider-w: 16px;                   /* side pane: gap between the two cards (and the divider's grab area) */
+  --pane-divider-w: 8px;                   /* side pane: gap between the two cards (and the divider's grab area) */
   --tree-guide-width: 1.5px;                /* vertical guide line under an open notebook */
   --tree-guide-indent: 12px;                /* its distance from the sidebar's left edge */
 
@@ -198,6 +200,9 @@
   --c-warn:   #E3C25A;
   --brand-from: #BFD3E6;      /* the app name's gradient: left … */
 --brand-to:   #95BDE5;      /* … to right (your Figma stops 0% and 100%) */
+--link-backlink:   #86C7BA;      /* backlink color */
+--link-mention:   #96AEC6;      /* mention color */
+--link-url:   #6BB4DF;      /* URL color */
 }
 :root[data-theme="light"] {
   --c-accent: #1F78B8;

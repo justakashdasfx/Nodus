@@ -93,6 +93,7 @@ export function menuModel(block, { turnOnly = false, extra = [] } = {}) {
       { act: 'up', label: 'Move up', ic: 'arrowUp', hint: hintFor('block.moveUp'), disabled: !canStep(block, -1), words: 'shift' },
       { act: 'down', label: 'Move down', ic: 'arrowDown', hint: hintFor('block.moveDown'), disabled: !canStep(block, 1), words: 'shift' },
       ...(tagged ? [{ act: 'untag', label: 'Remove tags', ic: 'tag-remove', words: 'untag' }] : []),
+      ...(kind === 'todo' || kind === 'task' ? [{ act: 'due', label: 'Set date…', ic: 'calendar', hint: hintFor('task.due'), words: 'due deadline task' }] : []),
     ] },
     ...extra,
     { items: [{ act: 'delete', label: 'Delete', ic: 'trash', danger: true, words: 'remove' }] },
@@ -155,6 +156,7 @@ export function runAction(root, history, act, block, { place = true } = {}) {
     if (stepBlock(block, act === 'up' ? -1 : 1)) { restoreSel(sel); finish(null); }
     return true;
   }
+  if (act === 'due') { block.dispatchEvent(new CustomEvent('due-open', { bubbles: true, detail: { li: block } })); history.record(); return true; }
   if (act === 'untag') { block.removeAttribute('data-tags'); finish(null); return true; }
   if (act === 'delete') { finish(deleteBlock(root, block)); return true; }
   return false;

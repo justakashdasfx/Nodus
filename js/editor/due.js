@@ -1,8 +1,9 @@
 /* ============================================================================
    DUE DATES — a date on a checklist item.
 
-   • Type "@" in a checklist item: a small menu offers Today, Tomorrow, Next week… Keep typing to narrow it
-     ("@fri", "@3 nov", "@in 2 weeks"); ↑ ↓ choose, Enter or Tab applies, Esc closes. The typed "@…" is removed.
+   • Type "!" in a checklist item: a small menu offers Today, Tomorrow, Next week… Keep typing to narrow it
+     ("!fri", "!3 nov", "!in 2 weeks"); ↑ ↓ choose, Enter or Tab applies, Esc closes. The typed "!…" is removed.
+     The trigger character is TRIGGER just below (it was "@"; "@" is kept free for other things).
    • Click the date on the right of an item, or press Ctrl/Cmd+Shift+D in the item, to change or remove it.
    • The date is saved on the item (data-due). The label next to it (Today, Fri, 3 Nov…) is drawn by CSS from
      data-due-label, which is worked out here and never saved. Look: css/tokens.css → section 17.
@@ -32,6 +33,9 @@ export function refreshDue(root) {
   });
 }
 
+/** The character that opens the date menu in a checklist item. Change it here ('!' → '@' …). */
+const TRIGGER = '!';
+
 const isTodoItem = (li) => !!li && li.parentElement?.dataset.type === 'todo';
 
 export function mountDue(root, { editable = true } = {}) {
@@ -57,7 +61,7 @@ export function mountDue(root, { editable = true } = {}) {
     notify();
   }
 
-  /** Removes the typed "@query" (and the space before it when it ends the item). */
+  /** Removes the typed "!query" (and the space before it when it ends the item). */
   function strip(c) {
     if (!c.node?.isConnected) return;
     const r = document.createRange();
@@ -74,7 +78,7 @@ export function mountDue(root, { editable = true } = {}) {
     sel.collapse(c.node, at);
   }
 
-  /** "Pick a date…" opens a calendar (ui/calendar.js). Typing a date still works with "@" in the item. */
+  /** "Pick a date…" opens a calendar (ui/calendar.js). */
   async function askDate(li) {
     const r = li.getBoundingClientRect();
     const iso = await pickDate({ value: li.getAttribute('data-due') || '', rect: { left: r.right - 280, top: r.top, bottom: r.top + 28 } });
@@ -174,7 +178,7 @@ export function mountDue(root, { editable = true } = {}) {
     return r && (r.width || r.height) ? r : li.getBoundingClientRect();
   }
 
-  /** "@" typed in a checklist item. */
+  /** The trigger typed in a checklist item. */
   function scan() {
     const sel = getSelection();
     if (!sel.rangeCount || !sel.isCollapsed) { close(); return; }
@@ -182,7 +186,7 @@ export function mountDue(root, { editable = true } = {}) {
     const node = sel.anchorNode;
     if (!isTodoItem(li) || !node || node.nodeType !== 3 || !li.contains(node)) { close(); return; }
     const before = node.nodeValue.slice(0, sel.anchorOffset);
-    const m = /(?:^|[\s\u00a0])@([^@\n]{0,24})$/.exec(before);
+    const m = new RegExp(`(?:^|[\\s\\u00a0])\\${TRIGGER}([^\\${TRIGGER}\\n]{0,24})$`).exec(before);
     if (!m) { close(); return; }
     const query = m[1];
     ctx = { li, node, start: sel.anchorOffset - query.length - 1, end: sel.anchorOffset, query, edit: false };
@@ -250,12 +254,21 @@ export function mountDue(root, { editable = true } = {}) {
     openEdit(li, { left: r.right - pad, top: r.top, bottom: r.top + 28 });
   };
 
+  /** The six-dot menu's "Set date…" asks for the same menu. */
+  const onOpen = (e) => {
+    const li = e.detail?.li;
+    if (!li?.isConnected || !isTodoItem(li)) return;
+    const r = li.getBoundingClientRect();
+    openEdit(li, { left: r.right - 160, top: r.top, bottom: r.top + 28 });
+  };
+
   const onBlur = () => setTimeout(() => { if (menu && !root.contains(document.activeElement) && !menu.contains(document.activeElement)) close(); }, 0);
 
   root.addEventListener('keydown', onKey, true);   // capture: the menu's keys never reach the editor
   root.addEventListener('input', onInput);
   root.addEventListener('click', onClick);
   root.addEventListener('focusout', onBlur);
+  root.addEventListener('due-open', onOpen);
 
   return () => {
     close();
@@ -263,6 +276,7 @@ export function mountDue(root, { editable = true } = {}) {
     root.removeEventListener('input', onInput);
     root.removeEventListener('click', onClick);
     root.removeEventListener('focusout', onBlur);
+    root.removeEventListener('due-open', onOpen);
     document.removeEventListener('visibilitychange', onVisible);
   };
 }

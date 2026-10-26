@@ -44,7 +44,7 @@ export function todayKey() {
 
 const ALLOWED_TAGS = new Set(['P', 'DIV', 'BR', 'H1', 'H2', 'H3', 'H4', 'UL', 'OL', 'LI',
   'B', 'STRONG', 'I', 'EM', 'U', 'BLOCKQUOTE', 'PRE', 'CODE', 'MARK', 'SPAN', 'HR', 'DETAILS', 'SUMMARY']);
-const ALLOWED_ATTRS = new Set(['data-hl', 'data-tc', 'data-type', 'data-check', 'data-bid', 'data-tags', 'data-lang', 'data-due', 'data-callout', 'open', 'data-task', 'data-thread-block', 'data-limit']);
+const ALLOWED_ATTRS = new Set(['data-hl', 'data-tc', 'data-type', 'data-check', 'data-bid', 'data-tags', 'data-lang', 'data-due', 'data-callout', 'open', 'data-task', 'data-note-mention', 'data-thread-block', 'data-limit', 'data-note-link', 'data-alias']);
 
 /* Block ids (data-bid) and tags (data-tags) — see core/blockindex.js */
 export const BID_RE = /^[a-z0-9]{6,16}$/;
@@ -116,6 +116,11 @@ function clean(node) {
     const tb = child.getAttribute('data-thread-block');            // a Threads block: an empty shell that points at a thread (js/editor/thread-block.js)
     if (tb !== null && (child.tagName !== 'DIV' || !/^[a-z0-9]{0,24}$/.test(tb))) child.removeAttribute('data-thread-block');
     if (child.hasAttribute('data-thread-block')) child.textContent = '';
+    const nm = child.getAttribute('data-note-mention');             // a mention of another note (no backlink): <span data-note-mention="ID">
+    if (nm !== null && (child.tagName !== 'SPAN' || !/^[a-z0-9]{4,24}$/.test(nm))) child.removeAttribute('data-note-mention');
+    const nl = child.getAttribute('data-note-link');                // a link to another note: <span data-note-link="ID"> (js/editor/note-link.js)
+    if (nl !== null && (child.tagName !== 'SPAN' || !/^[a-z0-9]{4,24}$/.test(nl))) child.removeAttribute('data-note-link');
+    if (child.hasAttribute('data-alias')) { if (child.hasAttribute('data-note-link') || child.hasAttribute('data-note-mention')) child.setAttribute('data-alias', ''); else child.removeAttribute('data-alias'); }
     const lim = child.getAttribute('data-limit');
     if (lim !== null && (!child.hasAttribute('data-thread-block') || !['10', '20', '30', 'all'].includes(lim))) child.removeAttribute('data-limit');
     if (child.hasAttribute('open')) { if (child.tagName === 'DETAILS') child.setAttribute('open', ''); else child.removeAttribute('open'); }
@@ -178,6 +183,7 @@ export function htmlToMarkdown(html = '') {
         case 'S': case 'STRIKE': case 'DEL': out += `~~${inner}~~`; break;
         case 'CODE': out += '`' + n.textContent + '`'; break;
         case 'A': out += `[${inner}](${n.getAttribute('href') || ''})`; break;
+        case 'SPAN': out += n.hasAttribute('data-note-link') ? `[[${inner}]]` : n.hasAttribute('data-note-mention') ? `@${inner}` : inner; break;   // a link to another note
         default: out += inner; // underline, highlight and colour have no Markdown form: the plain text stays
       }
     });

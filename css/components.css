@@ -53,7 +53,7 @@
 .button {
   /* Size and shape: auto layout, hug width, height 40, gap 8, padding 8 12 8 10, radius 8 */
   --button-height:  32px;
-  --button-gap:      8px;
+  --button-gap:      6px;
   --button-padding:  12px 12px 12px 10px;      /* top  right  bottom  left */
   --button-radius:   8px;
 

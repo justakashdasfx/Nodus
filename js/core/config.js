@@ -63,17 +63,17 @@ export const CONFIG = {
   notebookSorts: [['edited', 'Last edited'], ['created', 'Date created'], ['name', 'Name (A–Z)']],
 
   /* ---- Keyboard shortcuts — edit combos here. Format: Mod+Shift+1 (Mod = Ctrl or Cmd) ----
-     Note: on layouts where "/" needs Shift (e.g. German), Mod+/ and Mod+Shift+/ collide — remap here. */
+     Note: \ is the key above Enter (US layout); on layouts where it needs AltGr or Shift, remap these three here. */
   shortcuts: {
-    'sidebar.toggle':        'Mod+/',
+    'sidebar.toggle':        'Mod+\\',       // Ctrl+\  hide / show the sidebar
     'select.all':            'Mod+A',       // selects the text of the block you are in
-    'topbar.toggle':         'Mod+Shift+/',
+    'topbar.toggle':         'Mod+Shift+\\', // Ctrl+Shift+\  hide / show the sidebar AND the top bar together
     'mode.toggle':           'Mod+Shift+E', // Write ⇄ Read
     'note.new':              'Mod+N',       // new note in the Inbox (browsers keep Ctrl+N for a new window; it works in the installed app)
     'journal.today':         'Mod+Shift+D', // open today's entry, created if needed
     'save.now':              'Mod+S',       // save this note right now
     'find.open':             'Mod+F',       // find in this note
-    'focus.toggle':          'Mod+Alt+/',   // on some European layouts Ctrl+Alt = AltGr — remap here if it clashes
+    'focus.toggle':          'Mod+Alt+\\',  // Ctrl+Alt+\  full focus mode (sidebar and top bar out of the way); press again to go back. On some European layouts Ctrl+Alt = AltGr — remap here if it clashes
     'search.open':           'Mod+K',       // the search window (also the sidebar's Search box)
     'search.open.p':         'Mod+P',       // …same window. Overrides the browser's Print
     'search.open.k':         'Mod+Shift+K', // …same window (Firefox keeps this one for its own tools)
@@ -145,7 +145,7 @@ export const CONFIG = {
   },
 
   /* ---- Tasks (js/views/tasks.js, js/core/tasks.js). Look: css/tokens.css → section 17 ----
-     Dates are typed in a checklist item with "@" (js/editor/due.js). */
+     Dates are typed in a checklist item with "!" (js/editor/due.js). */
   tasks: {
     doneDays: 30,   // the Done group shows tasks from notes changed in the last N days
     doneMax: 50,    // …and at most this many
@@ -182,7 +182,7 @@ export const CONFIG = {
     { id: 'go.trash',       label: 'Go to Trash',         words: 'open deleted bin',            kind: 'go',     target: '#/trash',        icon: 'trash' },
     { id: 'theme.toggle',   label: 'Toggle theme',        words: 'dark light mode appearance',  kind: 'action', target: 'theme-toggle',   icon: 'sun' },
     { id: 'sidebar.toggle', label: 'Toggle sidebar',      words: 'show hide menu',              kind: 'action', target: 'sidebar-toggle', icon: 'menu',   key: 'sidebar.toggle' },
-    { id: 'topbar.toggle',  label: 'Toggle top bar',      words: 'show hide header',            kind: 'event',  target: 'topbar-toggle',  icon: 'menu',   key: 'topbar.toggle' },
+    { id: 'topbar.toggle',  label: 'Toggle sidebar and top bar', words: 'show hide header menu',            kind: 'event',  target: 'topbar-toggle',  icon: 'menu',   key: 'topbar.toggle' },
     { id: 'focus.toggle',   label: 'Toggle focus mode',   words: 'distraction free zen',        kind: 'event',  target: 'focus-toggle',   icon: 'pencil', key: 'focus.toggle' },
     { id: 'mode.toggle',    label: 'Switch Write / Read', words: 'edit mode reading',           kind: 'event',  target: 'mode-toggle',    icon: 'pencil', key: 'mode.toggle', needs: 'note' },
     { id: 'import',         label: 'Import a text file',  words: 'upload open markdown',        kind: 'action', target: 'import-text',    icon: 'upload' },

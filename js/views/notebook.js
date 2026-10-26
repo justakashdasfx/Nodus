@@ -25,7 +25,7 @@ export function render({ id }) {
 
   const sortMode = CONFIG.notebookSorts.some(([k]) => k === folder.sort) ? folder.sort : CONFIG.notebookSorts[0][0];
   const notes = sortNotes(store.notesInFolder(id), sortMode);
-  const newBtn = button({ action: 'note-new', iconName: 'plus', label: 'New note', variant: 'btn--solid', data: { folder: id } });
+  const newBtn = button({ action: 'note-new', iconName: 'plus', label: 'New note', variant: 'button', data: { folder: id } });
   const style = folder.viewStyle === 'list' || folder.viewStyle === 'gallery' ? folder.viewStyle : CONFIG.defaults.views.notebook;
   // [Sort ▾]  [+ New note]  [⋯]   — Edit, Gallery | List and Delete live in the ⋯ menu (js/app.js → 'notebook-more')
   const sortLabel = CONFIG.notebookSorts.find(([k]) => k === sortMode)[1];

@@ -26,6 +26,8 @@ import { mountHistory } from './history.js';
 import { mountCode } from './code-block.js';
 import { mountBlockRules } from './block-rules.js';
 import { mountThreadBlocks } from './thread-block.js';
+import { mountNoteLinks } from './note-link.js';
+import { mountNoteMentions } from './note-mention.js';
 import { mountExtraBlocks } from './blocks-extra.js';
 import { mountBlockSelect } from './block-select.js';
 import { idFactory } from './block-ops.js';
@@ -87,7 +89,9 @@ export function mountEditor(el, note, { readOnly = false } = {}) {
     const stopRail = mountTagRail(el, { editable: false });
     const stopDueRO = mountDue(el, { editable: false });   // the dates next to checklist items
     const stopThreadsRO = mountThreadBlocks(el, { readOnly: true });   // Threads blocks, read-only
-    return () => { stopCodeRO(); stopRail?.(); stopDueRO(); stopThreadsRO(); };
+    const stopLinksRO = mountNoteLinks(el, { readOnly: true });         // links to other notes: clickable
+    const stopMentionsRO = mountNoteMentions(el, { readOnly: true });   // mentions: clickable
+    return () => { stopCodeRO(); stopRail?.(); stopDueRO(); stopThreadsRO(); stopLinksRO(); stopMentionsRO(); };
   }
 
   el.contentEditable = 'true';
@@ -104,6 +108,8 @@ export function mountEditor(el, note, { readOnly = false } = {}) {
 
   /* ---- Undo / redo (our own, so moves and menu actions undo too), block handle, #tag suggestions ---- */
   const history = mountHistory(el);
+  const stopMentions = mountNoteMentions(el, { history });   // "@" picker: a mention, no backlink
+  const stopLinks = mountNoteLinks(el, { history });          // "[[" picker + clickable links (registered first so its keys win)
   const stopThreads = mountThreadBlocks(el, { history });   // Threads blocks ("/" → Threads)
   const stopRules = mountBlockRules(el, { history });   // Enter / Backspace / Ctrl+D rules per block type (registered before the handlers below so it runs first)
   const stopCode = mountCode(el, history);   // code blocks: Enter / Tab / paste, the language bar, colours
@@ -206,6 +212,6 @@ export function mountEditor(el, note, { readOnly = false } = {}) {
     el.removeEventListener('beforeinput', onBeforeInput);
     el.removeEventListener('input', onInputBlocks);
     el.removeEventListener('compositionend', onCompositionEnd);
-    stopFormatting(); stopShortcuts(); stopFocus(); stopTodos(); stopTags(); stopHandle(); stopSlash(); stopSuggest(); stopThreads(); stopRules(); stopCode(); stopDue(); stopExtra(); stopSelect(); host.removeEventListener('dblclick', onDblClick); history.stop();
+    stopFormatting(); stopShortcuts(); stopFocus(); stopTodos(); stopTags(); stopHandle(); stopSlash(); stopSuggest(); stopLinks(); stopMentions(); stopThreads(); stopRules(); stopCode(); stopDue(); stopExtra(); stopSelect(); host.removeEventListener('dblclick', onDblClick); history.stop();
   };
 }

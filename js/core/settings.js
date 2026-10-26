@@ -23,6 +23,10 @@ export function setTheme(theme) {
 export const getPinnedOpen = () => read(S.pinned, '1') !== '0';
 export function togglePinnedOpen() { const next = !getPinnedOpen(); write(S.pinned, next ? '1' : '0'); return next; }
 
+/* ---- The sidebar's Notebook section (Inbox · Journal · notebooks): shown or hidden ---- */
+export const getNotebooksOpen = () => read('notes.notebooksOpen', '1') !== '0';
+export function toggleNotebooksOpen() { const next = !getNotebooksOpen(); write('notes.notebooksOpen', next ? '1' : '0'); return next; }
+
 /* ---- What the top bar count shows: words or characters ---- */
 export const getStatsMode = () => (read(S.stats, CONFIG.defaults.statsMode) === 'chars' ? 'chars' : 'words');
 export function toggleStatsMode() {

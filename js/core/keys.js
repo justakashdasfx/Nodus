@@ -17,6 +17,7 @@ function keyMatches(e, key) {
   if (/^\d$/.test(key)) return e.code === `Digit${key}` || e.code === `Numpad${key}`;
   if (/^[a-z]$/i.test(key)) return (e.key || '').toLowerCase() === key.toLowerCase();
   if (key === '/') return e.code === 'Slash' || e.key === '/' || e.key === '?';
+  if (key === '\\') return e.code === 'Backslash' || e.key === '\\' || e.key === '|';   // Shift or Alt change what the key reports
   return e.key === key;
 }
 

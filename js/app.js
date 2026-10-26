@@ -187,22 +187,10 @@ function setNoteMode(id, mode) {
 registerActions({
   'sidebar-toggle': () => settings.setSidebarCollapsed(!settings.isSidebarCollapsed()),
 
-  /* Click "Notebook" above the notebooks: close them all (or open them all when none is open) */
-  'folders-toggle-all': () => {
-    const open = settings.getExpanded();
-    const ids = store.folders().map(f => f.id);
-    settings.setExpanded(ids.some(id => open.has(id)) ? new Set() : new Set(ids));
-    drawSidebar();
-  },
+  /* Click "Notebook" above the notebooks: hide or show the whole section (Inbox · Journal · notebooks) */
+  'notebooks-toggle': () => { settings.toggleNotebooksOpen(); drawSidebar(); },
   /* Tags page: a tag pill opens the side pane with its blocks */
   'tag-pane': (el) => pane.openTag(el.dataset.tag),
-
-  'folder-toggle': (el) => {
-    const open = settings.getExpanded();
-    open.has(el.dataset.id) ? open.delete(el.dataset.id) : open.add(el.dataset.id);
-    settings.setExpanded(open);
-    drawSidebar();
-  },
 
   'note-new': (el) => {
     if (route.view === 'journal' && !el.dataset.folder) { openToday(); return; }
@@ -475,6 +463,14 @@ function toggleFocusMode() {
   if (on) toast(`Focus mode — Esc or ${comboLabel(CONFIG.shortcuts['focus.toggle'])} to leave`);
 }
 
+/** Sidebar and top bar hidden or shown together (Ctrl+Shift+\). If only one of them is hidden, both get hidden. */
+function toggleChrome() {
+  const hide = !(settings.isTopbarHidden() && settings.isSidebarCollapsed());
+  settings.setTopbarHidden(hide);
+  settings.setSidebarCollapsed(hide);
+  if (hide) toast(`Sidebar and top bar hidden — ${comboLabel(CONFIG.shortcuts['topbar.toggle'])} to show them`);
+}
+
 document.addEventListener('keydown', (e) => {
   const SK = CONFIG.shortcuts;
 
@@ -507,9 +503,7 @@ document.addEventListener('keydown', (e) => {
   if (matches(e, SK['topbar.toggle'])) {
     e.preventDefault();
     if (settings.isFocusMode()) { settings.setFocusMode(false); return; }
-    const hide = !settings.isTopbarHidden();
-    settings.setTopbarHidden(hide);
-    if (hide) toast(`Top bar hidden — ${comboLabel(SK['topbar.toggle'])} to show it`);
+    toggleChrome();
   }
 });
 
@@ -517,11 +511,8 @@ document.addEventListener('keydown', (e) => {
 window.addEventListener('app-command', (e) => {
   const SK = CONFIG.shortcuts;
   if (e.detail === 'focus-toggle') toggleFocusMode();
-  else if (e.detail === 'topbar-toggle') {
-    const hide = !settings.isTopbarHidden();
-    settings.setTopbarHidden(hide);
-    if (hide) toast(`Top bar hidden — ${comboLabel(SK['topbar.toggle'])} to show it`);
-  } else if (e.detail === 'mode-toggle') {
+  else if (e.detail === 'topbar-toggle') toggleChrome();
+  else if (e.detail === 'mode-toggle') {
     const n = route.view === 'note' ? store.getNote(route.id) : null;
     if (n) setNoteMode(n.id, store.noteMode(n) === 'edit' ? 'read' : 'edit');
   }

@@ -11,7 +11,7 @@
    Bump CACHE when you add or rename files that must be available on first offline load.
    ========================================================================== */
 
-const CACHE = 'nodus-v10b';
+const CACHE = 'nodus-v10d';
 const SLOW_MS = 4000;
 
 const SHELL = [
@@ -29,7 +29,7 @@ const SHELL = [
   '/js/ui/components.js', '/js/ui/modal.js', '/js/ui/pane.js', '/js/ui/more-menu.js', '/js/ui/note-meta.js', '/js/ui/find.js', '/js/core/vendor.js', '/js/editor/code-block.js', '/js/ui/sidebar.js', '/js/ui/search.js', '/js/ui/topbar.js',
   '/js/views/home.js', '/js/views/inbox.js', '/js/views/journal.js', '/js/views/note.js', '/js/views/notebook.js', '/js/views/notebooks.js', '/js/views/blocklist.js', '/js/views/tag.js', '/js/views/thread.js', '/js/views/threads.js', '/js/views/trash.js', '/js/views/tasks.js', '/js/views/tags.js', '/js/ui/calendar.js', '/js/editor/blocks-extra.js', '/js/ui/popmenu.js', '/js/ui/sidebar-dnd.js', '/js/editor/block-select.js',
   '/js/editor/block-handle.js', '/js/editor/block-ops.js', '/js/editor/blocks.js', '/js/editor/editor.js', '/js/editor/history.js', '/js/editor/focus.js', '/js/editor/due.js', '/js/editor/inline.js', '/js/editor/lists.js', '/js/editor/normalize.js',
-  '/js/editor/paste.js', '/js/editor/selection-toolbar.js', '/js/editor/block-menu.js', '/js/editor/block-rules.js', '/js/editor/thread-block.js', '/js/editor/slash-menu.js', '/js/editor/shortcuts.js', '/js/editor/tag-suggest.js', '/js/editor/tags.js',
+  '/js/editor/paste.js', '/js/editor/selection-toolbar.js', '/js/editor/block-menu.js', '/js/editor/block-rules.js', '/js/editor/thread-block.js', '/js/editor/note-link.js', '/js/editor/note-mention.js', '/js/core/links.js', '/js/ui/related.js', '/js/editor/slash-menu.js', '/js/editor/shortcuts.js', '/js/editor/tag-suggest.js', '/js/editor/tags.js',
   '/css/tasks-tags.css'
 ];
 
