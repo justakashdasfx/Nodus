@@ -40,7 +40,7 @@
 
 /* ---------- Tasks: one row ---------- */
 .tk-rows { display: flex; flex-direction: column; gap: 2px; }
-.tk-row { display: flex; align-items: center; gap: 12px; padding: 10px 8px; border-radius: var(--r-sm); transition: background var(--t-fast); }
+.tk-row { display: flex; align-items: center; gap: 12px; padding: 10px 8px; border-radius: var(--r-md); transition: background var(--t-fast); }
 .tk-row:hover { background: var(--bg-hover); }
 
 .tk-box {                                   /* the round tick */
@@ -123,7 +123,7 @@
 :root {
   --tag-font: var(--font-mono);
   --tag-transform: uppercase;
-  --tag-tracking: 0.04em;
+  --tag-tracking: 0.18em;
   --tagsolid-sat: 32%;                      /* Tags page chips: how colourful the fill is … */
   --tagsolid-light: 38%;                    /* … and how light (white text needs it dark enough) */
     --tagsolid-alpha: 0.3;                    /* Tags page chips: 0 = invisible, 1 = solid */

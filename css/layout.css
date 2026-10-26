@@ -21,7 +21,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 0 var(--card-gap) 0 12px;
+  padding: 0 var(--card-gap) 0 0px;
   transition: padding-left var(--t-med) var(--ease);
 }
 .topbar__spacer { flex: 1; }
@@ -33,16 +33,9 @@
   height: var(--topbar-height);
   display: flex; align-items: center; gap: 4px;
 }
-.topbar__brand {
-  font-family: var(--font-mono); font-weight: 700; white-space: nowrap;
-  background: linear-gradient(90deg, var(--brand-from), var(--brand-to));
 
-  -webkit-background-clip: text; background-clip: text;
-  color: transparent; -webkit-text-fill-color: transparent;
-}
-.topbar__brand::after { content: '/>'; }      /* delete this line to drop the "/>" */
 /* Room for the cluster when the sidebar is collapsed. Raise --topbar-lead-width (tokens.css) if the app name is longer. */
-html.sidebar-collapsed .topbar { padding-left: var(--topbar-lead-width, 120px); }
+html.sidebar-collapsed .topbar { padding-left: var(--topbar-lead-width, 16px); }
 
 /* Note details: "Oct 15, 2026 · 📁 Notebook │ 342 words · 2 min read". With the sidebar open it starts at the card's left edge.
    Phones show these inside the note instead (css/editor.css → .note__bar), so the top bar stays short. */
@@ -126,7 +119,7 @@ body.is-pane-resizing, body.is-pane-resizing * { cursor: col-resize !important; 
   flex: none;
   display: flex;
   flex-direction: column;
-  padding: 0 10px 0px;
+  padding: 8px 10px 0px;
   overflow: hidden;
   transition: margin-left var(--t-med) var(--ease), opacity var(--t-med) var(--ease), visibility var(--t-med);
 }
@@ -137,20 +130,20 @@ body.is-pane-resizing, body.is-pane-resizing * { cursor: col-resize !important; 
 
 /* The Search box (opens the search window). Colours: --search-bg in css/tokens.css */
 .search-box {
-  display: flex; align-items: center; gap: 10px;
-  height: 44px; margin: 4px 0 12px; padding: 0 8px 0 10px;
-  border-radius: var(--search-radius);
-  background-color: var(--search-bg);
+  display: flex; align-items: center; gap: 12px;
+  height: 36px; margin: 4px 0 12px; padding: 0 8px 0 10px;
+border-radius: var(--search-radius);
   color: var(--text-dim); text-align: left;
   cursor: default; flex: none;
   transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
-  border: 1px solid var(--border-400);
 }
-.search-box:hover { background: var(--search-bg-hover); border-color: var(--border-strong); color: var(--text-dim); }
+
+.search-box:hover {  color: var(--nav-active-text); background: var(--nav-hover-bg) }
 .search-box__label { flex: 1; }
 .search-box__hint {
   font: inherit; font-size: var(--fs-tiny); line-height: 1;
-  padding: 3px 5px; border-radius: 0px;
+  background-color: var(--grey-300);
+  padding: 4px 6px; border-radius: 6px;
   color: var(--text-muted);
 }
 
@@ -168,7 +161,7 @@ body.is-pane-resizing, body.is-pane-resizing * { cursor: col-resize !important; 
 .nav-item, .tree-row {
   display: flex;
   align-items: center;
-  height: 36px;
+  height: 32px;
   min-width: 0;
   padding: 0 8px 0 calc(var(--nav-pad-left) - var(--nav-bar-width));   /* the bar's space is part of the left padding… */
   border-left: var(--nav-bar-width) solid transparent;                   /* …so choosing a row never makes its content jump */
@@ -181,8 +174,8 @@ body.is-pane-resizing, body.is-pane-resizing * { cursor: col-resize !important; 
 .tree-row__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 
 /* Colours: nav items */
-.nav-item:hover { background: var(--nav-hover-bg); border-left-color: var(--border-left); color: var(--nav-hover-text); }
-.nav-item.is-active { color: var(--nav-active-text); border-left-color: var(--border-left);
+.nav-item:hover { background: var(--nav-hover-bg); color: var(--nav-hover-text); }
+.nav-item.is-active { color: var(--nav-active-text);background: var(--nav-hover-bg);
   padding-left: calc(var(--nav-pad-left) - var(--nav-bar-width) + var(--nav-active-indent));   /* INDENT of the selected link: --nav-active-indent (0px = off) */
 }
 .nav-item:active { background: var(--nav-pressed-bg); }   /* last, so it shows even on the page you are on */
@@ -191,17 +184,17 @@ body.is-pane-resizing, body.is-pane-resizing * { cursor: col-resize !important; 
 
 /* Colours: Inbox, Journal and notebooks */
 .tree-row--folder { color: var(--folder-text); }
-.tree-row--folder:hover { background: var(--folder-hover-bg); color: var(--folder-hover-text); border-left-color: var(--border-left); }
-.tree-row--folder.is-active { color: var(--folder-active-text); border-left-color: var(--border-left); }
+.tree-row--folder:hover { background: var(--nav-hover-bg); color: var(--nav-hover-text);  }
+.tree-row--folder.is-active {  color: var(--nav-active-text);background: var(--nav-hover-bg) }
 .tree-row--folder:active { background: var(--folder-pressed-bg); }
 
 /* Inbox + Journal (built in) and your own notebooks are two groups */
-.tree-group--system { margin-bottom: var(--tree-group-gap, 2px); }
+.tree-group--system { margin-bottom: var(--tree-group-gap, 1px); }
 
 /* Colours: pinned notes */
 .tree-note { color: var(--note-text); }
-.tree-note:hover { background: var(--note-hover-bg); color: var(--note-hover-text); border-left-color: var(--border-left); }
-.tree-note.is-active { color: var(--note-active-text); border-left-color: var(--border-left); }
+.tree-note:hover {  color: var(--nav-active-text);background: var(--nav-hover-bg) }
+.tree-note.is-active { color: var(--nav-active-text);background: var(--nav-hover-bg) }
 .tree-note:active { background: var(--note-pressed-bg); }
 
 .tree-caret, .tree-add {

@@ -31,28 +31,32 @@ export function viewSwitch(style, { page = '', id = '' } = {}) {
   return `<div class="seg seg--plain seg--view" role="group" aria-label="View style">${btn('gallery', 'notebooks', 'Gallery')}${btn('list', 'bullets', 'List')}</div>`;
 }
 
-const snippetOf = (n) => (n.blocks || []).slice(1).map(b => b.text).filter(Boolean).join(' ').slice(0, 160);
+export const caretHtml = `<span class="lrow__caret">${icon('caret', 16)}</span>`;
+export const countText = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
-/** The List view of notes: title · a line of text · notebook and date. */
+/** The List view of notes: note icon · full name ............ notebook · date. */
 export function noteList(notes) {
   return `<div class="list">${notes.map((n) => {
     const folder = n.folderId ? store.getFolder(n.folderId) : null;
-    return `<a class="row" href="#/note/${n.id}">
-      <span class="row__title">${escapeHtml(n.title || 'Untitled')}</span>
-      <span class="row__text">${escapeHtml(snippetOf(n))}</span>
-      <span class="row__meta">${folder ? `<span class="row__where">${icon('folder', 12)}${escapeHtml(folder.name)}</span>` : ''}<span>${formatDate(n.updatedAt)}</span></span>
+    return `<a class="lrow lrow--note" href="#/note/${n.id}">
+      <span class="lrow__lead">${icon('note', 16)}</span>
+      <span class="lrow__main"><span class="lrow__title">${escapeHtml(n.title || 'Untitled')}</span></span>
+      <span class="lrow__meta">${folder ? `<span class="row__where">${icon('folder', 12)}${escapeHtml(folder.name)}</span>` : ''}<span>${formatDate(n.updatedAt)}</span></span>
     </a>`;
   }).join('')}</div>`;
 }
 
-/** The List view of notebooks. */
+/** The List view of notebooks (Linear-style): icon tile · name / note count / description ............ caret. */
 export function notebookList(folders) {
   return `<div class="list">${folders.map((f) => {
     const count = store.noteCount(f.id);
-    return `<a class="row" href="#/notebook/${f.id}">
-      <span class="row__title row__title--icon">${icon('folder', 16)}${escapeHtml(f.name)}</span>
-      <span class="row__text">${escapeHtml(f.description || '')}</span>
-      <span class="row__meta"><span>${count} ${count === 1 ? 'note' : 'notes'}</span></span>
+    return `<a class="lrow lrow--notebook" href="#/notebook/${f.id}">
+      <span class="lrow__tile">${icon('folder', 22)}</span>
+      <span class="lrow__main">
+        <span class="lrow__title">${escapeHtml(f.name)}</span>
+        <span class="lrow__sub">${icon('note', 14)}${countText(count, 'note', 'notes')}</span>
+      </span>
+      ${caretHtml}
     </a>`;
   }).join('')}</div>`;
 }
@@ -82,14 +86,20 @@ export function noteCard(note) {
   </a>`;
 }
 
+/** Notebook gallery card: description + latest notes on top, icon · name · count · date below. Same 210px as a note card. */
 export function notebookCard(folder) {
-  const count = store.noteCount(folder.id);
+  const notes = store.notesInFolder(folder.id);
+  const latest = [...notes].sort((x, y) => y.updatedAt - x.updatedAt);
+  const peek = latest.slice(0, 4).map(n => `<span class="g-card__peek-note">${icon('note', 12)}<span>${escapeHtml(n.title || 'Untitled')}</span></span>`).join('');
+  const updated = latest[0] ? ` · ${formatDate(latest[0].updatedAt)}` : '';
   return `<a class="g-card g-card--notebook" href="#/notebook/${folder.id}">
-    <div class="g-card__glyph">${icon('folder', 28)}</div>
+    <div class="g-card__peek">
+      ${folder.description ? `<span class="g-card__peek-desc">${escapeHtml(folder.description)}</span>` : ''}
+      ${peek || (folder.description ? '' : '<span class="g-card__empty">No notes yet</span>')}
+    </div>
     <div class="g-card__meta">
-      <span class="g-card__title">${escapeHtml(folder.name)}</span>
-      ${folder.description ? `<span class="g-card__desc">${escapeHtml(folder.description)}</span>` : ''}
-      <span class="g-card__sub"><span>${count} ${count === 1 ? 'note' : 'notes'}</span></span>
+      <span class="g-card__titlerow">${icon('folder', 16)}<span class="g-card__title">${escapeHtml(folder.name)}</span></span>
+      <span class="g-card__sub"><span>${countText(notes.length, 'note', 'notes')}${updated}</span></span>
     </div>
   </a>`;
 }

@@ -62,7 +62,6 @@ export function renderSidebar(route) {
 
   return `
     <div class="sidebar__head"></div>
-    ${searchBox()}
     <nav class="sidebar__nav" aria-label="Main">
       ${navItem({ href: '#/home', iconName: 'home', label: 'Home', active: route.view === 'home' })}
       ${navItem({ href: '#/notebooks', iconName: 'notebooks', label: 'Notebooks', active: route.view === 'notebooks' })}
@@ -70,6 +69,7 @@ export function renderSidebar(route) {
       ${navItem({ href: '#/threads', iconName: 'threads', label: 'Threads', active: route.view === 'threads' || route.view === 'thread' })}
       ${navItem({ href: '#/tasks', iconName: 'tasks', label: 'Tasks', active: route.view === 'tasks', count: openCount() })}
     </nav>
+    ${searchBox()}
     ${pinned.length ? `<div class="sidebar__pinned">
       <button type="button" class="sidebar__label sidebar__label--toggle" data-action="pinned-toggle" aria-expanded="${pinnedOpen}"><span>Pinned</span><span class="sidebar__count">${pinned.length}</span></button>
       ${pinnedOpen ? `<div class="sidebar__pinned-list">${pinned.map(n => noteRow(n, route.id, true)).join('')}</div>` : ''}

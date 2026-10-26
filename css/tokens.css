@@ -48,10 +48,10 @@
    --r-sm2: 8px;
   --r-sm: 6px;                              /* buttons, rows, inputs, menu items */
   --r-md: 12px;                             /* menus, popovers, toolbar, search window */
-  --sidebar-radius: 0 8px 8px 0px;   /* sidebar rows only: rounded top-left and bottom-left */
+  --sidebar-radius: 8px;   /* sidebar rows only: rounded top-left and bottom-left */
   --r-callout: 0 16px 16px 0px;   /* callout  only: rounded top-right and bottom-right */
   --r-lg: 16px;                             /* gallery cards, dialogs */
-  --r-card: 16px;                           /* the big writing card */
+  --r-card: 8px;                           /* the big writing card */
   --r-search: 8px;                          /* the sidebar's search box */
   --r-toggle: 8px;                          /* Write | Read toggle, Gallery | List switch */
   --r-pill: 999px;                          /* tag pills */
@@ -69,14 +69,15 @@
 --card-shadow: 0 0 0 2px #141414;
 
   /* ---- 5. LAYOUT ------------------------------------------------------ */
-  --sidebar-width: 280px;
-  --topbar-height: 48px;
+  --sidebar-width: 256px;
+  --topbar-height: 44px;
   --card-gap: 12px;                         /* space around the card */
   --editor-width: 656px;                    /* the writing column */
   --editor-pad-top: 40px;                   /* space above the first line */
   --editor-pad-bottom: 40vh;                /* lets the last line scroll to mid-screen */
-  --view-pad: 40px;                         /* padding inside the card, left and right */
-  --view-max-width: 1120px;                 /* widest a gallery / list page gets */
+  --view-pad: 44px;                         /* NOTE page side padding (the six-dot handle needs it) — do not set to 0 */
+  --view-gutter: 24px;                      /* list/gallery pages: breathing room when the card is narrower than the content */
+  --view-max-width: 784px;                  /* content width of every gallery / list page (desktop) */
   --handle-offset: 50px;                    /* how far left of the text the six-dot handle sits */
   --rail-width: 120px;                      /* tag column in the right margin */
   --rail-gap: 40px;                         /* space between the text and that column */
@@ -100,13 +101,13 @@
   --note-active-indent: 0px;
   --sidebar-hover-radius: 8px;
   /* ---- 7. GALLERY ------------------------------------------------------
-     Card height = preview + info + 2px of outline.  192 + 64 + 2 = 258px, as in Figma. */
-  --gallery-min: 300px;                     /* narrowest a card gets (more columns appear as the page widens) */
-  --gallery-gap: 16px;
-  --gallery-preview-h: 192px;               /* the page glimpse */
+     Card height = preview + info + 2px of outline.  144 + 64 + 2 = 210px. Width: 3 cards + 2 gaps = 3×256 + 2×8 = 784px. */
+  --gallery-min: 256px;                     /* narrowest a card gets (more columns appear as the page widens) */
+  --gallery-gap: 8px;
+  --gallery-preview-h: 144px;               /* the page glimpse */
   --gallery-meta-h: 64px;                   /* the info strip under it (name + notebook · date) */
-  --gallery-preview-fs: 10px;               /* text size inside the glimpse */
-  --gallery-title-fs: 15px;                 /* note name */
+  --gallery-preview-fs: 13px;               /* text size inside the glimpse */
+  --gallery-title-fs: 14px;                 /* note name */
   --gallery-sub-fs: 13px;                   /* notebook and date */
 
   /* ---- 8. MENUS & TOOLBAR (slash "/" menu, six-dot menu, selection toolbar) ---
@@ -343,7 +344,7 @@
   --row-active-bg:   var(--bg-hover);   --row-active-text: var(--text);
 }
 :root {
-  --nav-text: var(--row-text);               --nav-hover-bg: var(--row-hover-bg);       --nav-hover-text: var(--row-hover-text);
+  --nav-text: var(--row-text);               --nav-hover-bg: var(--grey-200);       --nav-hover-text: var(--row-hover-text);
   --nav-pressed-bg: var(--row-pressed-bg);   --nav-active-bg: var(--row-active-bg);     --nav-active-text: var(--row-active-text);
   --folder-text: var(--row-text);            --folder-hover-bg: var(--row-hover-bg);    --folder-hover-text: var(--row-hover-text);
   --folder-pressed-bg: var(--row-pressed-bg);--folder-active-bg: var(--row-active-bg);  --folder-active-text: var(--row-active-text);

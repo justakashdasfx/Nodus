@@ -2,12 +2,13 @@
 import * as store from '../core/store.js';
 import { escapeHtml, tagHue } from '../core/utils.js';
 import { matchBlocks, ruleCount } from '../core/threads.js';
-import { button, viewHead, emptyState } from '../ui/components.js';
+import { icon } from '../core/icons.js';
+import { button, viewHead, emptyState, caretHtml, countText } from '../ui/components.js';
 
 /** Small readable summary of a thread's rules: coloured #tags, then words and keywords. */
 export function rulesSummary(rules) {
   const parts = [
-    ...rules.tags.map(t => `<span class="rule-chip rule-chip--tag" style="--tag-h:${tagHue(t)}">${escapeHtml(t)}</span>`),
+    ...rules.tags.map(t => `<span class="rule-chip rule-chip--tag" style="--tag-h:${tagHue(t)}">#${escapeHtml(t)}</span>`),
     ...rules.words.map(w => `<span class="rule-chip">${escapeHtml(w)}</span>`),
     ...rules.keywords.map(k => `<span class="rule-chip rule-chip--keyword">“${escapeHtml(k)}”</span>`),
   ];
@@ -30,10 +31,14 @@ export function render() {
   const rows = list.map((t) => {
     const count = t.live ? matchBlocks(notes, t.rules).length : (t.frozen || []).length;
     const state = t.live ? '' : '<span class="badge">Paused</span>';
-    return `<a class="row thread-row" href="#/thread/${t.id}">
-      <span class="row__title">${escapeHtml(t.title)}</span>
-      <span class="thread-row__rules">${ruleCount(t.rules) ? rulesSummary(t.rules) : '<span class="row__text">No rules yet</span>'}</span>
-      <span class="thread-row__meta">${state}<span class="row__text">${count} ${count === 1 ? 'block' : 'blocks'}</span></span>
+    return `<a class="lrow lrow--thread" href="#/thread/${t.id}">
+      <span class="lrow__tile">${icon('threads', 22)}</span>
+      <span class="lrow__main">
+        <span class="lrow__title">${escapeHtml(t.title)}</span>
+        <span class="lrow__rules">${ruleCount(t.rules) ? rulesSummary(t.rules) : '<span class="lrow__desc">No rules yet</span>'}</span>
+      </span>
+      <span class="lrow__meta">${state}<span>${countText(count, 'block', 'blocks')}</span></span>
+      ${caretHtml}
     </a>`;
   }).join('');
   return { html: `<div class="view">${viewHead({ title: 'Threads', subtitle: `${list.length} ${list.length === 1 ? 'thread' : 'threads'}`, actions: add })}<div class="list">${rows}</div></div>` };

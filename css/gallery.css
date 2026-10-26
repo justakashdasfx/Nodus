@@ -2,7 +2,7 @@
    GALLERY & LISTS — page headers, Notion-style cards, journal/trash rows.
    ========================================================================== */
 
-.view { max-width: var(--view-max-width); margin: 0 auto; padding: 36px var(--view-pad) 64px; }
+.view { max-width: calc(var(--view-max-width) + 2 * var(--view-gutter)); margin: 0 auto; padding: 36px var(--view-gutter) 64px; }   /* content = 784px */
 
 .view-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 28px; flex-wrap: wrap;}
 .view-head__title { font-size: var(--fs-title); font-weight: 600; letter-spacing: -0.015em; color: var(--text-dim); }
@@ -56,11 +56,37 @@
 .g-card__sub { display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: var(--gallery-sub-fs); min-width: 0; }
 .g-card__folder { display: inline-flex; align-items: center; gap: 5px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
-/* Notebook card: icon on top, name + count below */
-.g-card--notebook .g-card__meta { padding-block: 12px; }   /* notebook cards can carry a description, so they may grow past the strip height */
-.g-card--notebook .g-card__glyph { height: 110px; display: grid; place-items: center; color: var(--text-muted); }
+/* Notebook card: same 210px as a note card. Top = description + latest notes (fades out), bottom = icon, name, count. */
+.g-card__peek {
+  height: var(--gallery-preview-h); padding: 16px 16px 0; overflow: hidden; display: flex; flex-direction: column; gap: 6px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent);
+          mask-image: linear-gradient(to bottom, #000 55%, transparent);
+}
+.g-card__peek-desc { color: var(--text-dim); font-size: var(--gallery-preview-fs); line-height: 1.45; margin-bottom: 4px;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.g-card__peek-note { display: flex; align-items: center; gap: 8px; min-width: 0; color: var(--text-muted); font-size: var(--gallery-preview-fs); }
+.g-card__peek-note span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g-card__titlerow { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.g-card__titlerow .icon { flex: none; color: var(--text-muted); }
 
-/* ---------- List rows (Journal, Trash) ---------- */
+/* ---------- Rich list rows: notes, notebooks, threads, journal (js/ui/components.js) ----------
+   [lead icon or tile] [title / lines under it] ............ [meta] [caret] */
+.lrow { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 10px 12px; border-radius: var(--r-md); color: inherit; transition: background var(--t-fast); }
+.lrow:hover { background: var(--bg-hover); }
+.lrow__lead { flex: none; display: grid; place-items: center; color: var(--text-muted); }
+.lrow__tile { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: var(--r-md); background: var(--bg-raised); color: var(--text-muted); }   /* later: custom notebook icon goes inside */
+.lrow__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.lrow__title { color: var(--text); font-weight: 500; overflow-wrap: anywhere; }   /* full name, wraps instead of "…" */
+.lrow__sub { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: var(--fs-small); }
+.lrow__desc { color: var(--text-muted); font-size: var(--fs-small); line-height: 1.45;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.lrow__rules { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+.lrow__meta { flex: none; display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: var(--fs-small); white-space: nowrap; }
+.lrow__caret { flex: none; display: grid; color: var(--text-faint); transition: color var(--t-fast); }
+.lrow:hover .lrow__caret { color: var(--text-muted); }
+@media (max-width: 760px) { .lrow--note .lrow__meta .row__where { display: none; } }
+
+/* ---------- List rows (Trash, Tasks) ---------- */
 
 .list { display: flex; flex-direction: column; }
 
