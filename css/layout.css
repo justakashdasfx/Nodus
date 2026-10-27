@@ -130,7 +130,7 @@ body.is-pane-resizing, body.is-pane-resizing * { cursor: col-resize !important; 
   height: var(--topbar-height); flex: none;
   display: flex; align-items: center; gap: 10px;
   padding: 0 8px 0 var(--nav-pad-left);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 .sidebar-logo { width: 24px; height: 24px; flex: none; display: block; border-radius: 6px;}
 .sidebar-brand {
@@ -141,9 +141,9 @@ body.is-pane-resizing, body.is-pane-resizing * { cursor: col-resize !important; 
 /* The Search box (opens the search window). Colours: --search-bg in css/tokens.css */
 .search-box {
   display: flex; align-items: center; gap: 12px;
-  height: 36px; margin: 4px 0 12px; padding: 0 8px 0 10px;
+  height: 32px; margin: 0px 0 12px; padding: 0 8px 0 10px;
 border-radius: var(--search-radius);
-  color: var(--text-dim); text-align: left;
+  color: var( --row-text); text-align: left;
   cursor: default; flex: none;
   transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
 }

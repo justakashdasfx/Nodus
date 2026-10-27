@@ -22,7 +22,7 @@ const navItem = ({ href, iconName, label, active, count }) =>
 /** A note in Pinned: a link, plus an Unpin button that shows on hover. */
 const noteRow = (note, activeId, unpin = false) =>
   `<div class="tree-row tree-note ${note.id === activeId ? 'is-active' : ''}">
-    <a class="tree-link" draggable="true" href="#/note/${note.id}">${icon('note', ICON)}<span class="tree-row__label">${escapeHtml(note.title || 'Untitled')}</span></a>
+    <a class="tree-link" draggable="true" href="#/${note.type === 'map' ? 'map' : 'note'}/${note.id}">${icon(note.type === 'map' ? 'mindmap' : 'note', ICON)}<span class="tree-row__label">${escapeHtml(note.title || (note.type === 'map' ? 'Untitled map' : 'Untitled'))}</span></a>
     ${unpin ? `<button type="button" class="tree-pin" data-action="note-pin" data-id="${note.id}" aria-label="Unpin" title="Unpin">${icon('unpin', 14)}</button>` : ''}
   </div>`;
 
@@ -62,15 +62,16 @@ export function renderSidebar(route) {
 
 return `
     <div class="sidebar__head">
-      <img class="sidebar-logo" src="/icons-ui/icon.svg" width="24" height="24" alt="">
-      <span class="sidebar-brand">Nodus</span>
-    </div>
+  <img src="/icons-ui/icon.svg" width="28" height="28" alt="" style="flex-shrink:0">
+  <span class="sidebar-brand">Nodus</span>
+</div>
     <nav class="sidebar__nav" aria-label="Main">
       ${navItem({ href: '#/home', iconName: 'home', label: 'Home', active: route.view === 'home' })}
       ${navItem({ href: '#/notebooks', iconName: 'notebooks', label: 'Notebooks', active: route.view === 'notebooks' })}
       ${navItem({ href: '#/tags', iconName: 'tag', label: 'Tags', active: route.view === 'tags' || route.view === 'tag', count: store.tagCounts().size })}
       ${navItem({ href: '#/threads', iconName: 'threads', label: 'Threads', active: route.view === 'threads' || route.view === 'thread' })}
       ${navItem({ href: '#/tasks', iconName: 'tasks', label: 'Tasks', active: route.view === 'tasks', count: openCount() })}
+      ${navItem({ href: '#/maps', iconName: 'mindmap', label: 'Mind maps', active: route.view === 'maps' || route.view === 'map', count: store.maps().length })}
     </nav>
     ${searchBox()}
     ${pinned.length ? `<div class="sidebar__pinned">

@@ -17,6 +17,7 @@ import { getTheme } from '../core/settings.js';
 import { registerActions } from '../core/actions.js';
 import { escapeHtml } from '../core/utils.js';
 import { noteState } from './note-meta.js';
+import { THEMES, LINES, LAYOUTS } from '../maps/config.js';
 
 let menu = null;
 let anchor = null;
@@ -41,14 +42,21 @@ const choiceRow = (label, buttons) =>
 
 function moreHtml() {
   const route = getRoute();
-  const note = route.view === 'note' ? store.getNote(route.id) : null;
+  const note = route.view === 'note' || route.view === 'map' ? store.getNote(route.id) : null;
+  const isMap = note?.type === 'map';
   const theme = getTheme();
   const parts = [choiceRow('Theme', [
     { text: 'Light', on: theme === 'light', action: 'theme-set', data: { theme: 'light' } },
     { text: 'Dark', on: theme === 'dark', action: 'theme-set', data: { theme: 'dark' } },
   ])];
 
-  if (note) {
+  if (isMap) {   // how this map looks (more of these move to the map's own side bar later)
+    const m = note.map || {};
+    const row = (label, key, list) => choiceRow(label, list.map(([value, text]) => ({ text, on: (m[key] || list[0][0]) === value, action: 'map-set', data: { id: note.id, key, value } })));
+    parts.push(row('Map theme', 'theme', THEMES), row('Lines', 'line', LINES), row('Layout', 'layout', LAYOUTS));
+  }
+
+  if (note && !isMap) {
     const font = note.font === 'mono' || note.font === 'serif' ? note.font : 'sans';
     parts.push(choiceRow('Font', ['sans', 'mono', 'serif'].map(f => ({
       text: f[0].toUpperCase() + f.slice(1), on: font === f, action: 'note-font', data: { id: note.id, font: f },
@@ -58,13 +66,13 @@ function moreHtml() {
   if (note && !note.deletedAt) parts.push('<div class="block-menu__sep"></div>', item({ action: 'note-pin', ic: 'pin', label: note.pinned ? 'Unpin from sidebar' : 'Pin to sidebar', data: { id: note.id } }));
   parts.push('<div class="block-menu__sep"></div>', item({ action: 'download-all', ic: 'download', label: 'Download all' }));
   if (note) {
-    parts.push(
+    if (!isMap) parts.push(
       item({ action: 'download-text', ic: 'fileDown', label: 'Download as text' }),
       item({ action: 'copy-markdown', ic: 'copy', label: 'Copy as Markdown' }),
       item({ action: 'export-markdown', ic: 'filemd', label: 'Export as Markdown (.md)' }),
       ...(note.deletedAt ? [] : [item({ action: 'template-save', ic: 'copy', label: 'Save as template', data: { id: note.id } })]),
-      '<div class="block-menu__sep"></div>',
     );
+    parts.push('<div class="block-menu__sep"></div>');
     const { folder, folderTrashed } = noteState(note);
     if (note.deletedAt) {
       parts.push(

@@ -5,7 +5,7 @@ import { button, viewHead, gallery, noteCard, noteList, viewSwitch, emptyState }
 
 export function render() {
   const notes = store.recentNotes();
-  const pinned = store.pinnedNotes();
+  const pinned = store.pinnedNotes().filter(n => n.type !== 'map');   // pinned maps live in the sidebar
   const style = settings.getViewStyle('home');
   const show = (list) => (style === 'list' ? noteList(list) : gallery(list.map(noteCard)));
   const actions = viewSwitch(style, { page: 'home' })

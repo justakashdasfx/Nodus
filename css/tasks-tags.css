@@ -77,42 +77,52 @@
 .tk-row:hover .tk-due--add, .tk-due--add:focus-visible { opacity: 1; }
 @media (hover: none) { .tk-due--add { opacity: 1; } }                                                                  /* touch screens have no hover */
 
-/* ---------- Tags: the bar (filter box + sort) ---------- */
-.tg-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 4px 0 24px; }
+/* ---------- Tags page: sleek + minimal (js/views/tags.js) ---------- */
+.tg { --tg-chip-h: 30px; --tg-dot: 6px; }
+
+.tg-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin: 8px 0 32px; }
 .tg-search {
-  display: flex; align-items: center; gap: 8px; flex: 1 1 220px; max-width: 320px; height: 34px; padding: 0 12px; background: var(--grey-300);
-  border: 1px solid var(--grey-600); border-radius: var(--r-sm2); color: var(--text-muted);
+  display: flex; align-items: center; gap: 8px; flex: 1 1 220px; max-width: 280px; height: 34px; padding: 0 12px;
+  background: transparent; border: 1px solid var(--border); border-radius: 999px; color: var(--text-faint);
+  transition: border-color var(--t-fast), color var(--t-fast);
 }
-.tg-search:focus-within { border-color: var(--accent); background: var(--grey-200); }
+.tg-search:hover { border-color: var(--grey-600); }
+.tg-search:focus-within { border-color: var(--grey-800); color: var(--text-muted); }
 .tg-search__input { flex: 1; min-width: 0; height: 100%; border: 0; outline: none; background: transparent; color: var(--text); font: inherit; font-size: var(--fs-small); }
 .tg-search__input::placeholder { color: var(--text-faint); }
-.tg-sort { display: inline-flex; gap: 2px; padding: 3px; border-radius: var(--r-toggle); background: var(--toggle-bg); }
-.tg-sort__btn { height: 26px; padding: 0 12px; border-radius: var(--r-sm); color: var(--text-muted); font-size: var(--fs-small); transition: background var(--t-fast), color var(--t-fast); }
-.tg-sort__btn:hover { color: var(--text); }
-.tg-sort__btn[aria-pressed="true"] { background: var(--bg-pressed); color: var(--text); }
+.tg-sort { display: inline-flex; gap: 18px; }
+.tg-sort__btn { position: relative; height: 28px; padding: 0; color: var(--text-faint); font-size: var(--fs-small); transition: color var(--t-fast); }
+.tg-sort__btn:hover { color: var(--text-muted); }
+.tg-sort__btn[aria-pressed="true"] { color: var(--text); }
+.tg-sort__btn[aria-pressed="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: currentColor; }
 
-/* ---------- Tags: the two lists (the sort switch sets data-sort on .tg) ---------- */
 .tg[data-sort="az"]   .tg-used { display: none; }
 .tg[data-sort="used"] .tg-az   { display: none; }
 
-.tg-group { display: grid; grid-template-columns: 44px 1fr; gap: 0 12px; padding: 20px 0; border-top: 1px solid var(--grey-200); }
+.tg-group { margin-top: 28px; }
+.tg-group:first-child { margin-top: 0; }
 .tg-group[hidden], .tg-chip[hidden], .tg-none[hidden] { display: none; }
-.tg-letter { margin: 4px 0 0; font-size: 20px; font-weight: 600; line-height: 1.1; color: var(--text-faint); }
+.tg-letter { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; font-size: var(--fs-tiny); font-weight: 600; line-height: 1; letter-spacing: .14em; color: var(--text-faint); }
+.tg-letter::after { content: ""; flex: 1; height: 1px; background: var(--border); opacity: .6; }
 .tg-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.tg-used .tg-chips { padding-top: 16px; border-top: 1px solid var(--border); }
 .tg-none { padding: 28px 0; color: var(--text-muted); }
 
-/* ---------- Tags: one chip (white text on the tag's own colour) ---------- */
 .tg-chip {
   --tag-h: 210;
-  display: inline-flex; align-items: center; height: 28px; padding: 8px;
-  border: 0; border-radius: var(--r-sm2);
-  background: hsl(var(--tag-h) var(--tagsolid-sat) var(--tagsolid-light) / var(--tagsolid-alpha));
-  color: var(--grey-1200); font-size: var(--fs-tiny); font-weight: 500; cursor: pointer;
-  transition: filter var(--t-fast), transform var(--t-fast);
+  display: inline-flex; align-items: center; gap: 8px; height: var(--tg-chip-h); padding: 0 12px 0 11px;
+  background: transparent; border: 1px solid var(--border); border-radius: 999px;
+  color: var(--text-dim); font-size: var(--fs-small); font-weight: 450; cursor: pointer;
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast), transform var(--t-fast);
 }
-.tg-chip:hover { filter: brightness(1.15); }
+.tg-chip::before { content: ""; flex: none; width: var(--tg-dot); height: var(--tg-dot); border-radius: 50%; background: hsl(var(--tag-h) 58% 62%); }
+.tg-chip__name { font-family: inherit; text-transform: none; letter-spacing: 0; line-height: 1; }
+.tg-chip__count { font-size: var(--fs-tiny); color: var(--text-faint); font-variant-numeric: tabular-nums; line-height: 1; }
+.tg-chip:hover { color: var(--text); border-color: hsl(var(--tag-h) 40% 55% / .55); background: hsl(var(--tag-h) 45% 55% / .10); }
 .tg-chip:active { transform: scale(0.97); }
+.tg-chip:focus-visible { outline: 2px solid hsl(var(--tag-h) 50% 60% / .7); outline-offset: 2px; }
+
+/* ---------- Tags: one chip (white text on the tag's own colour) ---------- */
+
 
 
 /* ==========================================================================
@@ -130,7 +140,7 @@
 }
 .tag-chip__label, .tag-suggest__name, .rule-chip--tag,
 .pane__title[style*="--tag-h"], .view-head__title[style*="--tag-h"],
-.tg-chip__name, .tr-chip--tag .tr-chip__label, .tr-pick__name {
+.tr-chip--tag .tr-chip__label, .tr-pick__name {
   font-family: var(--tag-font); text-transform: var(--tag-transform); letter-spacing: var(--tag-tracking);
 }
 

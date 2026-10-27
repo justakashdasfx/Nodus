@@ -1,0 +1,269 @@
+/* ==========================================================================
+   TASKS AND TAGS PAGES — js/views/tasks.js (.tk-*) and js/views/tags.js (.tg-*)
+   Load this file LAST in index.html (after editor.css). Colours are the same tokens as the rest of the app:
+   due colours --due-…, tag colours --tag-sat / --tag-light in css/tokens.css.
+   ========================================================================== */
+
+/* ---------- Filter chips (shared look) ---------- */
+.tk-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 28px; }
+.tk-chip {
+  display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px;
+  border: 1px solid var(--border); border-radius: var(--r-pill);
+  color: var(--text-muted); font-size: var(--fs-small);
+  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
+}
+.tk-chip:hover { background: var(--bg-hover); color: var(--text); }
+.tk-chip[aria-pressed="true"] { background: var(--bg-pressed); border-color: var(--border-strong); color: var(--text); }
+.tk-chip__n { color: var(--text-faint); font-variant-numeric: tabular-nums; }
+.tk-chip[aria-pressed="true"] .tk-chip__n { color: var(--text-muted); }
+.tk-chip[data-tone="overdue"]::before, .tk-chip[data-tone="today"]::before { content: ''; width: 6px; height: 6px; border-radius: 50%; margin-right: -2px; }
+.tk-chip[data-tone="overdue"]::before { background: var(--due-overdue); }
+.tk-chip[data-tone="today"]::before { background: var(--due-today); }
+
+/* ---------- Tasks: filter (the chips set data-filter on .tk) ---------- */
+.tk[data-filter="overdue"]  .tk-group:not([data-group="overdue"]),
+.tk[data-filter="today"]    .tk-group:not([data-group="today"]),
+.tk[data-filter="upcoming"] .tk-group:not([data-group="upcoming"]),
+.tk[data-filter="nodate"]   .tk-group:not([data-group="nodate"]),
+.tk[data-filter="done"]     .tk-group:not([data-group="done"]) { display: none; }
+
+/* ---------- Tasks: groups ---------- */
+.tk-group + .tk-group { margin-top: 28px; }
+.tk-label { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; padding: 0 8px; font-size: var(--fs-small); font-weight: 500; color: var(--text-muted); }
+.tk-label::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--text-faint); }
+.tk-group[data-group="overdue"]  .tk-label::before { background: var(--due-overdue); }
+.tk-group[data-group="today"]    .tk-label::before { background: var(--due-today); }
+.tk-group[data-group="upcoming"] .tk-label::before { background: var(--due-soon); }
+.tk-group[data-group="done"]     .tk-label::before { background: var(--status-ok); }
+.tk-label__n { color: var(--text-faint); font-variant-numeric: tabular-nums; }
+.tk-label__note { color: var(--text-faint); font-weight: 400; }
+
+/* ---------- Tasks: one row ---------- */
+.tk-rows { display: flex; flex-direction: column; gap: 2px; }
+.tk-row { display: flex; align-items: center; gap: 12px; padding: 10px 8px; border-radius: var(--r-md); transition: background var(--t-fast); }
+.tk-row:hover { background: var(--bg-hover); }
+
+.tk-box {                                   /* the round tick */
+  flex: none; width: var(--task-box-size); height: var(--task-box-size); display: grid; place-items: center;
+  border: 1.5px solid var(--border-strong); border-radius: 50%; color: transparent;
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+}
+.tk-box:hover, .tk-box:focus-visible { border-color: var(--text-muted); color: var(--text-faint); outline: none; }
+.is-done .tk-box { background: var(--accent); border-color: var(--accent); color: var(--bg-card); }
+
+.tk-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.tk-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+.tk-main:hover .tk-text { text-decoration: underline; text-underline-offset: 3px; }
+.is-done .tk-text { color: var(--text-muted); text-decoration: line-through; }
+
+.tk-sub { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: var(--fs-small); color: var(--text-muted); }
+.tk-note { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tk-dotsep { color: var(--text-faint); }
+.tk-place { flex: none; max-width: 40%; display: inline-flex; align-items: center; gap: 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.tk-place .icon { flex: none; opacity: 0.8; }
+
+.tk-due {                                   /* the date pill (a button: click to change the date). Its tint follows its text colour */
+  flex: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 9px;
+  border-radius: var(--r-pill); font-size: var(--fs-small); white-space: nowrap;
+  color: var(--due-color); background: color-mix(in srgb, currentColor 12%, transparent);
+}
+.tk-due:hover { background: color-mix(in srgb, currentColor 22%, transparent); }
+.tk-due[data-state="soon"]    { color: var(--due-soon); }
+.tk-due[data-state="today"]   { color: var(--due-today); }
+.tk-due[data-state="overdue"] { color: var(--due-overdue); }
+.is-done .tk-due { color: var(--due-color); opacity: 0.7; }
+.tk-due--add { color: var(--text-faint); background: transparent; border: 1px dashed var(--border-strong); opacity: 0; }   /* "Add date": only shows when you hover the row */
+.tk-due--add:hover { color: var(--text); background: var(--bg-pressed); }
+.tk-row:hover .tk-due--add, .tk-due--add:focus-visible { opacity: 1; }
+@media (hover: none) { .tk-due--add { opacity: 1; } }                                                                  /* touch screens have no hover */
+
+/* ---------- Tags: the bar (filter box + sort) ---------- */
+.tg-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 4px 0 24px; }
+.tg-search {
+  display: flex; align-items: center; gap: 8px; flex: 1 1 220px; max-width: 320px; height: 34px; padding: 0 12px; background: var(--grey-300);
+  border: 1px solid var(--grey-600); border-radius: var(--r-sm2); color: var(--text-muted);
+}
+.tg-search:focus-within { border-color: var(--accent); background: var(--grey-200); }
+.tg-search__input { flex: 1; min-width: 0; height: 100%; border: 0; outline: none; background: transparent; color: var(--text); font: inherit; font-size: var(--fs-small); }
+.tg-search__input::placeholder { color: var(--text-faint); }
+.tg-sort { display: inline-flex; gap: 2px; padding: 3px; border-radius: var(--r-toggle); background: var(--toggle-bg); }
+.tg-sort__btn { height: 26px; padding: 0 12px; border-radius: var(--r-sm); color: var(--text-muted); font-size: var(--fs-small); transition: background var(--t-fast), color var(--t-fast); }
+.tg-sort__btn:hover { color: var(--text); }
+.tg-sort__btn[aria-pressed="true"] { background: var(--bg-pressed); color: var(--text); }
+
+/* ---------- Tags: the two lists (the sort switch sets data-sort on .tg) ---------- */
+.tg[data-sort="az"]   .tg-used { display: none; }
+.tg[data-sort="used"] .tg-az   { display: none; }
+
+.tg-group { display: grid; grid-template-columns: 44px 1fr; gap: 0 12px; padding: 20px 0; border-top: 1px solid var(--grey-200); }
+.tg-group[hidden], .tg-chip[hidden], .tg-none[hidden] { display: none; }
+.tg-letter { margin: 4px 0 0; font-size: 20px; font-weight: 600; line-height: 1.1; color: var(--text-faint); }
+.tg-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.tg-used .tg-chips { padding-top: 16px; border-top: 1px solid var(--border); }
+.tg-none { padding: 28px 0; color: var(--text-muted); }
+
+/* ---------- Tags: one chip (white text on the tag's own colour) ---------- */
+.tg-chip {
+  --tag-h: 210;
+  display: inline-flex; align-items: center; height: 28px; padding: 8px;
+  border: 0; border-radius: var(--r-sm2);
+  background: hsl(var(--tag-h) var(--tagsolid-sat) var(--tagsolid-light) / var(--tagsolid-alpha));
+  color: var(--grey-1200); font-size: var(--fs-tiny); font-weight: 500; cursor: pointer;
+  transition: filter var(--t-fast), transform var(--t-fast);
+}
+.tg-chip:hover { filter: brightness(1.15); }
+.tg-chip:active { transform: scale(0.97); }
+
+
+/* ==========================================================================
+   TAG LOOK — one place for how a tag NAME is written everywhere (writing page margin, picker, Tags page, side pane, threads).
+   The # is not shown any more; the name is ALL CAPS in the mono font.
+   To go back to normal writing: --tag-transform: none and --tag-font: inherit.
+   ========================================================================== */
+:root {
+  --tag-font: var(--font-mono);
+  --tag-transform: uppercase;
+  --tag-tracking: 0.18em;
+  --tagsolid-sat: 32%;                      /* Tags page chips: how colourful the fill is … */
+  --tagsolid-light: 38%;                    /* … and how light (white text needs it dark enough) */
+    --tagsolid-alpha: 0.3;                    /* Tags page chips: 0 = invisible, 1 = solid */
+}
+.tag-chip__label, .tag-suggest__name, .rule-chip--tag,
+.pane__title[style*="--tag-h"], .view-head__title[style*="--tag-h"],
+.tg-chip__name, .tr-chip--tag .tr-chip__label, .tr-pick__name {
+  font-family: var(--tag-font); text-transform: var(--tag-transform); letter-spacing: var(--tag-tracking);
+}
+
+
+/* ==========================================================================
+   SIDE PANE — header padding and the gap between the two cards (js/ui/pane.js · css/layout.css)
+   ========================================================================== */
+:root {
+  --pane-head-h: 52px;                      /* height of the pane's header strip */
+  --pane-head-pad: 0 12px 0 20px;           /* top/bottom  right  …  left of the title (the buttons sit on the right) */
+  --pane-gap-bg: transparent;               /* the colour of the gap between the two cards ( transparent = the page colour ) */
+}
+.pane__head { height: var(--pane-head-h); padding: var(--pane-head-pad); }
+.divider { background: var(--pane-gap-bg); }
+/* The grip in the gap: icon file = icons-ui/dividerGrip.svg (size in pane.js).  Box colour: --pane-grip-bg · icon colour: --pane-grip-color
+   (+ -hover) in tokens.css section 13.  Box size: width / height below. */
+.divider__grip { height: 48px; }
+
+
+/* ==========================================================================
+   THREADS — the rules card (js/views/thread.js)
+   Match Any/All, then three fields. Each field is a box holding chips + a typing area; the Tags box opens a picker.
+   ========================================================================== */
+.tr { margin: 4px 0 24px; padding: 20px; display: grid; gap: 18px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--bg-raised); }
+.tr[hidden] { display: none; }
+
+.tr-label { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-small); font-weight: 500; color: var(--text-muted); }
+.tr-label .icon { opacity: 0.8; }
+.tr-hint, .tr-help { margin: 0; font-size: var(--fs-tiny); color: var(--text-faint); }
+.tr-help { margin-top: 6px; }
+
+.tr-head { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.tr-seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: var(--r-toggle); background: var(--toggle-bg); }
+.tr-seg__btn { height: 26px; padding: 0 14px; border-radius: var(--r-sm); color: var(--text-muted); font-size: var(--fs-small); transition: background var(--t-fast), color var(--t-fast); }
+.tr-seg__btn:hover { color: var(--text); }
+.tr-seg__btn[aria-pressed="true"] { background: var(--bg-pressed); color: var(--text); }
+
+.tr-field { display: grid; gap: 8px; }
+.tr-box {
+  position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  min-height: 42px; padding: 6px 10px; border: 1px solid var(--border-strong); border-radius: var(--r-sm); background: var(--bg-card);
+  transition: border-color var(--t-fast);
+}
+.tr-box:focus-within { border-color: var(--accent); }
+.tr-input { flex: 1; min-width: 140px; height: 28px; padding: 0 2px; border: 0; background: transparent; outline: none; color: var(--text); font: inherit; font-size: var(--fs-ui); }
+.tr-input::placeholder { color: var(--text-faint); }
+
+.tr-chip {                                  /* a word or keyword you added */
+  --tag-h: 210;
+  display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 6px 0 10px; border-radius: var(--r-xs);
+  background: var(--bg-pressed); color: var(--text-dim); font-size: var(--fs-small); white-space: nowrap;
+}
+.tr-chip--tag {                             /* a tag you added: its own colour */
+  background: hsl(var(--tag-h) var(--tagsolid-sat) var(--tagsolid-light) / 0.35);
+  color: hsl(var(--tag-h) var(--tag-sat) var(--tag-light));
+  font-size: var(--fs-tiny);
+}
+.tr-chip__x { display: grid; place-items: center; width: 18px; height: 18px; border-radius: var(--r-xs); color: inherit; opacity: 0.6; cursor: pointer; }
+.tr-chip__x:hover, .tr-chip__x:focus-visible { opacity: 1; background: color-mix(in srgb, currentColor 18%, transparent); }
+
+.tr-pick {                                  /* the tag picker */
+  position: absolute; left: -1px; right: -1px; top: calc(100% + 6px); z-index: 30;
+  max-height: 232px; overflow-y: auto; padding: 6px;
+  border: 1px solid var(--menu-border, var(--border)); border-radius: var(--r-md); background: var(--menu-bg, var(--bg-raised)); box-shadow: var(--shadow-pop);
+}
+.tr-pick[hidden] { display: none; }
+.tr-pick__item { --tag-h: 210; display: flex; align-items: center; gap: 10px; width: 100%; height: 34px; padding: 0 10px; border-radius: var(--r-sm); color: var(--text-dim); text-align: left; }
+.tr-pick__item.is-active, .tr-pick__item:hover { background: var(--bg-hover); color: var(--text); }
+.tr-pick__dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: hsl(var(--tag-h) var(--tagsolid-sat) 55%); }
+.tr-pick__name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-tiny); }
+.tr-pick__meta { flex: none; font-size: var(--fs-tiny); color: var(--text-faint); }
+
+.tr-foot { display: flex; justify-content: flex-end; }
+
+
+/* ==========================================================================
+   NOTE LINKS — "[[" in a note (js/editor/note-link.js)
+   The colour is one token: --link-note (green by default = --c-ok). Change it here or in tokens.css.
+   ========================================================================== */
+:root { --link-note: var(--link-backlink); }
+.prose span[data-note-link] { color: var(--link-note); cursor: pointer; border-radius: 3px; transition: background var(--t-fast); }
+.prose span[data-note-link]:hover { background: color-mix(in srgb, var(--link-note) 14%, transparent); text-decoration: underline; text-underline-offset: 3px; }
+.prose span[data-note-link].is-missing { color: var(--text-faint); text-decoration: line-through; cursor: default; }
+
+.link-suggest {                             /* the list under "[[" */
+  position: fixed; z-index: 110; min-width: 260px; max-width: 380px; padding: 6px;
+  border: 1px solid var(--menu-border, var(--border)); border-radius: var(--r-md); background: var(--menu-bg, var(--bg-raised)); box-shadow: var(--shadow-pop);
+  font-size: var(--fs-ui);
+}
+.link-suggest[hidden] { display: none; }
+.link-suggest__item { display: flex; align-items: center; gap: 8px; width: 100%; height: 34px; padding: 0 10px; border-radius: var(--r-sm); color: var(--text-dim); text-align: left; }
+.link-suggest__item.is-active, .link-suggest__item:hover { background: var(--bg-hover); color: var(--text); }
+.link-suggest__item .icon { flex: none; color: var(--text-muted); }
+.link-suggest__name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.link-suggest__name b { color: var(--link-note); font-weight: 600; }
+.link-suggest__where { flex: none; font-size: var(--fs-tiny); color: var(--text-faint); }
+
+.link-alias {                               /* Alt+click on a link: its short name */
+  position: fixed; z-index: 120; display: grid; gap: 6px; width: 280px; padding: 8px;
+  border: 1px solid var(--menu-border, var(--border)); border-radius: var(--r-md); background: var(--menu-bg, var(--bg-raised)); box-shadow: var(--shadow-pop);
+}
+.link-alias__input { height: 34px; padding: 0 10px; border: 1px solid var(--border-strong); border-radius: var(--r-sm); background: var(--bg-card); color: var(--text); outline: none; font: inherit; font-size: var(--fs-ui); }
+.link-alias__input:focus { border-color: var(--link-note); }
+.link-alias__hint { padding: 0 2px; font-size: var(--fs-tiny); color: var(--text-faint); }
+
+
+/* ==========================================================================
+   RELATED NOTES — a toggle at the end of the note (js/ui/related.js). It sits in the page after the last line, and the list opens below it.
+   --rel-gap = the space above it.
+   ========================================================================== */
+:root { --rel-gap: 40px; }
+.rel { margin-top: var(--rel-gap); padding-bottom: 48px; }
+.rel[hidden] { display: none; }
+.rel__inner { border-top: 0px solid var(--border); }
+.rel__bar { display: flex; align-items: center; gap: 8px; width: 100%; height: 40px; color: var(--text-muted); font-size: var(--fs-small); }
+.rel__bar:hover { color: var(--text); }
+.rel__bar .icon { transition: transform var(--t-fast); }
+.rel__bar[aria-expanded="true"] .icon { transform: rotate(90deg); }
+.rel__n { color: var(--text-faint); font-variant-numeric: tabular-nums; }
+.rel__panel { padding: 4px 0 4px; }
+.rel__panel[hidden] { display: none; }
+.rel__group + .rel__group { margin-top: 14px; }
+.rel__label { margin-bottom: 4px; font-size: var(--fs-tiny); color: var(--text-faint); }
+.rel__item { display: flex; flex-direction: column; gap: 2px; margin: 0 -10px; padding: 8px 10px; border-radius: var(--r-sm); }
+.rel__item:hover { background: var(--bg-hover); }
+.rel__title { color: var(--link-mention); }
+.rel__snip { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-small); color: var(--text-muted); }
+
+/* ==========================================================================
+   NOTE MENTIONS — "@" in a note (js/editor/note-mention.js). A mention only points at a note: no backlink, no Related notes.
+   The colour is one token: --mention-note (blue by default = --accent). Its list uses the same look as "[[" (.link-suggest).
+   ========================================================================== */
+:root { --mention-note: var(--link-mention); }
+.prose span[data-note-mention] { color: var(--mention-note); cursor: pointer; border-radius: 3px; transition: background var(--t-fast); }
+.prose span[data-note-mention]:hover { background: color-mix(in srgb, var(--mention-note) 14%, transparent); text-decoration: underline; text-underline-offset: 3px; }
+.prose span[data-note-mention].is-missing { color: var(--text-faint); text-decoration: line-through; cursor: default; }

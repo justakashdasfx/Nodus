@@ -71,16 +71,16 @@
 
 /* ---------- Rich list rows: notes, notebooks, threads, journal (js/ui/components.js) ----------
    [lead icon or tile] [title / lines under it] ............ [meta] [caret] */
-.lrow { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 10px 12px; border-radius: var(--r-md); color: inherit; transition: background var(--t-fast); }
+.lrow { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 16px 16px; border-radius: var(--r-md); color: inherit; transition: background var(--t-fast);} /*Thread icon and text gap in the thread page*/
 .lrow:hover { background: var(--bg-hover); }
-.lrow__lead { flex: none; display: grid; place-items: center; color: var(--text-muted); }
-.lrow__tile { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: var(--r-md); background: var(--bg-raised); color: var(--text-muted); }   /* later: custom notebook icon goes inside */
-.lrow__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.lrow__lead { flex: none; display: grid; place-items: center; color: var(--text-muted);}
+.lrow__tile { flex: none; display: grid; place-items: center; border-radius: var(--r-md); color: var(--text-muted); }   /* later: custom notebook icon goes inside */
+.lrow__main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 16px; }
 .lrow__title { color: var(--text); font-weight: 500; overflow-wrap: anywhere; }   /* full name, wraps instead of "…" */
 .lrow__sub { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: var(--fs-small); }
 .lrow__desc { color: var(--text-muted); font-size: var(--fs-small); line-height: 1.45;
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
-.lrow__rules { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+.lrow__rules { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0;  margin-right: 8px;}
 .lrow__meta { flex: none; display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: var(--fs-small); white-space: nowrap; }
 .lrow__caret { flex: none; display: grid; color: var(--text-faint); transition: color var(--t-fast); }
 .lrow:hover .lrow__caret { color: var(--text-muted); }
@@ -122,7 +122,7 @@ a.row:hover, .row--static:hover { background: var(--bg-hover); border-radius: va
    Text on the first line; under it "Note name · Notebook" in small, muted type (same idea as the Tasks page). */
 .block-row {
   display: flex; flex-direction: column; align-items: flex-start; flex-wrap: nowrap;
-  gap: 8px; padding-block: 8px;
+  gap: 6px; padding-block: 12px 0 12px 0; margin-bottom: 4px;
 }
 .block-row__text {
   flex: none; width: 100%; min-width: 0; color: var(--grey-1150); font-weight: 400; line-height: 1.5;
@@ -220,7 +220,7 @@ a.row:hover, .row--static:hover { background: var(--bg-hover); border-radius: va
   display: inline-flex; align-items: center; gap: 2px; height: 22px; padding: 0 8px; border-radius: var(--r-sm);
   background: var(--bg-hover); color: var(--text-dim); font-size: 11.5px; white-space: nowrap;
 }
-.rule-chip--tag { background: transparent; color: hsl(var(--tag-h) var(--tag-sat) var(--tag-light)); }
+.rule-chip--tag { background: hsl(var(--tag-h) var(--tag-sat) var(--tag-light) / 0.1); color: hsl(var(--tag-h) var(--tag-sat) var(--tag-light));}
 .rule-chip__x { padding: 0 0 0 4px; font-size: 13px; line-height: 1; color: inherit; opacity: 0.6; cursor: pointer; }
 .rule-chip__x:hover, .rule-chip__x:focus-visible { opacity: 1; color: var(--tag-remove); }
 
@@ -251,3 +251,27 @@ a.row:hover, .row--static:hover { background: var(--bg-hover); border-radius: va
 .calendar__foot { display: flex; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
 .calendar__foot button { border: 0; border-radius: var(--r-sm); padding: 5px 10px; background: transparent; color: var(--accent); font: inherit; cursor: pointer; }
 .calendar__foot button:hover { background: var(--bg-hover); }
+
+
+/* ---------- Threads page: sleek + minimal (CSS only, no JS change needed) ----------
+   Flat rows with hairline dividers, a small faint icon, quiet outlined rule chips.
+   Scoped to .lrow--thread so Notebooks / Notes lists keep their look. Kept at the END of the file so it wins over the rules above. */
+.lrow--thread { align-items: flex-start; gap: 12px; min-height: 0; margin-bottom: 0; padding: 16px 12px; border-radius: 16px; border-bottom: 0px solid var(--border);  }
+.lrow--thread:hover { background: var(--bg-hover); }
+
+/* the boxed tile becomes a small bare icon */
+.lrow--thread .lrow__tile { width: auto; height: auto; margin-top: 2px; background: transparent; border-radius: 0; color: var(--text-faint); transition: color var(--t-fast);  }
+
+.lrow--thread .lrow__tile svg, .lrow--thread .lrow__tile .icon { width: 16px; height: 16px;}
+.lrow--thread:hover .lrow__tile { color: var(--text-muted); }
+
+.lrow--thread .lrow__main { gap: 16px; }
+.lrow--thread .lrow__title { line-height: 1.3; }
+.lrow--thread .lrow__desc { color: var(--text-faint); }
+.lrow--thread .lrow__meta { align-self: center; gap: 10px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+.lrow--thread .lrow__caret { align-self: center; opacity: 0; transform: translateX(-4px); transition: opacity var(--t-fast), transform var(--t-fast), color var(--t-fast); }
+.lrow--thread:hover .lrow__caret { opacity: 1; transform: none; }   /* delete these two caret lines to keep the arrow always visible */
+
+/* rule chips inside a thread row: outlined, normal case; the tag's hue is only the text + border colour */
+.lrow--thread .rule-chip { height: 22px; padding: 0 9px; border: 1px solid var(--border); border-radius: 999px; background: transparent; color: var(--text-muted); font-size: var(--fs-tiny); }
+.lrow--thread .rule-chip--tag { font-family: inherit; text-transform: none; letter-spacing: 0; background: transparent; border-color: hsl(var(--tag-h) 35% 50% / .35); color: hsl(var(--tag-h) var(--tag-sat) var(--tag-light)); }

@@ -228,7 +228,7 @@
   --toggle-bg: var(--grey-100);              /* the Write | Read toggle (and Gallery | List) */
 
   /* Interaction */
-  --bg-hover:   var(--grey-500);            /* pointer over a row or button */
+  --bg-hover:   var(--grey-300);            /* pointer over a row or button */
   --bg-pressed: var(--grey-600);            /* mouse down · the "on" side of a toggle · selected */
   --bg-solid:   var(--grey-500);            /* filled button (section 14 has primary / secondary) */
 
@@ -344,7 +344,7 @@
   --row-active-bg:   var(--bg-hover);   --row-active-text: var(--text);
 }
 :root {
-  --nav-text: var(--row-text);               --nav-hover-bg: var(--grey-200);       --nav-hover-text: var(--row-hover-text);
+  --nav-text: var(--row-text);               --nav-hover-bg: var(--grey-300);       --nav-hover-text: var(--row-hover-text);
   --nav-pressed-bg: var(--row-pressed-bg);   --nav-active-bg: var(--row-active-bg);     --nav-active-text: var(--row-active-text);
   --folder-text: var(--row-text);            --folder-hover-bg: var(--row-hover-bg);    --folder-hover-text: var(--row-hover-text);
   --folder-pressed-bg: var(--row-pressed-bg);--folder-active-bg: var(--row-active-bg);  --folder-active-text: var(--row-active-text);
@@ -391,7 +391,7 @@
   --write-code-bg:           color-mix(in srgb, var(--grey-1200) 7%, transparent);   /* `inline code` */
   --write-code-text:         var(--grey-1100);
   --write-checked:           var(--grey-800);    /* ticked checklist items */
-  --write-dim:               var(--grey-900);    /* focus mode (Ctrl/Cmd+Alt+/): how dim the other paragraphs get */
+  --write-dim:               var(--grey-700);    /* focus mode (Ctrl/Cmd+Alt+/): how dim the other paragraphs get */
 
   --read-text:      var(--grey-1150);
   --read-heading:   var(--grey-1100);
@@ -557,3 +557,55 @@
 /* ---------- Task block (/Task): the text colour of a checklist item that is a Task ---------- */
 :root[data-theme="dark"]  { --task-block-color: hsl(145 42% 66%); }
 :root[data-theme="light"] { --task-block-color: hsl(145 46% 28%); }
+
+/* ==========================================================================
+   22. MIND MAPS — the canvas, the nodes and the pastel branch colours (dark mode; css/maps.css uses these)
+   Branch colours: each main branch takes the next one, 1 → 8, then starts again. Change a hex to retune a colour.
+   The Neutral theme ignores them and draws every line in --mm-neutral-line.
+   ========================================================================== */
+:root,
+:root[data-theme="dark"] {
+  /* Canvas */
+  --mm-canvas-bg:    var(--grey-50);
+  --mm-grid-color:   var(--grey-400);       /* the dots of the grid … */
+  --mm-grid-opacity: 100%;                  /* … how visible they are: 0% = gone, 100% = full colour */
+  --mm-grid-size:    1px;                 /* … and how big each dot is */
+  --mm-grid-dot:     color-mix(in srgb, var(--mm-grid-color) var(--mm-grid-opacity), transparent);   /* (the result: leave as is) */
+  --mm-select:       var(--accent);         /* ring around the selected node */
+
+  /* Text */
+  --mm-text:         var(--grey-1150);
+  --mm-text-dim:     var(--grey-1100);
+  --mm-text-faint:   var(--grey-900);       /* the "Idea" placeholder of an empty node */
+
+  /* Nodes */
+  --mm-fs:           14px;                  /* font size of a node */
+  --mm-node-max:     300px;                 /* a node wraps its text after this width */
+  --mm-pad-x:        12px;
+  --mm-pad-y:        6px;
+  --mm-radius:       10px;
+  --mm-root-bg:      var(--grey-400);       /* the central node */
+  --mm-root-border:  var(--grey-700);
+  --mm-root-fs:      16px;
+  --mm-n1-bg:        var(--grey-300);       /* main branches in the Neutral theme */
+  --mm-border:       var(--grey-200);
+  --mm-l1-tint:      16%;                   /* how strongly a main branch is tinted in its own colour */
+
+  /* Lines */
+  --mm-line-opacity: 0.92;
+  --mm-neutral-line: var(--grey-800);
+
+  /* Floating bits: zoom bar, fold badge */
+  --mm-panel-bg:     var(--grey-100);
+  --mm-badge-bg:     var(--grey-100);
+
+  /* Pastel branch colours */
+  --mm-p1: #8DB4E2;   /* blue   */
+  --mm-p2: #86CBB0;   /* mint   */
+  --mm-p3: #E3CD86;   /* butter */
+  --mm-p4: #E6A98A;   /* peach  */
+  --mm-p5: #E299B2;   /* rose   */
+  --mm-p6: #B5A3E3;   /* lilac  */
+  --mm-p7: #86C9D0;   /* aqua   */
+  --mm-p8: #B4CC8E;   /* sage   */
+}

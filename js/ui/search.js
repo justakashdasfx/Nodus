@@ -22,7 +22,7 @@ let list = null;
 let items = [];
 let active = 0;
 
-const GROUPS = [['commands', 'Commands'], ['notes', 'Notes'], ['blocks', 'Blocks'], ['tags', 'Tags'], ['notebooks', 'Notebooks'], ['threads', 'Threads']];
+const GROUPS = [['commands', 'Commands'], ['notes', 'Notes'], ['maps', 'Mind maps'], ['blocks', 'Blocks'], ['tags', 'Tags'], ['notebooks', 'Notebooks'], ['threads', 'Threads']];
 
 /* ---------- Open / close ---------- */
 
@@ -62,7 +62,7 @@ function close() {
 
 /* ---------- Drawing ---------- */
 
-const ICON = { note: 'note', journal: 'journal', block: 'bullets', tag: 'tag', notebook: 'folder', thread: 'threads', recent: 'clock' };
+const ICON = { note: 'note', journal: 'journal', block: 'bullets', tag: 'tag', notebook: 'folder', thread: 'threads', map: 'mindmap', recent: 'clock' };
 
 function rowHtml(it, i) {
   const ic = it.kind === 'command' ? it.icon : it.kind === 'note' && it.journal ? 'journal' : ICON[it.kind];
@@ -138,6 +138,7 @@ function activate(i, shift) {
   else if (it.kind === 'tag') { shift ? pane.openTag(it.id) : go(`#/tag/${encodeURIComponent(it.id)}`); }
   else if (it.kind === 'notebook') go(`#/notebook/${it.id}`);
   else if (it.kind === 'thread') go(`#/thread/${it.id}`);
+  else if (it.kind === 'map') go(`#/map/${it.id}`);
 }
 
 /* ---------- Events ---------- */

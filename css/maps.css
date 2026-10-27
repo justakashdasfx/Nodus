@@ -1,0 +1,134 @@
+/* ==========================================================================
+   MIND MAPS — structure and styling of the canvas, nodes, lines and the Mind maps cards.
+   Colours and sizes live in css/tokens.css → section 22. Numbers for distances between nodes: js/maps/config.js.
+   Sections: 1 Canvas · 2 Nodes · 3 Branch colours · 4 Lines · 5 Zoom bar and hint · 6 Cards (thumbnails)
+   ========================================================================== */
+
+/* ---------- 1. Canvas ---------- */
+
+/* The page card becomes a plain frame for the canvas (no scrolling: the canvas pans itself) */
+.card__scroll:has(.mm) { position: relative; overflow: hidden; }
+.mm { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
+.mm:not(.is-ready) .mm__world { visibility: hidden; }          /* no flash before the first layout */
+
+.mm__viewport {
+  position: absolute; inset: 0; outline: none; cursor: default; touch-action: none;
+  background-color: var(--mm-canvas-bg);
+  /* The grid. Colour, opacity and dot size: css/tokens.css → section 22 (--mm-grid-*). Spacing and position are set by the engine. */
+  background-image: radial-gradient(circle, var(--mm-grid-dot) var(--mm-grid-size), transparent calc(var(--mm-grid-size) + 0.4px));
+  background-size: 24px 24px;
+  user-select: none; -webkit-user-select: none;
+}
+.mm__viewport.is-hand { cursor: grab; }                 /* the hand key is held */
+.mm__viewport.is-panning { cursor: grabbing; }
+.mm__marquee { position: absolute; border: 1px solid var(--mm-select); border-radius: 4px; background: color-mix(in srgb, var(--mm-select) 12%, transparent); pointer-events: none; }
+/* No will-change here: it makes the browser zoom a picture of the map (blurry) instead of redrawing it sharp. */
+.mm__world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.mm__edges { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+.mm__nodes { position: absolute; left: 0; top: 0; }
+
+/* ---------- 2. Nodes ---------- */
+
+.mm-node {
+  position: absolute; left: 0; top: 0;
+  width: max-content; max-width: var(--mm-node-max);
+  padding: var(--mm-pad-y) var(--mm-pad-x);
+  border-radius: var(--mm-radius);
+  color: var(--mm-text); font-size: var(--mm-fs); line-height: 1.4;
+  cursor: default;
+}
+.mm-node__text { white-space: pre-wrap; overflow-wrap: anywhere; outline: none; min-width: 1ch; }
+.mm-node.is-empty .mm-node__text::before { content: 'Idea'; color: var(--mm-text-faint); pointer-events: none; }
+.mm-node[data-level="0"].is-empty .mm-node__text::before { content: 'Central idea'; }
+.mm-node.is-sel { box-shadow: 0 0 0 2px var(--mm-select); }
+.mm-node.is-edit { cursor: text; user-select: text; -webkit-user-select: text; }
+
+/* The central node */
+.mm-node[data-level="0"] {
+  padding: 8px 16px; border-radius: 12px; font-size: var(--mm-root-fs); font-weight: 600;
+  background: var(--mm-root-bg); border: 1px solid var(--mm-root-border);
+}
+/* Main branches: a soft tint of their own colour */
+.mm-node[data-level="1"] {
+  font-weight: 500; color: var(--mm-c);
+  background: color-mix(in srgb, var(--mm-c) var(--mm-l1-tint), transparent);
+  border: 1px solid color-mix(in srgb, var(--mm-c) 32%, transparent);
+}
+/* Everything deeper: just text, the line carries the colour */
+.mm-node[data-level="2"], .mm-node[data-level="3"] { padding: 4px 8px; }
+
+/* Neutral theme: grey nodes, normal text */
+[data-mm-theme="neutral"] .mm-node[data-level="1"] { color: var(--mm-text); background: var(--mm-n1-bg); border-color: var(--mm-border); }
+
+/* The badge of a folded branch: how many nodes are hidden. Click to open. */
+.mm-node__fold {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px;
+  background: var(--mm-badge-bg); border: 1px solid var(--mm-border); color: var(--mm-text-dim);
+  font-size: 11px; font-variant-numeric: tabular-nums; cursor: pointer;
+}
+.mm-node__fold:hover { color: var(--mm-text); border-color: var(--mm-text-faint); }
+.mm-node[data-side="r"] .mm-node__fold { right: -30px; }
+.mm-node[data-side="l"] .mm-node__fold { left: -30px; }
+
+/* ---------- 3. Branch colours (also used by the thumbnails) ---------- */
+
+[data-ci="0"] { --mm-c: var(--mm-p1); }
+[data-ci="1"] { --mm-c: var(--mm-p2); }
+[data-ci="2"] { --mm-c: var(--mm-p3); }
+[data-ci="3"] { --mm-c: var(--mm-p4); }
+[data-ci="4"] { --mm-c: var(--mm-p5); }
+[data-ci="5"] { --mm-c: var(--mm-p6); }
+[data-ci="6"] { --mm-c: var(--mm-p7); }
+[data-ci="7"] { --mm-c: var(--mm-p8); }
+[data-mm-theme="neutral"] [data-ci] { --mm-c: var(--mm-neutral-line); }   /* Neutral: one grey for every branch */
+
+/* ---------- 4. Lines ---------- */
+
+.mm-edge { opacity: var(--mm-line-opacity); }
+.mm-edge--fill   { fill: var(--mm-c); stroke: none; }                           /* Tapered: a filled shape */
+.mm-edge--stroke { fill: none; stroke: var(--mm-c); stroke-linecap: round; stroke-linejoin: round; }   /* Curved and Elbow */
+
+/* ---------- 5. Zoom bar and hint ---------- */
+
+.mm__zoom {
+  position: absolute; left: 14px; bottom: 14px; display: flex; align-items: center; gap: 2px; padding: 4px;
+  background: var(--mm-panel-bg); border: 1px solid var(--mm-border); border-radius: 10px;
+  color: var(--text-muted); font-size: var(--fs-small);
+}
+.mm__zoom .btn--icon { width: 28px; height: 28px; }
+.mm__zoom-value { min-width: 48px; height: 28px; border-radius: var(--r-sm); color: var(--text-dim); font-size: var(--fs-small); font-variant-numeric: tabular-nums; }
+.mm__zoom-value:hover { background: var(--bg-hover); color: var(--text); }
+.mm__zoom-sep { width: 1px; height: 16px; margin: 0 6px; background: var(--mm-border); }
+.mm__count { padding: 0 8px 0 2px; white-space: nowrap; }
+
+.mm__hint {
+  position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; gap: 18px;
+  color: var(--mm-text-faint); font-size: 12px; white-space: nowrap; pointer-events: none;
+}
+.mm__hint kbd {
+  padding: 1px 6px; margin-right: 4px; border: 1px solid var(--mm-border); border-radius: 5px;
+  font: inherit; color: var(--text-muted);
+}
+.mm__banner {
+  position: absolute; top: 14px; left: 50%; transform: translateX(-50%); padding: 6px 14px; border-radius: 999px;
+  background: var(--mm-panel-bg); border: 1px solid var(--mm-border); color: var(--text-dim); font-size: var(--fs-small);
+}
+
+/* ---------- 6. Cards on the Mind maps page ---------- */
+
+.mm-thumb {
+  display: flex; align-items: center; justify-content: center; padding: 0;
+  background-color: var(--mm-canvas-bg);
+  background-image: radial-gradient(circle, var(--mm-grid-dot) 1px, transparent 1.4px); background-size: 18px 18px;
+  -webkit-mask-image: none; mask-image: none;                                        /* a note card fades out; a map card does not */
+}
+.mm-thumb svg { width: 100%; height: 100%; }
+.mmt-n { stroke-width: 1; }
+.mmt-root { fill: var(--mm-root-bg); stroke: var(--mm-root-border); }
+.mmt-l1   { fill: color-mix(in srgb, var(--mm-c) 30%, transparent); stroke: color-mix(in srgb, var(--mm-c) 45%, transparent); }
+.mmt-deep { fill: color-mix(in srgb, var(--mm-c) 22%, transparent); stroke: none; }
+[data-mm-theme="neutral"] .mmt-l1   { fill: var(--mm-n1-bg); stroke: var(--mm-border); }
+[data-mm-theme="neutral"] .mmt-deep { fill: var(--grey-400); }
+.g-card__titlerow { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.g-card__titlerow .icon { flex: none; color: var(--text-muted); }

@@ -39,8 +39,9 @@ export function noteList(notes) {
   return `<div class="list">${notes.map((n) => {
     const folder = n.folderId ? store.getFolder(n.folderId) : null;
     return `<a class="lrow lrow--note" href="#/note/${n.id}">
-      <span class="lrow__lead">${icon('note', 16)}</span>
-      <span class="lrow__main"><span class="lrow__title">${escapeHtml(n.title || 'Untitled')}</span></span>
+      <span class="lrow__lead">${icon('note', 20)}</span>
+      <span class="lrow__main">
+        <span class="lrow__title">${escapeHtml(n.title || 'Untitled')}</span></span>
       <span class="lrow__meta">${folder ? `<span class="row__where">${icon('folder', 12)}${escapeHtml(folder.name)}</span>` : ''}<span>${formatDate(n.updatedAt)}</span></span>
     </a>`;
   }).join('')}</div>`;
@@ -54,8 +55,8 @@ export function notebookList(folders) {
       <span class="lrow__tile">${icon('folder', 22)}</span>
       <span class="lrow__main">
         <span class="lrow__title">${escapeHtml(f.name)}</span>
-        <span class="lrow__sub">${icon('note', 14)}${countText(count, 'note', 'notes')}</span>
       </span>
+       <span class="lrow__sub">${icon('note', 14)}${countText(count, 'note', 'notes')}</span>
       ${caretHtml}
     </a>`;
   }).join('')}</div>`;

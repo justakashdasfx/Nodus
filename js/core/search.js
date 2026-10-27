@@ -109,7 +109,11 @@ function build() {
     return { kind: 'notebook', id: f.id, title: f.name, sub: `${c} ${c === 1 ? 'note' : 'notes'}`, t: f.createdAt, f: [[uniqueWords(f.name), 3], [uniqueWords(f.description), 0.8]] };
   });
   const threads = store.threads().map(t => ({ kind: 'thread', id: t.id, title: t.title || 'Untitled thread', sub: 'Thread', t: t.updatedAt, f: [[uniqueWords(t.title), 3]] }));
-  return { notes, blocks, tags, notebooks, threads };
+  const maps = store.maps().map(m => {
+    const folder = m.folderId ? store.getFolder(m.folderId) : null;
+    return { kind: 'map', id: m.id, title: m.title || 'Untitled map', sub: `Mind map${folder ? ' · ' + folder.name : ''}`, t: m.updatedAt, f: [[uniqueWords(m.title), 3]] };   // the title only, not the text inside the map
+  });
+  return { notes, blocks, tags, notebooks, threads, maps };
 }
 
 /** Results for the typed text: { notes, blocks, tags, notebooks, threads } (each sorted, limited), or null for an empty query. */
@@ -124,9 +128,10 @@ export function search(query) {
     tags: top(idx.tags, terms, fuzzy, L.tags),
     notebooks: top(idx.notebooks, terms, fuzzy, L.notebooks),
     threads: top(idx.threads, terms, fuzzy, L.threads),
+    maps: top(idx.maps, terms, fuzzy, L.maps),
   });
   const exact = run(false);
-  const found = exact.notes.length + exact.blocks.length + exact.tags.length + exact.notebooks.length + exact.threads.length;
+  const found = exact.notes.length + exact.blocks.length + exact.tags.length + exact.notebooks.length + exact.threads.length + exact.maps.length;
   return found >= CONFIG.search.fuzzyBelow ? exact : run(true);   // typos are only forgiven when little is found
 }
 

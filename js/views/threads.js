@@ -18,7 +18,7 @@ export function rulesSummary(rules) {
 export function render() {
   const list = store.threads();
   const notes = store.searchableNotes();
-  const add = button({ action: 'thread-new', iconName: 'plus', label: 'New thread', variant: 'button' });
+  const add = button({ action: 'thread-new', iconName: 'plus', label: 'New thread', variant: 'button btn--thread-new' });
 
   if (!list.length) {
     return { html: `<div class="view">${viewHead({ title: 'Threads' })}${emptyState({
@@ -32,11 +32,11 @@ export function render() {
     const count = t.live ? matchBlocks(notes, t.rules).length : (t.frozen || []).length;
     const state = t.live ? '' : '<span class="badge">Paused</span>';
     return `<a class="lrow lrow--thread" href="#/thread/${t.id}">
-      <span class="lrow__tile">${icon('threads', 22)}</span>
+      <span class="lrow__lead">${icon('threads', 16)}</span>
       <span class="lrow__main">
         <span class="lrow__title">${escapeHtml(t.title)}</span>
-        <span class="lrow__rules">${ruleCount(t.rules) ? rulesSummary(t.rules) : '<span class="lrow__desc">No rules yet</span>'}</span>
       </span>
+      <span class="lrow__rules">${ruleCount(t.rules) ? rulesSummary(t.rules) : '<span class="lrow__desc">No rules yet</span>'}</span>
       <span class="lrow__meta">${state}<span>${countText(count, 'block', 'blocks')}</span></span>
       ${caretHtml}
     </a>`;

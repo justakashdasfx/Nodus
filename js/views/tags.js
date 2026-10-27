@@ -52,8 +52,13 @@ export function render() {
 
   const tags = [...counts.keys()];
 
-  const chip = (tag) => `<button type="button" class="tg-chip" style="--tag-h:${tagHue(tag)}" data-tag="${escapeHtml(tag)}" data-action="tag-pane" title="Show the blocks tagged ${escapeHtml(tag)}">
-      <span class="tg-chip__name">${escapeHtml(tag)}</span></button>`;
+
+// 27.10.26
+const chip = (tag) => `<button type="button" class="tg-chip" style="--tag-h:${tagHue(tag)}" data-tag="${escapeHtml(tag)}" data-action="tag-pane" title="Show the blocks tagged ${escapeHtml(tag)}">
+      <span class="tg-chip__name">${escapeHtml(tag)}</span><span class="tg-chip__count">${counts.get(tag)}</span></button>`;
+
+
+
 
   // A–Z
   const groups = new Map();

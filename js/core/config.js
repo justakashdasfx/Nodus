@@ -48,7 +48,7 @@ export const CONFIG = {
     noteFont: 'sans',    // font of a note that has none chosen: 'sans' | 'mono' | 'serif'
     statsMode: 'words',  // the top bar count: 'words' or 'chars'
     views: {             // Gallery or List until you choose (a notebook keeps its own choice, set in its Edit dialog)
-      home: 'gallery', inbox: 'gallery', notebooks: 'gallery', notebook: 'gallery', journal: 'list',
+      home: 'gallery', inbox: 'gallery', notebooks: 'gallery', notebook: 'gallery', journal: 'list', maps: 'gallery',
     },
     /* How strongly non-active paragraphs are muted while writing:
          'subtle' → inactive paragraphs a little dimmer (matches your screenshots)
@@ -140,7 +140,7 @@ export const CONFIG = {
     fuzzyBelow: 8,            // typos are only forgiven when fewer results than this were found without them
     recentMax: 8,             // recent searches kept (they sync between devices)
     typeDelay: 50,            // ms after the last keystroke before results update
-    limits: { commands: 5, notes: 6, blocks: 6, tags: 4, notebooks: 4, threads: 4 }, // results shown per group
+    limits: { commands: 5, notes: 6, blocks: 6, tags: 4, notebooks: 4, threads: 4, maps: 4 }, // results shown per group
     emptyCommands: ['note.new', 'journal.today', 'go.inbox', 'go.threads', 'theme.toggle', 'sidebar.toggle'], // shown under Recent in an empty box
   },
 
@@ -170,6 +170,7 @@ export const CONFIG = {
   commands: [
     { id: 'note.new',       label: 'New note',            words: 'create add write',            kind: 'action', target: 'note-new',       icon: 'plus' },
     { id: 'journal.today',  label: "Open today's journal", words: 'daily diary entry',          kind: 'action', target: 'journal-today',  icon: 'journal' },
+    { id: 'map.new',        label: 'New mind map',        words: 'create add mindmap diagram brainstorm', kind: 'action', target: 'map-new',    icon: 'mindmap' },
     { id: 'notebook.new',   label: 'New notebook',        words: 'create add folder',           kind: 'action', target: 'notebook-new',   icon: 'folder' },
     { id: 'thread.new',     label: 'New thread',          words: 'create add filter live',      kind: 'action', target: 'thread-new',     icon: 'threads' },
     { id: 'go.home',        label: 'Go to Home',          words: 'open recent',                 kind: 'go',     target: '#/home',         icon: 'home' },
@@ -177,6 +178,7 @@ export const CONFIG = {
     { id: 'go.journal',     label: 'Go to Journal',       words: 'open diary',                  kind: 'go',     target: '#/journal',      icon: 'journal' },
     { id: 'go.notebooks',   label: 'Go to Notebooks',     words: 'open folders',                kind: 'go',     target: '#/notebooks',    icon: 'notebooks' },
     { id: 'go.threads',     label: 'Go to Threads',       words: 'open filters',                kind: 'go',     target: '#/threads',      icon: 'threads' },
+    { id: 'go.maps',        label: 'Go to Mind maps',     words: 'open mindmap diagrams',       kind: 'go',     target: '#/maps',         icon: 'mindmap' },
     { id: 'go.tasks',       label: 'Go to Tasks',         words: 'open todo due checklist',     kind: 'go',     target: '#/tasks',        icon: 'tasks' },
     { id: 'template.pick',  label: 'New from template…',  words: 'create note meeting weekly daily', kind: 'action', target: 'template-pick', icon: 'copy' },
     { id: 'go.trash',       label: 'Go to Trash',         words: 'open deleted bin',            kind: 'go',     target: '#/trash',        icon: 'trash' },

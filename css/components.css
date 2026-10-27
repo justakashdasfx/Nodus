@@ -139,7 +139,7 @@
   color: var(--text-muted);
 }
 .seg .icon { margin-right: 5px; }
-.topbar .seg--plain { padding: 0 4px; background: var(--modeswitch-bg); border-radius: var(--toggle-radius);}   /* Write | Read in the top bar and Gallery | List. Colours: --toggle-bg in css/tokens.css */
+.topbar .seg--plain { padding:0 4px; background: var(--modeswitch-bg); border-radius: var(--toggle-radius);}   /* Write | Read in the top bar and Gallery | List. Colours: --toggle-bg in css/tokens.css */
 .topbar .seg--plain .seg__btn.is-on { color: var(--grey-1150); }
 .seg__btn { display: flex; align-items: center; height: 24px; padding: 0 8px; border-radius: var(--r-sm); color: inherit; transition: background var(--t-fast), color var(--t-fast); }
 .seg__btn:hover { color: var(--text); }

@@ -36,10 +36,12 @@ import * as thread from './views/thread.js';
 import * as inbox from './views/inbox.js';
 import * as tasks from './views/tasks.js';
 import * as tags from './views/tags.js';
+import * as maps from './views/maps.js';
+import * as map from './views/map.js';
 import { openPopMenu } from './ui/popmenu.js';
 import { initSidebarDnd } from './ui/sidebar-dnd.js';
 
-const VIEWS = { home, inbox, notebooks, notebook, journal, trash, note, tag, threads, thread, tasks, tags };
+const VIEWS = { home, inbox, notebooks, notebook, journal, trash, note, tag, threads, thread, tasks, tags, maps, map };
 const els = { sidebar: $('#sidebar'), topbar: $('#topbar'), view: $('#view'), card: $('#card'), pane: $('#pane'), divider: $('#divider') };
 
 let route = parseRoute();
@@ -92,8 +94,9 @@ store.subscribe((kind, detail) => {
   drawSidebar();
   if (kind === 'content') { if (route.view === 'tasks' || route.view === 'tags') drawView(); return; } // typing: never redraw the page under the cursor (the Tasks page has no editor, so it follows)
   drawTopbar();                   // the notebook picker and the note's details follow the store
-  if (kind === 'remote' && route.view === 'note') {
-    const editing = document.activeElement?.classList.contains('editor') && els.view.contains(document.activeElement);
+  if (kind === 'remote' && (route.view === 'note' || route.view === 'map')) {
+    const ae = document.activeElement;
+    const editing = route.view === 'map' ? !!ae?.closest?.('.mm-node') : ae?.classList.contains('editor') && els.view.contains(ae);   // never redraw under a cursor
     if (!detail.ids?.includes(route.id) || editing) return;
   }
   drawView();
@@ -198,6 +201,9 @@ registerActions({
     if (folderId) { const open = settings.getExpanded(); open.add(folderId); settings.setExpanded(open); }
     go(`#/note/${store.createNote({ folderId }).id}`);
   },
+
+  'map-new': () => go(`#/map/${store.createMap().id}`),
+  'map-set': (el) => store.setMapOptions(el.dataset.id, { [el.dataset.key]: el.dataset.value }),
 
   'thread-new': () => go(`#/thread/${store.createThread().id}`),
   'thread-from-tag': (el) => {
@@ -333,8 +339,8 @@ registerActions({
     });
     if (!ok) return;
     store.trashNote(n.id);
-    toastUndo('Moved to Trash', () => { store.restoreNote(n.id); go(`#/note/${n.id}`); });
-    go(n.type === 'journal' ? '#/journal' : n.folderId ? `#/notebook/${n.folderId}` : '#/home');
+    toastUndo('Moved to Trash', () => { store.restoreNote(n.id); go(`#/${n.type === 'map' ? 'map' : 'note'}/${n.id}`); });
+    go(n.type === 'map' ? '#/maps' : n.type === 'journal' ? '#/journal' : n.folderId ? `#/notebook/${n.folderId}` : '#/home');
   },
   'note-restore': (el) => store.restoreNote(el.dataset.id),
   'note-delete': async (el) => {

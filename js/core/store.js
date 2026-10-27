@@ -20,6 +20,9 @@ import { CONFIG } from './config.js';
 import { uid, deriveTitle, formatJournalDate, escapeHtml, sanitizeHtml, todayKey } from './utils.js';
 import { indexHtml, migrateHtml } from './blockindex.js';
 import { matchBlocks, normalizeRules } from './threads.js';
+import { newMap, mapTitle } from '../maps/model.js';
+import { THEMES, LINES, LAYOUTS } from '../maps/config.js';
+import { rebalance } from '../maps/model.js';
 
 /* ---------- State ---------- */
 
@@ -119,7 +122,7 @@ export const trashedNotes = () =>
 export function tagCounts() {
   const counts = new Map();
   for (const note of state.notes) {
-    if (!live(note) || folderTrashed(note) || note.type === 'template') continue;
+    if (!live(note) || folderTrashed(note) || note.type === 'template' || note.type === 'map') continue;
     for (const block of note.blocks || []) for (const t of block.tags || []) counts.set(t, (counts.get(t) || 0) + 1);
   }
   return counts;
@@ -260,7 +263,38 @@ export const threads = () => state.threads.filter(t => !t.deletedAt).sort((a, b)
 export const getThread = (id) => state.threads.find(t => t.id === id && !t.deletedAt) || null;
 
 /** Notes that searches and threads look at: not in Trash, not in a notebook that is in Trash. */
-export const searchableNotes = () => state.notes.filter(n => live(n) && !folderTrashed(n) && n.type !== 'template');
+export const searchableNotes = () => state.notes.filter(n => live(n) && !folderTrashed(n) && n.type !== 'template' && n.type !== 'map');   // maps have no text blocks: they stay out of search blocks, tags, threads, tasks and links
+
+/* ---------- Mind maps: notes of type 'map' (the data is note.map, see js/maps/model.js) ---------- */
+
+export const maps = () => state.notes.filter(n => n.type === 'map' && live(n) && !folderTrashed(n)).sort((a, b) => b.updatedAt - a.updatedAt);
+
+export function createMap({ folderId = null } = {}) {
+  const now = Date.now();
+  const note = { id: uid(), type: 'map', folderId, html: '', title: 'Untitled map', blocks: [], map: newMap(), createdAt: now, updatedAt: now, deletedAt: null };
+  state.notes.push(note);
+  touch(note);
+  return note;
+}
+
+/** Called (debounced) by the map canvas after every change: keeps the name = the central node, and saves + syncs. */
+export function touchMap(id, map) {
+  const n = getNote(id);
+  if (!n || n.type !== 'map') return;
+  if (map) n.map = map;
+  n.title = mapTitle(n.map);
+  touch(n, 'content');   // 'content' = never redraw the page under the canvas
+}
+
+/** Theme / line style / layout of a map (from the ⋯ menu). */
+export function setMapOptions(id, patch) {
+  const n = getNote(id);
+  if (!n || n.type !== 'map') return;
+  const ok = { theme: THEMES, line: LINES, layout: LAYOUTS };
+  for (const [k, v] of Object.entries(patch)) if (ok[k]?.some(([val]) => val === v)) n.map[k] = v;
+  if (patch.layout === 'both') rebalance(n.map);   // coming back from Right only: share the branches between the two sides again
+  touch(n, 'change');
+}
 
 function touchThreads() {
   state.threadsUpdatedAt = Date.now();

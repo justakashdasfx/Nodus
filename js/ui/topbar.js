@@ -20,6 +20,8 @@ export function renderTopbar(route, status = 'idle') {
   const note = route.view === 'note' ? store.getNote(route.id) : null;
   let meta = '';
   let modeSwitch = '';
+  const mapNote = route.view === 'map' ? store.getNote(route.id) : null;
+  const onMaps = route.view === 'maps' || route.view === 'map';
 
   if (note) {
     const mode = store.noteMode(note);
@@ -38,13 +40,21 @@ export function renderTopbar(route, status = 'idle') {
       </div>`;
   }
 
+  if (mapNote?.type === 'map') {   // a mind map: its notebook picker and date (the canvas has its own zoom bar)
+    meta = `<div class="topbar__meta">
+        ${noteLocation(mapNote, noteState(mapNote).trashed)}
+        <span class="topbar__sep" aria-hidden="true"></span>
+        <span>${formatDate(mapNote.createdAt)}</span>
+      </div>`;
+  }
+
 return `
     <div class="topbar__lead"></div>
     <button type="button" class="btn btn--icon" data-action="sidebar-toggle"
             aria-label="Toggle sidebar" title="Toggle sidebar">${icon('menu')}</button>
     ${meta}
     <div class="topbar__spacer"></div>
-    ${button({ action: 'note-new', iconName: 'plus', label: 'New Note' })}
+    ${onMaps ? button({ action: 'map-new', iconName: 'plus', label: 'New map' }) : button({ action: 'note-new', iconName: 'plus', label: 'New Note' })}
     ${modeSwitch}
     <button type="button" class="status" id="sync-status" data-action="sync-key" data-state="${status}"
             title="Sync status — click to set the sync key">
