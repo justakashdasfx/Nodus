@@ -391,7 +391,7 @@
   --write-code-bg:           color-mix(in srgb, var(--grey-1200) 7%, transparent);   /* `inline code` */
   --write-code-text:         var(--grey-1100);
   --write-checked:           var(--grey-800);    /* ticked checklist items */
-  --write-dim:               var(--grey-700);    /* focus mode (Ctrl/Cmd+Alt+/): how dim the other paragraphs get */
+  --write-dim:               var(--grey-900);    /* focus mode (Ctrl/Cmd+Alt+/): how dim the other paragraphs get */
 
   --read-text:      var(--grey-1150);
   --read-heading:   var(--grey-1100);

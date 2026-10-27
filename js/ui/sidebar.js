@@ -60,8 +60,11 @@ export function renderSidebar(route) {
   const notebooksOpen = getNotebooksOpen();
   const trashCount = store.trashedNotes().length + store.trashedFolders().length;
 
-  return `
-    <div class="sidebar__head"></div>
+return `
+    <div class="sidebar__head">
+      <img class="sidebar-logo" src="/icons-ui/icon.svg" width="24" height="24" alt="">
+      <span class="sidebar-brand">Nodus</span>
+    </div>
     <nav class="sidebar__nav" aria-label="Main">
       ${navItem({ href: '#/home', iconName: 'home', label: 'Home', active: route.view === 'home' })}
       ${navItem({ href: '#/notebooks', iconName: 'notebooks', label: 'Notebooks', active: route.view === 'notebooks' })}

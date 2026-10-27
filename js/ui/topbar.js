@@ -38,17 +38,18 @@ export function renderTopbar(route, status = 'idle') {
       </div>`;
   }
 
-  return `
-    <div class="topbar__lead">
-      ${note ? '' : `<button type="button" class="btn btn--icon" data-action="sidebar-toggle" aria-label="Toggle sidebar" title="Toggle sidebar">${icon('menu')}</button>`}
-    </div>
-    ${note ? `<button type="button" class="btn btn--icon" data-action="sidebar-toggle" aria-label="Toggle sidebar" title="Toggle sidebar">${icon('menu')}</button>` : ''}
+return `
+    <div class="topbar__lead"></div>
+    <button type="button" class="btn btn--icon" data-action="sidebar-toggle"
+            aria-label="Toggle sidebar" title="Toggle sidebar">${icon('menu')}</button>
     ${meta}
     <div class="topbar__spacer"></div>
     ${button({ action: 'note-new', iconName: 'plus', label: 'New Note' })}
     ${modeSwitch}
-    <button type="button" class="status" id="sync-status" data-action="sync-key" data-state="${status}" title="Sync status — click to set the sync key">
+    <button type="button" class="status" id="sync-status" data-action="sync-key" data-state="${status}"
+            title="Sync status — click to set the sync key">
       <span class="status__dot"></span><span class="status__text">${STATUS_LABELS[status]}</span>
     </button>
-    <button type="button" class="btn btn--icon" data-action="more-menu" aria-label="More" aria-haspopup="menu" aria-expanded="false" title="More">${icon('more')}</button>`;
+    <button type="button" class="btn btn--icon" data-action="more-menu"
+            aria-label="More" aria-haspopup="menu" aria-expanded="false" title="More">${icon('more')}</button>`;
 }
