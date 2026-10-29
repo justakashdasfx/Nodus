@@ -24,7 +24,7 @@ export const MAPS = {
 
   /* ---- Lines: [thickness at the parent, thickness at the child] for the Tapered style; width for Curved / Elbow ---- */
   lines: {
-    tapered: { root: [8, 2], level1: [6, 1.5], deep: [5, 1] },
+    tapered: { root: [14, 3], level1: [9, 2.2], deep: [5.5, 1.6] },
     stroke:  { root: 3.2, level1: 2.6, deep: 2 },
     elbowRadius: 12,
   },
@@ -37,6 +37,8 @@ export const MAPS = {
 /* ---- Choices shown in the ⋯ menu of a map ([id, label]); the first of each is the default ---- */
 export const THEMES  = [['colored', 'Colored'], ['neutral', 'Neutral']];
 export const LINES   = [['tapered', 'Taper'], ['curved', 'Curve'], ['elbow', 'Elbow']];
-export const LAYOUTS = [['both', 'Both'], ['right', 'Right']];   // both sides of the centre · right side only
+export const LAYOUTS = [['both', 'Both'], ['right', 'Right'], ['free', 'Free']];   // both sides of the centre · right side only · free: both sides, and you can drag any node anywhere
 
-export const DEFAULTS = { theme: 'colored', line: 'tapered', layout: 'both' };
+export const SHAPES  = [['round', 'Rounded'], ['pill', 'Pill'], ['square', 'Square']];
+
+export const DEFAULTS = { theme: 'colored', line: 'tapered', layout: 'both', shape: 'round' };

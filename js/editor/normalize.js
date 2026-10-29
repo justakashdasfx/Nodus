@@ -57,7 +57,7 @@ const isLoose = (n) =>
 function structure(root) {
   let changed = false;
   if ([...root.childNodes].some(isLoose)) { tidyBlocks(root); changed = true; }
-  for (const div of root.querySelectorAll(':scope > div:not([data-thread-block])')) {
+  for (const div of root.querySelectorAll(':scope > div:not([data-thread-block]):not([data-map-block])')) {
     const keep = saveSel();
     const p = document.createElement('p');
     for (const { name, value } of [...div.attributes]) p.setAttribute(name, value);

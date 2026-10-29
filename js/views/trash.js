@@ -8,7 +8,7 @@ export function render() {
   const folders = store.trashedFolders();
   const all = store.trashedNotes();
   const notes = all.filter(n => n.type !== 'map');
-  const maps = all.filter(n => n.type === 'map');
+  const maps = all.filter(n => n.type === 'map' || n.type === 'maptemplate');
 
   const folderRows = folders.map(f => {
     const count = store.noteCount(f.id);
@@ -30,7 +30,7 @@ export function render() {
     const isMap = n.type === 'map';
     return `
     <div class="row row--static">
-      ${isMap ? `<a class="row__title row__title--icon" href="#/map/${n.id}">${icon('mindmap', 16)}<span>${escapeHtml(n.title || 'Untitled map')}</span></a>` : `<a class="row__title" href="#/note/${n.id}">${escapeHtml(n.title || 'Untitled')}</a>`}
+      ${n.type === 'maptemplate' ? `<span class="row__title row__title--icon">${icon('mindmap', 16)}<span>Template · ${escapeHtml(n.title || 'Untitled map')}</span></span>` : isMap ? `<a class="row__title row__title--icon" href="#/map/${n.id}">${icon('mindmap', 16)}<span>${escapeHtml(n.title || 'Untitled map')}</span></a>` : `<a class="row__title" href="#/note/${n.id}">${escapeHtml(n.title || 'Untitled')}</a>`}
       <span class="row__text">Deleted ${formatDate(n.deletedAt)}</span>
       <span class="row__actions">
         ${button({ action: 'note-restore', iconName: 'restore', label: 'Restore', data: { id: n.id } })}

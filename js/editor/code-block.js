@@ -375,7 +375,7 @@ export function mountCode(root, history, { readOnly = false } = {}) {
   const stop = (e) => { e.preventDefault(); e.stopImmediatePropagation(); };
 
   const onKeyDown = (e) => {
-    if (e.target.closest?.('[data-thread-block]')) return;      // typing inside a thread block is not typing in the note
+    if (e.target.closest?.('[data-thread-block], [data-map-block]')) return;      // typing inside a thread block is not typing in the note
     const mod = e.ctrlKey || e.metaKey;
     const pre = caretPre();
     if (!pre) {
@@ -411,7 +411,7 @@ export function mountCode(root, history, { readOnly = false } = {}) {
   };
 
   const onBeforeInput = (e) => {                    // phone keyboards: Enter arrives here instead of as a key press
-    if (e.target.closest?.('[data-thread-block]')) return;      // typing inside a thread block is not typing in the note
+    if (e.target.closest?.('[data-thread-block], [data-map-block]')) return;      // typing inside a thread block is not typing in the note
     if (e.inputType !== 'insertParagraph' && e.inputType !== 'insertLineBreak') return;
     const pre = caretPre();
     if (!pre) return;

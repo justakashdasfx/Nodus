@@ -9,6 +9,7 @@
 
 import { icon } from '../core/icons.js';
 import { insertThreadBlock } from './thread-block.js';
+import { insertMapBlock } from './map-block.js';
 import { CONFIG } from '../core/config.js';
 import { comboLabel } from '../core/keys.js';
 import { escapeHtml } from '../core/utils.js';
@@ -54,6 +55,7 @@ export function turnInto(root, block, kind, { place = true } = {}) {
   if (block.tagName === 'P' && block.hasAttribute('data-callout')) { block.removeAttribute('data-callout'); if (kind === 'p') return; } // callout → normal text first
   if (block.tagName === 'SUMMARY') { block = unwrapToggle(root, block); placeCaret(root, block); if (kind === 'p') return; }   // toggle → its title becomes text, its content stays
   if (kind === 'thread') { insertThreadBlock(root, block); return; }
+  if (kind === 'map') { insertMapBlock(root, block); return; }
   if (kind === 'task') { toTask(root, block); return; }
   if (kind === 'divider') { insertDivider(root, block); return; }
   if (kind === 'toggle')  { toToggle(root, block); return; }
@@ -82,7 +84,7 @@ export function menuModel(block, { turnOnly = false, extra = [] } = {}) {
   const kind = blockKind(block);
   const turn = {
     title: 'Turn into',
-    items: CONFIG.blockTypes.filter(([k]) => !(turnOnly && (k === 'divider' || k === 'thread'))).map(([k, label, sk, words, ic]) => ({ act: 'turn:' + k, label, ic, hint: hintFor(sk), current: k === kind, words })),
+    items: CONFIG.blockTypes.filter(([k]) => !(turnOnly && (k === 'divider' || k === 'thread' || k === 'map'))).map(([k, label, sk, words, ic]) => ({ act: 'turn:' + k, label, ic, hint: hintFor(sk), current: k === kind, words })),
   };
   if (turnOnly) return [turn, ...extra];
   const tagged = !!block.getAttribute('data-tags');

@@ -26,6 +26,7 @@ import { mountHistory } from './history.js';
 import { mountCode } from './code-block.js';
 import { mountBlockRules } from './block-rules.js';
 import { mountThreadBlocks } from './thread-block.js';
+import { mountMapBlocks } from './map-block.js';
 import { mountNoteLinks } from './note-link.js';
 import { mountNoteMentions } from './note-mention.js';
 import { mountExtraBlocks } from './blocks-extra.js';
@@ -89,9 +90,10 @@ export function mountEditor(el, note, { readOnly = false } = {}) {
     const stopRail = mountTagRail(el, { editable: false });
     const stopDueRO = mountDue(el, { editable: false });   // the dates next to checklist items
     const stopThreadsRO = mountThreadBlocks(el, { readOnly: true });   // Threads blocks, read-only
+    const stopMapsRO = mountMapBlocks(el, { readOnly: true });         // Mind map blocks, read-only
     const stopLinksRO = mountNoteLinks(el, { readOnly: true });         // links to other notes: clickable
     const stopMentionsRO = mountNoteMentions(el, { readOnly: true });   // mentions: clickable
-    return () => { stopCodeRO(); stopRail?.(); stopDueRO(); stopThreadsRO(); stopLinksRO(); stopMentionsRO(); };
+    return () => { stopCodeRO(); stopRail?.(); stopDueRO(); stopThreadsRO(); stopMapsRO(); stopLinksRO(); stopMentionsRO(); };
   }
 
   el.contentEditable = 'true';
@@ -111,6 +113,7 @@ export function mountEditor(el, note, { readOnly = false } = {}) {
   const stopMentions = mountNoteMentions(el, { history });   // "@" picker: a mention, no backlink
   const stopLinks = mountNoteLinks(el, { history });          // "[[" picker + clickable links (registered first so its keys win)
   const stopThreads = mountThreadBlocks(el, { history });   // Threads blocks ("/" → Threads)
+  const stopMapBlocks = mountMapBlocks(el, { history });    // Mind map blocks ("/" → Mind map)
   const stopRules = mountBlockRules(el, { history });   // Enter / Backspace / Ctrl+D rules per block type (registered before the handlers below so it runs first)
   const stopCode = mountCode(el, history);   // code blocks: Enter / Tab / paste, the language bar, colours
   const stopExtra = mountExtraBlocks(el, { history });   // callout, toggle behaviour
@@ -212,6 +215,6 @@ export function mountEditor(el, note, { readOnly = false } = {}) {
     el.removeEventListener('beforeinput', onBeforeInput);
     el.removeEventListener('input', onInputBlocks);
     el.removeEventListener('compositionend', onCompositionEnd);
-    stopFormatting(); stopShortcuts(); stopFocus(); stopTodos(); stopTags(); stopHandle(); stopSlash(); stopSuggest(); stopLinks(); stopMentions(); stopThreads(); stopRules(); stopCode(); stopDue(); stopExtra(); stopSelect(); host.removeEventListener('dblclick', onDblClick); history.stop();
+    stopFormatting(); stopShortcuts(); stopFocus(); stopTodos(); stopTags(); stopHandle(); stopSlash(); stopSuggest(); stopLinks(); stopMentions(); stopThreads(); stopMapBlocks(); stopRules(); stopCode(); stopDue(); stopExtra(); stopSelect(); host.removeEventListener('dblclick', onDblClick); history.stop();
   };
 }

@@ -54,6 +54,27 @@ export function computeLayout(map, size) {
     for (const c of group) { place(c, dir, edge, y); y += sub(c) + rootGapY; }
   }
 
+  /* Floating nodes: each one is laid out like a small tree growing to the right, then moved so the node itself sits at its own x, y */
+  for (const n of Object.values(map.nodes)) {
+    if (!n.fl) continue;
+    place(n.id, 1, 0, 0);
+    const dx = n.x - pos[n.id].x, dy = n.y - pos[n.id].y;
+    const shift = (id) => { pos[id].x += dx; pos[id].y += dy; pos[id].cy += dy; kids(id).forEach(shift); };
+    shift(n.id);
+  }
+
+  /* Free layout: the automatic layout is the starting point; every node can be moved by (dx, dy), and its children move with it */
+  if (map.layout === 'free') {
+    const move = (id, ox, oy) => {
+      const n = map.nodes[id];
+      const tx = ox + (n.dx || 0), ty = oy + (n.dy || 0);
+      pos[id].x += tx; pos[id].y += ty; pos[id].cy += ty;
+      kids(id).forEach((c) => move(c, tx, ty));
+    };
+    move(root, 0, 0);
+    for (const n of Object.values(map.nodes)) if (n.fl) move(n.id, 0, 0);
+  }
+
   const bbox = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
   for (const p of Object.values(pos)) {
     bbox.minX = Math.min(bbox.minX, p.x); bbox.maxX = Math.max(bbox.maxX, p.x + p.w);

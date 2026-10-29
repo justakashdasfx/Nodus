@@ -25,7 +25,7 @@ function mapList(maps) {
   return `<div class="list">${maps.map((m) => {
     const folder = folderName(m);
     return `<a class="lrow lrow--note" href="#/map/${m.id}">
-      <span class="lrow__lead">${icon('mindmap', 20)}</span>
+      <span class="lrow__lead">${icon('mindmap', 16)}</span>
       <span class="lrow__main"><span class="lrow__title">${escapeHtml(m.title || 'Untitled map')}</span></span>
       <span class="lrow__meta">${folder ? `<span class="row__where">${icon('folder', 12)}${escapeHtml(folder)}</span>` : ''}<span>${countNodes(m.map)} nodes</span><span>${formatDate(m.updatedAt)}</span></span>
     </a>`;
@@ -36,9 +36,10 @@ export function render() {
   const maps = store.maps();
   const style = settings.getViewStyle('maps');
   const add = button({ action: 'map-new', iconName: 'plus', label: 'New map', variant: 'button' });
+  const fromTemplate = button({ action: 'map-template-pick', iconName: 'copy', label: 'From template' });
   const body = maps.length
     ? (style === 'list' ? mapList(maps) : gallery(maps.map(mapCard)))
     : emptyState({ title: 'No mind maps yet', text: 'Press Enter for a node beside, Tab for a branch under it. Everything else follows.', actionHtml: add });
   const subtitle = maps.length ? `${maps.length} ${maps.length === 1 ? 'map' : 'maps'}` : '';
-  return { html: `<div class="view">${viewHead({ title: 'Mind maps', subtitle, actions: maps.length ? viewSwitch(style, { page: 'maps' }) + add : '' })}${body}</div>` };
+  return { html: `<div class="view">${viewHead({ title: 'Mind maps', subtitle, actions: (maps.length ? viewSwitch(style, { page: 'maps' }) : '') + fromTemplate + add })}${body}</div>` };
 }

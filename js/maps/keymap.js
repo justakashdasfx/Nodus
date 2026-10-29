@@ -11,6 +11,9 @@ export const KEYMAP = {
   canvas: {
     'node.sibling':  ['Enter'],                       // a new node on the same level (on the centre it adds a branch)
     'node.child':    ['Tab'],                         // a new branch under the selected node
+    'node.float':    ['Mod+Enter'],                   // a new floating node in the middle of the screen (or double-click empty canvas)
+    'find.open':     ['Mod+F'],                       // find text in the map
+    'node.duplicate': ['Mod+D'],                      // a copy of the selected branches right after them (Ctrl+C / X / V copy, cut and paste)
     'node.edit':     ['F2'],                          // type in the selected node (or double-click it)
     'node.delete':   ['Delete', 'Backspace'],         // delete the node and everything under it
     'node.collapse': ['Mod+.'],                       // fold / unfold the branch (Space is the hand tool now)
@@ -30,7 +33,10 @@ export const KEYMAP = {
   editing: {
     'edit.next':      ['Enter'],                      // finish this node, start a new one on the same level
     'edit.nextChild': ['Tab'],                        // finish this node, start a branch under it
-    'edit.newline':   ['Shift+Enter'],                // a line break inside the node
+    'edit.newline':   ['Shift+Enter'],                // a line break inside the node. (Inside a list, Enter adds an item instead.)
+    'edit.bullets':   ['Mod+Shift+8'],                // lists (Ctrl+B / I / U for bold, italic, underline work by themselves)
+    'edit.numbers':   ['Mod+Shift+7'],
+    'edit.checklist': ['Mod+Shift+9'],
     'edit.done':      ['Escape', 'Mod+Enter'],        // finish typing (an empty new node is removed)
   },
 };

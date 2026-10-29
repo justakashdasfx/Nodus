@@ -44,7 +44,7 @@ export function todayKey() {
 
 const ALLOWED_TAGS = new Set(['P', 'DIV', 'BR', 'H1', 'H2', 'H3', 'H4', 'UL', 'OL', 'LI',
   'B', 'STRONG', 'I', 'EM', 'U', 'BLOCKQUOTE', 'PRE', 'CODE', 'MARK', 'SPAN', 'HR', 'DETAILS', 'SUMMARY']);
-const ALLOWED_ATTRS = new Set(['data-hl', 'data-tc', 'data-type', 'data-check', 'data-bid', 'data-tags', 'data-lang', 'data-due', 'data-callout', 'open', 'data-task', 'data-note-mention', 'data-thread-block', 'data-limit', 'data-note-link', 'data-alias']);
+const ALLOWED_ATTRS = new Set(['data-hl', 'data-tc', 'data-type', 'data-check', 'data-bid', 'data-tags', 'data-lang', 'data-due', 'data-callout', 'open', 'data-task', 'data-note-mention', 'data-thread-block', 'data-limit', 'data-map-block', 'data-map-h', 'data-note-link', 'data-alias']);
 
 /* Block ids (data-bid) and tags (data-tags) — see core/blockindex.js */
 export const BID_RE = /^[a-z0-9]{6,16}$/;
@@ -123,6 +123,11 @@ function clean(node) {
     if (child.hasAttribute('data-alias')) { if (child.hasAttribute('data-note-link') || child.hasAttribute('data-note-mention')) child.setAttribute('data-alias', ''); else child.removeAttribute('data-alias'); }
     const lim = child.getAttribute('data-limit');
     if (lim !== null && (!child.hasAttribute('data-thread-block') || !['10', '20', '30', 'all'].includes(lim))) child.removeAttribute('data-limit');
+    const mb = child.getAttribute('data-map-block');                // a Mind map block: an empty shell that points at a map (js/editor/map-block.js)
+    if (mb !== null && (child.tagName !== 'DIV' || !/^[a-z0-9]{0,24}$/.test(mb))) child.removeAttribute('data-map-block');
+    if (child.hasAttribute('data-map-block')) child.textContent = '';
+    const mh = child.getAttribute('data-map-h');
+    if (mh !== null && (!child.hasAttribute('data-map-block') || !/^\d{3}$/.test(mh))) child.removeAttribute('data-map-h');
     if (child.hasAttribute('open')) { if (child.tagName === 'DETAILS') child.setAttribute('open', ''); else child.removeAttribute('open'); }
     const bid = child.getAttribute('data-bid');
     if (bid !== null && !BID_RE.test(bid)) child.removeAttribute('data-bid');

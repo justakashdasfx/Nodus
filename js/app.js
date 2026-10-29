@@ -96,7 +96,7 @@ store.subscribe((kind, detail) => {
   drawTopbar();                   // the notebook picker and the note's details follow the store
   if (kind === 'remote' && (route.view === 'note' || route.view === 'map')) {
     const ae = document.activeElement;
-    const editing = route.view === 'map' ? !!ae?.closest?.('.mm-node') : ae?.classList.contains('editor') && els.view.contains(ae);   // never redraw under a cursor
+    const editing = route.view === 'map' ? !!ae?.closest?.('.mm-node, .mo-text, .mm__find') : ae?.classList.contains('editor') && els.view.contains(ae);   // never redraw under a cursor
     if (!detail.ids?.includes(route.id) || editing) return;
   }
   drawView();
@@ -203,7 +203,32 @@ registerActions({
   },
 
   'map-new': () => go(`#/map/${store.createMap().id}`),
-  'map-set': (el) => store.setMapOptions(el.dataset.id, { [el.dataset.key]: el.dataset.value }),
+  'map-template-save': async (el) => {
+    const n = store.getNote(el.dataset.id);
+    if (!n || n.type !== 'map') return;
+    const name = await modal.prompt({ title: 'Save as template', label: 'Template name', value: n.title || 'Untitled map', confirmLabel: 'Save' });
+    if (!name) return;
+    if (store.saveMapAsTemplate(n.id, name)) toast('Saved as a template. Find it under New map from template.');
+  },
+  'map-template-pick': async () => {
+    const mine = store.mapTemplates();
+    const res = await modal.pick({
+      title: 'New map from template',
+      sections: [
+        { label: 'Start with', items: [{ id: 'blank', label: 'Blank map', sub: 'Just the central idea' }] },
+        ...(mine.length ? [{ label: 'Yours', items: mine.map(t => ({ id: 't:' + t.id, label: t.title || 'Untitled map', removable: true })) }] : []),
+      ],
+    });
+    if (!res) return;
+    if (res.remove) {
+      const id = res.remove.slice(2);
+      store.trashNote(id);
+      toastUndo('Template moved to Trash', () => store.restoreNote(id));
+      return;
+    }
+    const note = res.id === 'blank' ? store.createMap() : store.createMapFromTemplate(res.id.slice(2));
+    if (note) go(`#/map/${note.id}`);
+  },
 
   'thread-new': () => go(`#/thread/${store.createThread().id}`),
   'thread-from-tag': (el) => {

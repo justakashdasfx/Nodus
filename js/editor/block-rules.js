@@ -118,7 +118,7 @@ export function mountBlockRules(root, { history = null } = {}) {
   }
 
   const onKeyDown = (e) => {
-    if (e.target.closest?.('[data-thread-block]')) return;      // typing inside a thread block is not typing in the note
+    if (e.target.closest?.('[data-thread-block], [data-map-block]')) return;      // typing inside a thread block is not typing in the note
     if (e.isComposing) return;
     const mod = e.ctrlKey || e.metaKey;
     const eat = () => { e.preventDefault(); e.stopPropagation(); };

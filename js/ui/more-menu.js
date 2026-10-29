@@ -17,7 +17,6 @@ import { getTheme } from '../core/settings.js';
 import { registerActions } from '../core/actions.js';
 import { escapeHtml } from '../core/utils.js';
 import { noteState } from './note-meta.js';
-import { THEMES, LINES, LAYOUTS } from '../maps/config.js';
 
 let menu = null;
 let anchor = null;
@@ -50,12 +49,6 @@ function moreHtml() {
     { text: 'Dark', on: theme === 'dark', action: 'theme-set', data: { theme: 'dark' } },
   ])];
 
-  if (isMap) {   // how this map looks (more of these move to the map's own side bar later)
-    const m = note.map || {};
-    const row = (label, key, list) => choiceRow(label, list.map(([value, text]) => ({ text, on: (m[key] || list[0][0]) === value, action: 'map-set', data: { id: note.id, key, value } })));
-    parts.push(row('Map theme', 'theme', THEMES), row('Lines', 'line', LINES), row('Layout', 'layout', LAYOUTS));
-  }
-
   if (note && !isMap) {
     const font = note.font === 'mono' || note.font === 'serif' ? note.font : 'sans';
     parts.push(choiceRow('Font', ['sans', 'mono', 'serif'].map(f => ({
@@ -72,6 +65,7 @@ function moreHtml() {
       item({ action: 'export-markdown', ic: 'filemd', label: 'Export as Markdown (.md)' }),
       ...(note.deletedAt ? [] : [item({ action: 'template-save', ic: 'copy', label: 'Save as template', data: { id: note.id } })]),
     );
+    if (isMap && !note.deletedAt) parts.push(item({ action: 'map-template-save', ic: 'copy', label: 'Save as template', data: { id: note.id } }));
     parts.push('<div class="block-menu__sep"></div>');
     const { folder, folderTrashed } = noteState(note);
     if (note.deletedAt) {

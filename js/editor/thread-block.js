@@ -56,7 +56,7 @@ export function insertThreadBlock(root, block) {
 
 let sheets = null;
 /** The app's stylesheets, copied once so they also apply inside the shadow roots (+ the block's own). */
-function appSheets() {
+export function appSheets() {
   if (sheets) return sheets;
   sheets = [];
   for (const s of document.styleSheets) {

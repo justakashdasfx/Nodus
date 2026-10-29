@@ -29,7 +29,8 @@ export function render({ id }) {
   const m = note.map;
 
   const html = `
-    <div class="mm" data-mm-theme="${escapeHtml(m.theme || 'colored')}">
+    <div class="mm${trashed ? ' is-readonly' : ''}" data-mm-theme="${escapeHtml(m.theme || 'colored')}">
+      <div class="mm__outline" aria-label="Mind map outline"></div>
       <div class="mm__viewport" tabindex="0" aria-label="Mind map canvas">
         <div class="mm__world">
           <svg class="mm__edges" width="1" height="1" aria-hidden="true"></svg>
@@ -46,6 +47,27 @@ export function render({ id }) {
         <span class="mm__count" data-mm-count></span>
       </div>
       ${trashed ? '' : `<div class="mm__hint">${hint()}</div>`}
+      <div class="mm__views" role="group" aria-label="View">
+        <button type="button" class="mm-views__btn is-on" data-mode="map">${icon('mindmap', 16)}<span>Map</span></button>
+        <button type="button" class="mm-views__btn" data-mode="outline">${icon('list', 16)}<span>Outline</span></button>
+      </div>
+      <div class="mm__find" hidden>
+        <input type="text" placeholder="Find in map" spellcheck="false" aria-label="Find in map">
+        <span class="mm__find-count"></span>
+        <button type="button" class="mm-bar__btn mm-find__btn" data-find="prev" title="Previous (Shift+Enter)" aria-label="Previous">${icon('arrowUp', 16)}</button>
+        <button type="button" class="mm-bar__btn mm-find__btn" data-find="next" title="Next (Enter)" aria-label="Next">${icon('arrowDown', 16)}</button>
+        <button type="button" class="mm-bar__btn mm-find__btn" data-find="close" title="Close (Esc)" aria-label="Close">${icon('close', 16)}</button>
+      </div>
+      <div class="mm__bar" role="toolbar" aria-label="Map tools">
+        <button type="button" class="mm-bar__btn" data-bar="text" title="Text" aria-label="Text">${icon('text', 18)}</button>
+        <button type="button" class="mm-bar__btn" data-bar="color" title="Color" aria-label="Color">${icon('palette', 18)}</button>
+        <button type="button" class="mm-bar__btn" data-bar="node" title="Node" aria-label="Node">${icon('shape', 18)}</button>
+        <button type="button" class="mm-bar__btn" data-bar="map" title="Map" aria-label="Map">${icon('mindmap', 18)}</button>
+        <span class="mm__bar-sep" aria-hidden="true"></span>
+        <button type="button" class="mm-bar__btn" data-bar="undo" title="Undo (${escapeHtml(comboLabel((KEYMAP.canvas['edit.undo'] || [])[0] || ''))})" aria-label="Undo">${icon('undo', 18)}</button>
+        <button type="button" class="mm-bar__btn" data-bar="redo" title="Redo (${escapeHtml(comboLabel((KEYMAP.canvas['edit.redo'] || [])[0] || ''))})" aria-label="Redo">${icon('redo', 18)}</button>
+      </div>
+      <div class="mm__panel" hidden></div>
     </div>`;
 
   return {

@@ -171,6 +171,7 @@ export const CONFIG = {
     { id: 'note.new',       label: 'New note',            words: 'create add write',            kind: 'action', target: 'note-new',       icon: 'plus' },
     { id: 'journal.today',  label: "Open today's journal", words: 'daily diary entry',          kind: 'action', target: 'journal-today',  icon: 'journal' },
     { id: 'map.new',        label: 'New mind map',        words: 'create add mindmap diagram brainstorm', kind: 'action', target: 'map-new',    icon: 'mindmap' },
+    { id: 'map.template',   label: 'New mind map from template', words: 'create mindmap style', kind: 'action', target: 'map-template-pick', icon: 'mindmap' },
     { id: 'notebook.new',   label: 'New notebook',        words: 'create add folder',           kind: 'action', target: 'notebook-new',   icon: 'folder' },
     { id: 'thread.new',     label: 'New thread',          words: 'create add filter live',      kind: 'action', target: 'thread-new',     icon: 'threads' },
     { id: 'go.home',        label: 'Go to Home',          words: 'open recent',                 kind: 'go',     target: '#/home',         icon: 'home' },
@@ -217,6 +218,7 @@ export const CONFIG = {
     ['callout', 'Callout',     '',            'note tip info box highlight alert', 'callout'],
     ['toggle',  'Toggle',      '',            'collapsible details fold accordion expand', 'toggle'],
     ['thread',  'Threads',     '',            'thread gather collect tag rule search board', 'threads'],
+    ['map',     'Mind map',    '',            'mind map mindmap diagram brainstorm canvas', 'mindmap'],
   ],
 
   /* ---- The (i) button in the top bar opens this. Edit the words freely — it is all plain text.

@@ -122,7 +122,7 @@ export const trashedNotes = () =>
 export function tagCounts() {
   const counts = new Map();
   for (const note of state.notes) {
-    if (!live(note) || folderTrashed(note) || note.type === 'template' || note.type === 'map') continue;
+    if (!live(note) || folderTrashed(note) || note.type === 'template' || note.type === 'map' || note.type === 'maptemplate') continue;
     for (const block of note.blocks || []) for (const t of block.tags || []) counts.set(t, (counts.get(t) || 0) + 1);
   }
   return counts;
@@ -263,7 +263,7 @@ export const threads = () => state.threads.filter(t => !t.deletedAt).sort((a, b)
 export const getThread = (id) => state.threads.find(t => t.id === id && !t.deletedAt) || null;
 
 /** Notes that searches and threads look at: not in Trash, not in a notebook that is in Trash. */
-export const searchableNotes = () => state.notes.filter(n => live(n) && !folderTrashed(n) && n.type !== 'template' && n.type !== 'map');   // maps have no text blocks: they stay out of search blocks, tags, threads, tasks and links
+export const searchableNotes = () => state.notes.filter(n => live(n) && !folderTrashed(n) && n.type !== 'template' && n.type !== 'map' && n.type !== 'maptemplate');   // maps have no text blocks: they stay out of search blocks, tags, threads, tasks and links
 
 /* ---------- Mind maps: notes of type 'map' (the data is note.map, see js/maps/model.js) ---------- */
 
@@ -273,6 +273,30 @@ export function createMap({ folderId = null } = {}) {
   const now = Date.now();
   const note = { id: uid(), type: 'map', folderId, html: '', title: 'Untitled map', blocks: [], map: newMap(), createdAt: now, updatedAt: now, deletedAt: null };
   state.notes.push(note);
+  touch(note);
+  return note;
+}
+
+/* Map templates: a copy of a whole map (look + content), kept as a note of type 'maptemplate' so it syncs like everything else. */
+export const mapTemplates = () =>
+  state.notes.filter(n => n.type === 'maptemplate' && live(n)).sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+
+export function saveMapAsTemplate(id, name) {
+  const src = getNote(id);
+  if (!src || src.type !== 'map') return null;
+  const now = Date.now();
+  const note = { id: uid(), type: 'maptemplate', folderId: null, html: '', title: (name || '').trim() || mapTitle(src.map), blocks: [], map: JSON.parse(JSON.stringify(src.map)), createdAt: now, updatedAt: now, deletedAt: null };
+  state.notes.push(note);
+  touch(note);
+  return note;
+}
+
+export function createMapFromTemplate(id, { folderId = null } = {}) {
+  const tpl = getNote(id);
+  if (!tpl || tpl.type !== 'maptemplate') return null;
+  const note = createMap({ folderId });
+  note.map = JSON.parse(JSON.stringify(tpl.map));
+  note.title = mapTitle(note.map);
   touch(note);
   return note;
 }

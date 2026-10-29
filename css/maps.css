@@ -1,7 +1,7 @@
 /* ==========================================================================
-   MIND MAPS — structure and styling of the canvas, nodes, lines and the Mind maps cards.
+   MIND MAPS — structure and styling of the canvas, nodes, lines, panels and the Mind maps cards.
    Colours and sizes live in css/tokens.css → section 22. Numbers for distances between nodes: js/maps/config.js.
-   Sections: 1 Canvas · 2 Nodes · 3 Branch colours · 4 Lines · 5 Zoom bar and hint · 6 Cards (thumbnails)
+   Sections: 1 Canvas · 2 Nodes · 3 Branch colours · 4 Lines and connectors · 5 Dragging · 6 Zoom bar and hint · 7 Icon bar and panels · 8 Cards
    ========================================================================== */
 
 /* ---------- 1. Canvas ---------- */
@@ -20,7 +20,7 @@
   user-select: none; -webkit-user-select: none;
 }
 .mm__viewport.is-hand { cursor: grab; }                 /* the hand key is held */
-.mm__viewport.is-panning { cursor: grabbing; }
+.mm__viewport.is-panning, .mm__viewport.is-moving { cursor: grabbing; }
 .mm__marquee { position: absolute; border: 1px solid var(--mm-select); border-radius: 4px; background: color-mix(in srgb, var(--mm-select) 12%, transparent); pointer-events: none; }
 /* No will-change here: it makes the browser zoom a picture of the map (blurry) instead of redrawing it sharp. */
 .mm__world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
@@ -33,7 +33,7 @@
   position: absolute; left: 0; top: 0;
   width: max-content; max-width: var(--mm-node-max);
   padding: var(--mm-pad-y) var(--mm-pad-x);
-  border-radius: var(--mm-radius);
+  border: 1px solid transparent; border-radius: var(--mm-radius); background: transparent;
   color: var(--mm-text); font-size: var(--mm-fs); line-height: 1.4;
   cursor: default;
 }
@@ -43,22 +43,72 @@
 .mm-node.is-sel { box-shadow: 0 0 0 2px var(--mm-select); }
 .mm-node.is-edit { cursor: text; user-select: text; -webkit-user-select: text; }
 
-/* The central node */
-.mm-node[data-level="0"] {
-  padding: 8px 16px; border-radius: 12px; font-size: var(--mm-root-fs); font-weight: 600;
-  background: var(--mm-root-bg); border: 1px solid var(--mm-root-border);
-}
-/* Main branches: a soft tint of their own colour */
-.mm-node[data-level="1"] {
-  font-weight: 500; color: var(--mm-c);
-  background: color-mix(in srgb, var(--mm-c) var(--mm-l1-tint), transparent);
-  border: 1px solid color-mix(in srgb, var(--mm-c) 32%, transparent);
-}
-/* Everything deeper: just text, the line carries the colour */
-.mm-node[data-level="2"], .mm-node[data-level="3"] { padding: 4px 8px; }
+/* Shapes (Node panel) */
+.mm[data-shape="pill"]   .mm-node { border-radius: 999px; }
+.mm[data-shape="square"] .mm-node { border-radius: 3px; }
 
-/* Neutral theme: grey nodes, normal text */
-[data-mm-theme="neutral"] .mm-node[data-level="1"] { color: var(--mm-text); background: var(--mm-n1-bg); border-color: var(--mm-border); }
+/* Sizes by level */
+.mm-node[data-level="0"] { padding: 12px 22px; border-radius: 14px; font-size: var(--mm-root-fs); font-weight: 600; }
+.mm-node[data-level="1"] { font-weight: 500; }
+.mm-node[data-level="2"], .mm-node[data-level="3"] { padding: 4px 9px; }
+
+/* What is coloured — set in the Color panel: both · fill · border · none.
+   A node with a colour (data-ci) takes it for text, fill and border; the central node without one stays grey. */
+.mm-node[data-ci]:not([data-k="none"]) { color: var(--mm-c); }
+.mm-node[data-ci]:is([data-k="both"], [data-k="fill"])   { background: color-mix(in srgb, var(--mm-c) var(--mm-l1-tint), transparent); }
+.mm-node[data-ci]:is([data-k="both"], [data-k="border"]) { border-color: color-mix(in srgb, var(--mm-c) var(--mm-border-tint), transparent); }
+.mm-node[data-level="0"]:not([data-ci]):is([data-k="both"], [data-k="fill"])   { background: var(--mm-root-bg); }
+.mm-node[data-level="0"]:not([data-ci]):is([data-k="both"], [data-k="border"]) { border-color: var(--mm-root-border); }
+
+/* Neutral theme: everything grey, even the colours you chose. They are only hidden: switch back to Colored and they return. */
+[data-mm-theme="neutral"] .mm-node[data-ci] { color: var(--mm-text); }
+[data-mm-theme="neutral"] .mm-node[data-ci]:is([data-k="both"], [data-k="fill"])   { background: var(--mm-n1-bg); }
+[data-mm-theme="neutral"] .mm-node[data-ci]:is([data-k="both"], [data-k="border"]) { border-color: var(--mm-border); }
+
+/* Floating node: a main branch that sits anywhere. With the sticky look it becomes a coloured card you can make wider. */
+.mm-node[data-fl][data-sticky] {
+  width: 220px; max-width: none; padding: 12px 14px; border-radius: 12px; color: var(--mm-text);
+  background: color-mix(in srgb, var(--mm-c) var(--mm-sticky-tint), var(--mm-canvas-bg));
+  border-color: color-mix(in srgb, var(--mm-c) 50%, transparent); box-shadow: 0 6px 18px rgb(0 0 0 / .28);
+}
+.mm-node[data-fl][data-sticky].is-sel { box-shadow: 0 0 0 2px var(--mm-select), 0 6px 18px rgb(0 0 0 / .28); }
+.mm-node__resize { position: absolute; top: 8px; bottom: 8px; right: -4px; width: 8px; border-radius: 4px; cursor: ew-resize; }
+.mm-node__resize:hover { background: color-mix(in srgb, var(--mm-select) 45%, transparent); }
+
+/* Text inside a node: lists, checklists, coloured words */
+:is(.mm-node__text, .mo-text) > :first-child { margin-top: 0; }
+:is(.mm-node__text, .mo-text) > :last-child { margin-bottom: 0; }
+:is(.mm-node__text, .mo-text) ul, :is(.mm-node__text, .mo-text) ol { margin: 3px 0; padding-left: 20px; }
+:is(.mm-node__text, .mo-text) li { padding-left: 2px; }
+:is(.mm-node__text, .mo-text) ul[data-todo] { list-style: none; padding-left: 22px; }
+:is(.mm-node__text, .mo-text) li[data-ck] { position: relative; }
+:is(.mm-node__text, .mo-text) li[data-ck]::before {
+  content: ''; position: absolute; left: -20px; top: .3em; width: 13px; height: 13px; box-sizing: border-box;
+  border: 1.5px solid currentColor; border-radius: 4px; opacity: .55; cursor: pointer;
+}
+:is(.mm-node__text, .mo-text) li[data-ck="1"] { color: var(--mm-text-faint); text-decoration: line-through; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }   /* done: greyed, soft strike-through */
+:is(.mm-node__text, .mo-text) li[data-ck="1"]::before {
+  border-color: transparent; opacity: 1; background-color: color-mix(in srgb, var(--mm-select) 75%, transparent); background-size: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-6.5' fill='none' stroke='%23121212' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+:is(.mm-node__text, .mo-text) [data-tc="0"], :is(.mm-node__text, .mo-text) [data-tb="0"] { --mm-tx: var(--mm-p1); }
+:is(.mm-node__text, .mo-text) [data-tc="1"], :is(.mm-node__text, .mo-text) [data-tb="1"] { --mm-tx: var(--mm-p2); }
+:is(.mm-node__text, .mo-text) [data-tc="2"], :is(.mm-node__text, .mo-text) [data-tb="2"] { --mm-tx: var(--mm-p3); }
+:is(.mm-node__text, .mo-text) [data-tc="3"], :is(.mm-node__text, .mo-text) [data-tb="3"] { --mm-tx: var(--mm-p4); }
+:is(.mm-node__text, .mo-text) [data-tc="4"], :is(.mm-node__text, .mo-text) [data-tb="4"] { --mm-tx: var(--mm-p5); }
+:is(.mm-node__text, .mo-text) [data-tc="5"], :is(.mm-node__text, .mo-text) [data-tb="5"] { --mm-tx: var(--mm-p6); }
+:is(.mm-node__text, .mo-text) [data-tc="6"], :is(.mm-node__text, .mo-text) [data-tb="6"] { --mm-tx: var(--mm-p7); }
+:is(.mm-node__text, .mo-text) [data-tc="7"], :is(.mm-node__text, .mo-text) [data-tb="7"] { --mm-tx: var(--mm-p8); }
+:is(.mm-node__text, .mo-text) [data-tc], :is(.mm-node__text, .mo-text) [data-tb] { color: var(--mm-tx); }
+:is(.mm-node__text, .mo-text) [data-tb] { background: color-mix(in srgb, var(--mm-tx) 24%, transparent); border-radius: 4px; padding: 0 2px; }
+[data-mm-theme="neutral"] :is(.mm-node__text, .mo-text) :is([data-tc], [data-tb]) { --mm-tx: var(--mm-text-dim); }   /* Neutral greys coloured words too */
+
+/* The handle you pull onto another node to connect them (shows under a single selected node) */
+.mm-node__link {
+  display: none; position: absolute; left: 50%; bottom: -8px; width: 12px; height: 12px; margin-left: -6px;
+  border-radius: 50%; background: var(--mm-canvas-bg); border: 2px solid var(--mm-select); cursor: crosshair;
+}
+.mm-node.is-solo:not(.is-edit) .mm-node__link { display: block; }
 
 /* The badge of a folded branch: how many nodes are hidden. Click to open. */
 .mm-node__fold {
@@ -71,7 +121,7 @@
 .mm-node[data-side="r"] .mm-node__fold { right: -30px; }
 .mm-node[data-side="l"] .mm-node__fold { left: -30px; }
 
-/* ---------- 3. Branch colours (also used by the thumbnails) ---------- */
+/* ---------- 3. Branch colours (also used by the thumbnails, the panels and the lines) ---------- */
 
 [data-ci="0"] { --mm-c: var(--mm-p1); }
 [data-ci="1"] { --mm-c: var(--mm-p2); }
@@ -81,15 +131,30 @@
 [data-ci="5"] { --mm-c: var(--mm-p6); }
 [data-ci="6"] { --mm-c: var(--mm-p7); }
 [data-ci="7"] { --mm-c: var(--mm-p8); }
-[data-mm-theme="neutral"] [data-ci] { --mm-c: var(--mm-neutral-line); }   /* Neutral: one grey for every branch */
+[data-mm-theme="neutral"] :is(.mm-node, .mm-edge, .mmt-n, .mo-bullet)[data-ci] { --mm-c: var(--mm-neutral-line); }   /* Neutral: one grey for every branch and every chosen colour */
 
-/* ---------- 4. Lines ---------- */
+/* ---------- 4. Lines and connectors ---------- */
 
 .mm-edge { opacity: var(--mm-line-opacity); }
 .mm-edge--fill   { fill: var(--mm-c); stroke: none; }                           /* Tapered: a filled shape */
 .mm-edge--stroke { fill: none; stroke: var(--mm-c); stroke-linecap: round; stroke-linejoin: round; }   /* Curved and Elbow */
 
-/* ---------- 5. Zoom bar and hint ---------- */
+.mm-link { fill: none; stroke: var(--mm-link); stroke-width: 1.6; stroke-dasharray: 6 5; stroke-linecap: round; pointer-events: none; }
+.mm-link.is-sel { stroke: var(--mm-select); stroke-width: 2.2; }
+.mm-link-hit { fill: none; stroke: transparent; stroke-width: 14; pointer-events: stroke; cursor: pointer; }
+.mm-arrow { fill: none; stroke: var(--mm-link); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- 5. Dragging ---------- */
+
+.mm-node.is-dragging { z-index: 3; opacity: .92; box-shadow: 0 8px 22px rgb(0 0 0 / .35); }   /* the nodes you are moving */
+.mm-node.is-drop { box-shadow: 0 0 0 2px var(--mm-select); }                    /* drop here = become its child / connect to it */
+.mm__drop { position: absolute; height: 3px; border-radius: 2px; background: var(--mm-select); pointer-events: none; }   /* drop here = before / after */
+.mm__ghost {
+  position: absolute; left: 0; top: 0; z-index: 5; padding: 4px 10px; border-radius: 8px; white-space: nowrap; pointer-events: none;
+  background: var(--mm-panel-bg); border: 1px solid var(--mm-select); color: var(--mm-text); font-size: 12px;
+}
+
+/* ---------- 6. Zoom bar and hint ---------- */
 
 .mm__zoom {
   position: absolute; left: 14px; bottom: 14px; display: flex; align-items: center; gap: 2px; padding: 4px;
@@ -115,7 +180,92 @@
   background: var(--mm-panel-bg); border: 1px solid var(--mm-border); color: var(--text-dim); font-size: var(--fs-small);
 }
 
-/* ---------- 6. Cards on the Mind maps page ---------- */
+/* ---------- 7. Icon bar (right) and its panels ---------- */
+
+.mm.is-readonly .mm__bar, .mm.is-readonly .mm__panel { display: none; }
+.mm__bar {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%); z-index: 6;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px;
+  background: var(--mm-panel-bg); border: 1px solid var(--mm-border); border-radius: 14px; box-shadow: 0 8px 24px rgb(0 0 0 / .3);
+}
+.mm-bar__btn { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 9px; color: var(--text-muted); }
+.mm-bar__btn:hover { background: var(--bg-hover); color: var(--text); }
+.mm-bar__btn.is-on { background: var(--bg-hover); color: var(--text); }
+.mm__bar-sep { width: 18px; height: 1px; margin: 4px 0; background: var(--mm-border); }
+
+.mm__panel {
+  position: absolute; right: 68px; top: 50%; transform: translateY(-50%); z-index: 6;
+  width: 256px; max-height: calc(100% - 40px); overflow-y: auto; padding: 14px;
+  background: var(--mm-panel-bg); border: 1px solid var(--mm-border); border-radius: 14px; box-shadow: 0 8px 24px rgb(0 0 0 / .3);
+}
+.mm__panel[hidden] { display: none; }
+.mm-panel__title { margin: 0 0 2px; font-size: 13px; font-weight: 600; color: var(--text); }
+.mm-panel__label { margin: 14px 0 6px; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-faint); }
+.mm-panel__note { margin: 10px 0 0; font-size: 12px; line-height: 1.45; color: var(--text-faint); }
+.mm-panel__sep { height: 1px; margin: 12px 0; background: var(--mm-border); }
+
+/* Style chips: a tiny node showing what gets coloured */
+.mm-chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.mm-chips:has(.mm-chip--text) { grid-template-columns: repeat(auto-fit, minmax(66px, 1fr)); }
+.mm-chip {
+  display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 7px 2px 6px;
+  border: 1px solid transparent; border-radius: 9px; color: var(--text-muted); font-size: 11px;
+}
+.mm-chip:hover { background: var(--bg-hover); }
+.mm-chip.is-on { border-color: var(--mm-select); color: var(--text); background: color-mix(in srgb, var(--mm-select) 10%, transparent); }
+.mm-chip--text { flex-direction: row; justify-content: center; padding: 6px 4px; border-color: var(--mm-border); font-size: 12px; }
+:where(.mm-pv) { --mm-c: var(--mm-text-dim); }
+.mm-pv { display: grid; place-items: center; width: 38px; height: 24px; border: 1px solid transparent; border-radius: 7px; color: var(--mm-text-dim); font-size: 11px; }
+.mm-pv i { font-style: normal; }
+.mm-pv--both, .mm-pv--fill   { background: color-mix(in srgb, var(--mm-c) 24%, transparent); }
+.mm-pv--both, .mm-pv--border { border-color: color-mix(in srgb, var(--mm-c) 75%, transparent); }
+.mm-pv[data-ci]:not(.mm-pv--none) { color: var(--mm-c); }
+
+/* Colours */
+.mm-swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.mm-sw { width: 100%; max-width: 32px; aspect-ratio: 1; border-radius: 50%; background: var(--mm-c); border: 2px solid transparent; }
+.mm-sw:hover { transform: scale(1.08); }
+.mm-sw.is-on { box-shadow: 0 0 0 2px var(--mm-panel-bg), 0 0 0 4px var(--mm-text-dim); }
+.mm-sw--auto { background: conic-gradient(var(--mm-p1), var(--mm-p2), var(--mm-p3), var(--mm-p4), var(--mm-p5), var(--mm-p6), var(--mm-p7), var(--mm-p8), var(--mm-p1)); }
+
+/* Apply to */
+.mm-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.mm-pill {
+  display: inline-flex; align-items: center; gap: 2px; padding: 5px 11px; border: 1px solid var(--mm-border); border-radius: 999px;
+  color: var(--text-muted); font-size: 12px;
+}
+.mm-pill:hover { color: var(--text); }
+.mm-pill.is-on { border-color: var(--mm-select); color: var(--text); background: color-mix(in srgb, var(--mm-select) 10%, transparent); }
+.mm-pill--level { padding: 2px; }
+.mm-pill__main { padding: 3px 4px; font: inherit; color: inherit; }
+.mm-pill__step { width: 20px; height: 20px; border-radius: 50%; font-size: 14px; line-height: 1; color: var(--text-muted); }
+.mm-pill__step:hover { background: var(--bg-hover); color: var(--text); }
+
+/* Color panel: two switches and the level button */
+.mm-chips--two { grid-template-columns: repeat(2, 1fr); }
+.mm-level { display: flex; align-items: center; gap: 6px; }
+.mm-level__apply { flex: 1; padding: 8px 10px; border: 1px solid var(--mm-border); border-radius: 9px; color: var(--text); font-size: 13px; text-align: center; }
+.mm-level__apply:hover:not(:disabled) { background: var(--bg-hover); border-color: var(--mm-select); }
+.mm-level__apply:disabled { opacity: .45; cursor: default; }
+.mm-level__step { width: 28px; height: 34px; border-radius: 9px; color: var(--text-muted); font-size: 16px; line-height: 1; }
+.mm-level__step:hover { background: var(--bg-hover); color: var(--text); }
+
+/* Text panel */
+.mm-tools { display: flex; gap: 6px; }
+.mm-tool { display: grid; place-items: center; width: 38px; height: 34px; border: 1px solid var(--mm-border); border-radius: 9px; color: var(--text-muted); }
+.mm-tool:hover { background: var(--bg-hover); color: var(--text); }
+.mm-swatches--text { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.mm-tsw--default { color: var(--text-dim); border: 1px dashed var(--mm-border); }
+.mm-tsw { height: 30px; border: 1px solid transparent; border-radius: 8px; color: var(--mm-c); font-size: 14px; font-weight: 600; }
+.mm-tsw--bg { background: color-mix(in srgb, var(--mm-c) 24%, transparent); }
+.mm-tsw:hover { border-color: var(--mm-border); }
+
+/* Rows (buttons with an icon) */
+.mm-row { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 4px; padding: 8px; border-radius: 9px; color: var(--text-dim); font-size: 13px; text-align: left; }
+.mm-row:hover { background: var(--bg-hover); color: var(--text); }
+.mm-row.is-on { background: var(--bg-hover); color: var(--text); }
+
+/* ---------- 8. Cards on the Mind maps page ---------- */
 
 .mm-thumb {
   display: flex; align-items: center; justify-content: center; padding: 0;
@@ -128,7 +278,45 @@
 .mmt-root { fill: var(--mm-root-bg); stroke: var(--mm-root-border); }
 .mmt-l1   { fill: color-mix(in srgb, var(--mm-c) 30%, transparent); stroke: color-mix(in srgb, var(--mm-c) 45%, transparent); }
 .mmt-deep { fill: color-mix(in srgb, var(--mm-c) 22%, transparent); stroke: none; }
+.mmt-n[data-ci].mmt-root { fill: color-mix(in srgb, var(--mm-c) 30%, transparent); stroke: color-mix(in srgb, var(--mm-c) 45%, transparent); }
 [data-mm-theme="neutral"] .mmt-l1   { fill: var(--mm-n1-bg); stroke: var(--mm-border); }
 [data-mm-theme="neutral"] .mmt-deep { fill: var(--grey-400); }
+[data-mm-theme="neutral"] .mmt-n[data-ci].mmt-root { fill: var(--mm-root-bg); stroke: var(--mm-root-border); }
 .g-card__titlerow { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .g-card__titlerow .icon { flex: none; color: var(--text-muted); }
+
+/* ---------- 9. Views (Map / Outline), Find, Outline ---------- */
+
+.mm__views { position: absolute; left: 14px; top: 14px; z-index: 6; display: flex; gap: 2px; padding: 3px; background: var(--mm-panel-bg); border: 1px solid var(--mm-border); border-radius: 10px; }
+.mm-views__btn { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 7px; color: var(--text-muted); font-size: 12px; }
+.mm-views__btn:hover { color: var(--text); }
+.mm-views__btn.is-on { background: var(--bg-hover); color: var(--text); }
+
+.mm__find {
+  position: absolute; top: 14px; left: 50%; transform: translateX(-50%); z-index: 7; display: flex; align-items: center; gap: 2px;
+  padding: 4px 4px 4px 14px; background: var(--mm-panel-bg); border: 1px solid var(--mm-border); border-radius: 12px; box-shadow: 0 8px 24px rgb(0 0 0 / .3);
+}
+.mm__find[hidden] { display: none; }
+.mm__find input { width: 200px; background: none; border: 0; outline: none; color: var(--text); font-size: 13px; }
+.mm__find-count { min-width: 56px; color: var(--text-faint); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
+.mm-find__btn { width: 28px; height: 28px; }
+.mm-node.is-hit { box-shadow: 0 0 0 2px color-mix(in srgb, var(--mm-select) 50%, transparent); }
+.mm-node.is-hit-cur { box-shadow: 0 0 0 2px var(--mm-select), 0 0 0 6px color-mix(in srgb, var(--mm-select) 25%, transparent); }
+
+.mm__outline { display: none; position: absolute; inset: 0; overflow-y: auto; padding: 72px 24px 120px; background: var(--mm-canvas-bg); }
+.mm[data-view="outline"] .mm__outline { display: block; }
+.mm[data-view="outline"] :is(.mm__viewport, .mm__zoom, .mm__hint, .mm__bar, .mm__panel, .mm__find) { display: none; }
+.mo-page { max-width: 780px; margin: 0 auto; }
+.mo-row { display: flex; align-items: flex-start; gap: 4px; padding-left: calc(var(--lvl) * 28px); }
+.mo-fold { flex: none; width: 20px; height: 28px; border-radius: 5px; color: var(--text-faint); font-size: 11px; }
+.mo-fold:hover { background: var(--bg-hover); color: var(--text); }
+.mo-fold.is-empty { visibility: hidden; }
+.mo-bullet { flex: none; width: 7px; height: 7px; margin: 11px 6px 0 0; border-radius: 50%; background: var(--mm-c, var(--mm-text-faint)); }
+.mo-text { flex: 1; min-width: 0; padding: 3px 7px; border-radius: 7px; outline: none; color: var(--mm-text); font-size: var(--mm-fs); line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+.mo-text:focus { background: var(--bg-hover); }
+.mo-text:empty::before { content: 'Idea'; color: var(--mm-text-faint); }
+.mo-row[data-level="0"] { padding-left: 24px; margin-bottom: 8px; }
+.mo-row[data-level="0"] .mo-bullet, .mo-row[data-level="0"] .mo-fold { display: none; }
+.mo-row[data-level="0"] .mo-text { font-size: 24px; font-weight: 600; }
+.mo-row[data-level="0"] .mo-text:empty::before { content: 'Central idea'; }
+.mo-label { margin: 28px 0 6px 24px; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-faint); }

@@ -161,7 +161,7 @@ export function mountExtraBlocks(root, { history = null, readOnly = false } = {}
   const onKeyUp = (e) => { if (e.key === ' ' && e.target.closest?.('summary')) e.preventDefault(); };   // Firefox folds on Space
 
   const onKeyDown = (e) => {
-    if (e.target.closest?.('[data-thread-block]')) return;      // typing inside a thread block is not typing in the note
+    if (e.target.closest?.('[data-thread-block], [data-map-block]')) return;      // typing inside a thread block is not typing in the note
     if (e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key !== 'Enter' && e.key !== 'Backspace') return;
     const sel = getSelection();
@@ -255,7 +255,7 @@ export function mountExtraBlocks(root, { history = null, readOnly = false } = {}
 
   /* Select a divider by dragging over it and press Delete / Backspace: the divider goes too */
   const onDeleteDivider = (e) => {
-    if (e.target.closest?.('[data-thread-block]')) return;      // typing inside a thread block is not typing in the note
+    if (e.target.closest?.('[data-thread-block], [data-map-block]')) return;      // typing inside a thread block is not typing in the note
     if ((e.key !== 'Delete' && e.key !== 'Backspace') || e.ctrlKey || e.metaKey || e.altKey) return;
     const sel = getSelection();
     if (sel.rangeCount && sel.isCollapsed && root.contains(sel.anchorNode)) {   // caret right after / before a divider
