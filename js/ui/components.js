@@ -7,6 +7,7 @@ import { CONFIG } from '../core/config.js';
 import { icon } from '../core/icons.js';
 import * as store from '../core/store.js';
 import { escapeHtml, formatDate, sanitizeHtml } from '../core/utils.js';
+import { emptyArt } from './empty-art.js';
 
 /** A toolbar-style button: icon + text label. */
 export function button({ action, iconName, label, variant = '', data = {}, title = '' }) {
@@ -62,8 +63,8 @@ export function notebookList(folders) {
   }).join('')}</div>`;
 }
 
-export function emptyState({ title, text = '', actionHtml = '' }) {
-  return `<div class="empty"><p class="empty__title">${escapeHtml(title)}</p>${text ? `<p class="empty__text">${escapeHtml(text)}</p>` : ''}${actionHtml}</div>`;
+export function emptyState({ title, text = '', actionHtml = '', art = '' }) {
+  return `<div class="empty">${art ? `<div class="empty__art">${emptyArt(art)}</div>` : ''}<p class="empty__title">${escapeHtml(title)}</p>${text ? `<p class="empty__text">${escapeHtml(text)}</p>` : ''}${actionHtml}</div>`;
 }
 
 /** The note's body without its title line, trimmed to a few blocks for the card preview. */

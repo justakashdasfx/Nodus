@@ -15,7 +15,7 @@ const notFound = (title, text, actionHtml) => ({ html: `<div class="view">${empt
 export function render({ id }) {
   const folder = store.getFolder(id);
   if (!folder) {
-    return notFound('Notebook not found', 'It may have been deleted.',
+    return notFound('Notebook not found', 'It may have been deleted.', art: 'notfound',
       '<a class="btn btn--solid" href="#/notebooks"><span class="btn__label">Back to notebooks</span></a>');
   }
   if (folder.deletedAt) {
@@ -34,11 +34,11 @@ export function render({ id }) {
   const actions = sortBtn + newBtn + moreBtn;
   const body = notes.length
     ? (style === 'list' ? noteList(notes) : gallery(notes.map(noteCard)))
-    : emptyState({ title: 'This notebook is empty', text: 'Add the first note to get started.',
+    : emptyState({ title: 'This notebook is empty', text: 'Add the first note to get started.', art: 'note',
         actionHtml: button({ action: 'note-new', iconName: 'plus', label: 'Add a note', variant: 'btn--solid', data: { folder: id } }) });
   const subtitle = `${notes.length} ${notes.length === 1 ? 'note' : 'notes'}`;
   const description = folder.description
     ? `<p class="view-head__desc">${escapeHtml(folder.description)}</p>`
     : `<button type="button" class="view-head__add-desc" data-action="notebook-edit" data-id="${id}">Add a description</button>`;
-  return { html: `<div class="view">${viewHead({ title: folder.name, subtitle, description, actions })}${body}</div>` };
+  return { html: `<div class="view">${viewHead({ title: folder.name, description, actions })}${body}</div>` };
 }

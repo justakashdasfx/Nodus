@@ -41,5 +41,5 @@ export function render() {
     ? (style === 'list' ? mapList(maps) : gallery(maps.map(mapCard)))
     : emptyState({ title: 'No mind maps yet', text: 'Press Enter for a node beside, Tab for a branch under it. Everything else follows.', actionHtml: add });
   const subtitle = maps.length ? `${maps.length} ${maps.length === 1 ? 'map' : 'maps'}` : '';
-  return { html: `<div class="view">${viewHead({ title: 'Mind maps', subtitle, actions: (maps.length ? viewSwitch(style, { page: 'maps' }) : '') + fromTemplate + add })}${body}</div>` };
+  return { html: `<div class="view">${viewHead({ title: 'Mind maps', actions: (maps.length ? viewSwitch(style, { page: 'maps' }) : '') + fromTemplate + add })}${body}</div>` };
 }

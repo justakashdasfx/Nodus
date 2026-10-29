@@ -17,6 +17,6 @@ export function render() {
     </a>`).join('');
   const body = entries.length
     ? (style === 'gallery' ? gallery(entries.map(noteCard)) : `<div class="list">${rows}</div>`)
-    : emptyState({ title: 'No journal entries yet', text: 'Start with today.', actionHtml: today });
+    : emptyState({ title: 'No journal entries yet', text: 'Start with today.', art: 'journal', actionHtml: today });
   return { html: `<div class="view">${viewHead({ title: 'Journal', actions: entries.length ? viewSwitch(style, { page: 'journal' }) + today : '' })}${body}</div>` };
 }

@@ -86,8 +86,8 @@
   background: transparent; border: 1px solid var(--border); border-radius: 999px; color: var(--text-faint);
   transition: border-color var(--t-fast), color var(--t-fast);
 }
-.tg-search:hover { border-color: var(--grey-600); }
-.tg-search:focus-within { border-color: var(--grey-800); color: var(--text-muted); }
+.tg-search:hover { border-color: var(--grey-800); color: var(--grey-1100);}
+.tg-search:focus-within { border-color: var(--accent); color: var(--grey-1200); }
 .tg-search__input { flex: 1; min-width: 0; height: 100%; border: 0; outline: none; background: transparent; color: var(--text); font: inherit; font-size: var(--fs-small); }
 .tg-search__input::placeholder { color: var(--text-faint); }
 .tg-sort { display: inline-flex; gap: 18px; }

@@ -23,7 +23,7 @@ export function render() {
   if (!list.length) {
     return { html: `<div class="view">${viewHead({ title: 'Threads' })}${emptyState({
       title: 'No threads yet',
-      text: 'A thread gathers blocks from all your notes by tag, word or keyword, and keeps them in one place.',
+      text: 'A thread gathers blocks from all your notes by tag, word or keyword, and keeps them in one place.', art: 'threads',
       actionHtml: add,
     })}</div>` };
   }
@@ -41,5 +41,5 @@ export function render() {
       ${caretHtml}
     </a>`;
   }).join('');
-  return { html: `<div class="view">${viewHead({ title: 'Threads', subtitle: `${list.length} ${list.length === 1 ? 'thread' : 'threads'}`, actions: add })}<div class="list">${rows}</div></div>` };
+  return { html: `<div class="view">${viewHead({ title: 'Threads', actions: add })}<div class="list">${rows}</div></div>` };
 }

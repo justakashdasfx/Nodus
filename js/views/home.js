@@ -14,7 +14,7 @@ export function render() {
                 + button({ action: 'note-new', iconName: 'plus', label: 'New note', variant: 'button' });
   const body = notes.length
     ? show(notes)
-    : emptyState({ title: 'No notes yet', text: 'Write a new note or import a text file.',
+    : emptyState({ title: 'No notes yet', text: 'Write a new note or import a text file.',art: 'notes',
         actionHtml: button({ action: 'note-new', iconName: 'plus', label: 'New note', variant: 'btn--solid' }) });
   return { html: `<div class="view">${viewHead({ title: 'Home', subtitle: 'Recent notes', actions })}${pinned.length ? `<p class="list-label">Pinned</p>${show(pinned)}<p class="list-label">Recent</p>` : ''}${body}</div>` };
 }

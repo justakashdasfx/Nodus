@@ -9,6 +9,6 @@ export function render() {
   const add = button({ action: 'notebook-new', iconName: 'plus', label: 'Add notebook', variant: 'button' });
   const body = folders.length
     ? (style === 'list' ? notebookList(folders) : gallery(folders.map(notebookCard)))
-    : emptyState({ title: 'No notebooks yet', text: 'Notebooks group related notes together.', actionHtml: add });
+    : emptyState({ title: 'No notebooks yet', text: 'Notebooks group related notes together.', art: 'notebooks', actionHtml: add });
   return { html: `<div class="view">${viewHead({ title: 'Notebooks', actions: folders.length ? viewSwitch(style, { page: 'notebooks' }) + add : '' })}${body}</div>` };
 }

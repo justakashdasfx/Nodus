@@ -50,7 +50,7 @@ export function revealBlock(editor, blockId) {
 export function render({ id, block }, { pane = false } = {}) {
   const note = store.getNote(id);
   if (!note) {
-    return { html: `<div class="view">${emptyState({ title: 'Note not found', text: 'It may have been deleted.',
+    return { html: `<div class="view">${emptyState({ title: 'Note not found', text: 'It may have been deleted.', art: 'notfound',
       actionHtml: pane ? '' : '<a class="btn btn--solid" href="#/home"><span class="btn__label">Back to Home</span></a>' })}</div>` };
   }
 

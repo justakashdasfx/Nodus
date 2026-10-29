@@ -12,8 +12,8 @@ export function render() {
   + button({ action: 'note-new', iconName: 'plus', label: 'New note', variant: 'button' });
   const body = notes.length
     ? (style === 'list' ? noteList(notes) : gallery(notes.map(noteCard)))
-    : emptyState({ title: 'Your inbox is empty', text: 'Notes without a notebook land here. Everything you file into a notebook leaves the inbox.',
+    : emptyState({ title: 'Your inbox is empty', text: 'Notes without a notebook land here. Everything you file into a notebook leaves the inbox.' art: 'inbox',
         actionHtml: button({ action: 'note-new', iconName: 'plus', label: 'New note', variant: 'button' }) });
   const subtitle = `${notes.length} ${notes.length === 1 ? 'note' : 'notes'} without a notebook`;
-  return { html: `<div class="view">${viewHead({ title: 'Inbox', subtitle, actions })}${body}</div>` };
+  return { html: `<div class="view">${viewHead({ title: 'Inbox', actions })}${body}</div>` };
 }

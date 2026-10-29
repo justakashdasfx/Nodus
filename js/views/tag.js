@@ -16,7 +16,7 @@ export function render({ id }) {
   if (!hits.length) {
     return { html: `<div class="view">${viewHead({ title: '#' + tag, titleStyle })}${emptyState({
       title: 'No blocks with this tag',
-      text: 'Type #' + tag + ' and a space in any block to tag it.',
+      text: 'Type #' + tag + ' and a space in any block to tag it.', art: 'tags',
       actionHtml: '<a class="btn btn--solid" href="#/home"><span class="btn__label">Back to Home</span></a>',
     })}</div>` };
   }

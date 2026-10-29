@@ -22,7 +22,7 @@ function hint() {
 export function render({ id }) {
   const note = store.getNote(id);
   if (!note || note.type !== 'map' || !note.map) {
-    return { html: `<div class="view">${emptyState({ title: 'Mind map not found', text: 'It may have been deleted.',
+    return { html: `<div class="view">${emptyState({ title: 'Mind map not found', text: 'It may have been deleted.', art: 'maps',
       actionHtml: '<a class="btn btn--solid" href="#/maps"><span class="btn__label">Back to Mind maps</span></a>' })}</div>` };
   }
   const { trashed } = noteState(note);

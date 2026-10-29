@@ -45,6 +45,6 @@ export function render() {
     ? `${folders.length ? `<h2 class="list-label">Notebooks</h2><div class="list">${folderRows}</div>` : ''}
        ${notes.length ? `<h2 class="list-label">Notes</h2><div class="list">${noteRows}</div>` : ''}
        ${maps.length ? `<h2 class="list-label">Mind maps</h2><div class="list">${mapRows}</div>` : ''}`
-    : emptyState({ title: 'Trash is empty', text: 'Deleted notes and notebooks appear here.' });
+    : emptyState({ title: 'Trash is empty', text: 'Deleted notes and notebooks appear here.', art: 'trash'  });
   return { html: `<div class="view">${viewHead({ title: 'Trash', actions: any ? empty : '' })}${body}</div>` };
 }

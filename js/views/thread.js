@@ -159,7 +159,7 @@ function mountThread(root, id) {
           title: ruleCount(thread.rules) ? 'No blocks match yet' : 'Add a rule to start',
           text: ruleCount(thread.rules)
             ? (thread.live ? 'Blocks that fit the rules will appear here as you write.' : 'Nothing was matching when this thread was paused.')
-            : 'Add a tag, a word or a keyword above and the matching blocks from all your notes will gather here.',
+            : 'Add a tag, a word or a keyword above and the matching blocks from all your notes will gather here.', art: 'threads',
         });
   }
 

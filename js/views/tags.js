@@ -46,7 +46,7 @@ export function render() {
   if (!counts.size) {
     return { html: `<div class="view">${viewHead({ title: 'Tags' })}${emptyState({
       title: 'No tags yet',
-      text: 'Type # and a word in any block (for example #idea) and press space. Every tag you use will be listed here.',
+      text: 'Type # and a word in any block (for example #idea) and press space. Every tag you use will be listed here.', art: 'tags',
     })}</div>` };
   }
 
