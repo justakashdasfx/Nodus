@@ -40,6 +40,7 @@ export function render() {
   const body = maps.length
     ? (style === 'list' ? mapList(maps) : gallery(maps.map(mapCard)))
     : emptyState({ title: 'No mind maps yet', text: 'Press Enter for a node beside, Tab for a branch under it. Everything else follows.', art: 'maps', actionHtml: add });
-  const subtitle = maps.length ? `${maps.length} ${maps.length === 1 ? 'map' : 'maps'}` : '';
-  return { html: `<div class="view">${viewHead({ title: 'Mind maps', actions: (maps.length ? viewSwitch(style, { page: 'maps' }) : '') + fromTemplate + (maps.length ? add : '') + fromTemplate + add })}${body}</div>` };
+  // Header buttons: when the page is empty the middle "New map" button is the only one, so the header drops its copy and the view switch.
+  const actions = (maps.length ? viewSwitch(style, { page: 'maps' }) : '') + fromTemplate + (maps.length ? add : '');
+  return { html: `<div class="view">${viewHead({ title: 'Mind maps', actions })}${body}</div>` };
 }
