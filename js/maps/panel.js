@@ -51,6 +51,10 @@ export function mountPanel(root, api) {
     if (sel !== lastSel) { lastSel = sel; if (sel) level = api.levelOf(sel); }
     const st = sel ? api.styleOf(sel) : { k: 'both', c: null, ci: null };
     const pv = (kind) => `<span class="mm-pv mm-pv--${kind}"${st.ci == null ? '' : ` data-ci="${st.ci}"`}><i>Aa</i></span>`;
+    const multi = (api.map.lineMode || 'multi') === 'multi';
+    const lc = Number.isInteger(api.map.lineColor) ? api.map.lineColor : 0;
+    const lineSwatches = `<button type="button" class="mm-sw mm-sw--grey${lc === -1 ? ' is-on' : ''}" data-linecolor="-1" title="Grey" aria-label="Grey"></button>`
+      + Array.from({ length: MAPS.palette }, (_, i) => `<button type="button" class="mm-sw${lc === i ? ' is-on' : ''}" data-linecolor="${i}" data-ci="${i}" aria-label="Colour ${i + 1}"></button>`).join('');
     const swatches = `<button type="button" class="mm-sw mm-sw--auto${st.c == null ? ' is-on' : ''}" data-c="auto" title="Auto: follows the branch"></button>` + swatchRow('data-c', st.c);
     return `
       <p class="mm-panel__label">Style</p>
@@ -60,6 +64,10 @@ export function mountPanel(root, api) {
       </div>
       <p class="mm-panel__label">Color</p>
       <div class="mm-swatches">${swatches}</div>
+      <p class="mm-panel__label">Lines</p>
+      <button type="button" class="mm-switch-row" role="switch" aria-checked="${multi}" data-lines="toggle"><span>Multicolor lines</span><span class="mm-switch${multi ? ' is-on' : ''}"></span></button>
+      ${multi ? '' : `<div class="mm-swatches">${lineSwatches}</div>`}
+      <p class="mm-panel__note">${multi ? 'Every main branch has its own color.' : 'Every line has the same color.'}</p>
       <p class="mm-panel__label">Whole level</p>
       <div class="mm-level">
         <button type="button" class="mm-level__step" data-step="-1" aria-label="Previous level">‹</button>
@@ -144,6 +152,8 @@ export function mountPanel(root, api) {
     }
     else if ((b = t.closest('[data-c]'))) api.applyStyle({ c: b.dataset.c === 'auto' ? null : Number(b.dataset.c) }, 'node');
     else if ((b = t.closest('[data-step]'))) { level = clamp(level + Number(b.dataset.step), 1, 9); refresh(); }
+    else if ((b = t.closest('[data-lines]'))) api.setOption('lineMode', (api.map.lineMode || 'multi') === 'multi' ? 'single' : 'multi');
+    else if ((b = t.closest('[data-linecolor]'))) api.setOption('lineColor', Number(b.dataset.linecolor));
     else if ((b = t.closest('[data-opt]'))) api.setOption(b.dataset.opt, b.dataset.v);
     else if ((b = t.closest('[data-exp]'))) api.exportAs(b.dataset.exp);
     else if ((b = t.closest('[data-act]'))) {

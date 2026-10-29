@@ -37,7 +37,7 @@
   color: var(--mm-text); font-size: var(--mm-fs); line-height: 1.4;
   cursor: default;
 }
-.mm-node__text { white-space: pre-wrap; overflow-wrap: anywhere; outline: none; min-width: 1ch; }
+.mm-node__text { position: relative; top: var(--mm-text-nudge, 1px); white-space: pre-wrap; overflow-wrap: anywhere; outline: none; min-width: 1ch; }   /* top: nudges the words down so they sit level with the line (tokens.css → --mm-text-nudge) */
 .mm-node.is-empty .mm-node__text::before { content: 'Idea'; color: var(--mm-text-faint); pointer-events: none; }
 .mm-node[data-level="0"].is-empty .mm-node__text::before { content: 'Central idea'; }
 .mm-node.is-sel { box-shadow: 0 0 0 2px var(--mm-select); }
@@ -136,6 +136,7 @@
 /* ---------- 4. Lines and connectors ---------- */
 
 .mm-edge { opacity: var(--mm-line-opacity); }
+.mm-edge:not([data-ci]) { --mm-c: var(--mm-neutral-line); }                   /* a line with no colour (Multicolor lines off, grey) */
 .mm-edge--fill   { fill: var(--mm-c); stroke: none; }                           /* Tapered: a filled shape */
 .mm-edge--stroke { fill: none; stroke: var(--mm-c); stroke-linecap: round; stroke-linejoin: round; }   /* Curved and Elbow */
 
@@ -259,6 +260,15 @@
 .mm-tsw { height: 30px; border: 1px solid transparent; border-radius: 8px; color: var(--mm-c); font-size: 14px; font-weight: 600; }
 .mm-tsw--bg { background: color-mix(in srgb, var(--mm-c) 24%, transparent); }
 .mm-tsw:hover { border-color: var(--mm-border); }
+
+/* Switch (Multicolor lines) */
+.mm-switch-row { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 6px 2px; color: var(--text-dim); font-size: 13px; text-align: left; }
+.mm-switch-row:hover { color: var(--text); }
+.mm-switch { position: relative; flex: none; width: 34px; height: 20px; border-radius: 10px; background: var(--mm-border); transition: background var(--t-fast); }
+.mm-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--text); transition: transform var(--t-fast); }
+.mm-switch.is-on { background: var(--mm-select); }
+.mm-switch.is-on::after { transform: translateX(14px); background: #fff; }
+.mm-sw--grey { background: var(--mm-neutral-line); }
 
 /* Rows (buttons with an icon) */
 .mm-row { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 4px; padding: 8px; border-radius: 9px; color: var(--text-dim); font-size: 13px; text-align: left; }

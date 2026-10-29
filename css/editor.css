@@ -87,15 +87,16 @@
 .prose [data-tc="pink"]   { color: var(--hl-pink-fg); }
 .prose [data-tc="purple"] { color: var(--hl-purple-fg); }
 
-/* Mini variant: the glimpse inside gallery cards */
+/* Mini variant: the glimpse inside gallery cards. Detached from the note's look: every block is plain, same-size text. */
 .prose--mini {
   --prose-fs: var(--gallery-preview-fs);
-  --prose-lh: 1.55;
-  --prose-block-gap: 0.7em;
-  --prose-h1: 1.5em; --prose-h2: 1.35em; --prose-h3: 1.2em; --prose-h4: 1.1em;
+  --prose-lh: 1.4;
+  --prose-block-gap: 0.4em;
+  --prose-h1: 1em; --prose-h2: 1em; --prose-h3: 1em; --prose-h4: 1em;   /* headings = body size */
 }
-.prose--mini h1, .prose--mini h2, .prose--mini h3, .prose--mini h4 { margin-top: 1em; }
-
+.prose--mini h1, .prose--mini h2, .prose--mini h3, .prose--mini h4 {
+  margin: 0 0 var(--prose-block-gap); font-weight: 500; letter-spacing: 0; color: inherit;   /* no big gap above, no special colour */
+}
 /* ---------- Note page ---------- */
 
 .note { min-height: 100%; display: flex; justify-content: center; padding: 0 var(--view-pad); }

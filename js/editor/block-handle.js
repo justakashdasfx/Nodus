@@ -51,6 +51,8 @@ export function mountBlockHandle(root, history) {
     const r = block.getBoundingClientRect();
     const lh = parseFloat(getComputedStyle(block).lineHeight);
     const firstLine = Math.min(Number.isFinite(lh) ? lh : r.height, r.height);
+    const wide = block.matches?.('[data-map-block]') ? block.shadowRoot?.querySelector('.mb') : null;   // a map block sticks out to the left of the text:
+    handle.style.left = wide ? `${Math.max(2, wide.getBoundingClientRect().left - b.left - 30)}px` : '';  // the grip goes beside it, not over it
     handle.style.top = `${r.top - b.top + Math.max(0, (firstLine - 24) / 2)}px`;
     handle.hidden = false;
     current = block;
@@ -74,8 +76,11 @@ export function mountBlockHandle(root, history) {
     frame = requestAnimationFrame(() => {
       frame = 0;
       const r = root.getBoundingClientRect();
-      if (x < r.left - 90 || x > r.right + 2 || y < r.top - 6 || y > r.bottom + 6) { hide(); return; }
       const block = blockAtY(y);
+      const wide = block?.matches?.('[data-map-block]') ? block.shadowRoot?.querySelector('.mb')?.getBoundingClientRect() : null;
+      const left = wide ? Math.min(r.left, wide.left) : r.left;      // the pointer may travel to a grip that sits left of a wide map block
+      const right = wide ? Math.max(r.right, wide.right) : r.right;
+      if (x < left - 90 || x > right + 2 || y < r.top - 6 || y > r.bottom + 6) { hide(); return; }
       if (block) show(block); else hide();
     });
   }

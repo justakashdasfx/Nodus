@@ -11,7 +11,7 @@
    Bump CACHE when you add or rename files that must be available on first offline load.
    ========================================================================== */
 
-const CACHE = 'nodus-v11e';
+const CACHE = 'nodus-v11f';
 const SLOW_MS = 4000;
 
 const SHELL = [

@@ -57,7 +57,7 @@ export function mountMap(root, note, { readOnly = false, onSave = () => {} } = {
   /* ---------- History (undo / redo): whole-map snapshots, small enough to be instant ---------- */
 
   const snapshot = () => JSON.stringify({ nodes: map.nodes, nextCi: map.nextCi, levels: map.levels, links: map.links,
-    opts: { theme: map.theme, line: map.line, layout: map.layout, shape: map.shape } });
+    opts: { theme: map.theme, line: map.line, layout: map.layout, shape: map.shape, lineMode: map.lineMode, lineColor: map.lineColor } });
   const restore = (s) => {
     const d = JSON.parse(s);
     map.nodes = d.nodes; map.nextCi = d.nextCi; map.levels = d.levels || {}; map.links = d.links || [];
@@ -451,7 +451,10 @@ export function mountMap(root, note, { readOnly = false, onSave = () => {} } = {
 
   function setOption(key, value) {
     const lists = { theme: THEMES, line: LINES, layout: LAYOUTS, shape: SHAPES };
-    if (readOnly || !lists[key]?.some(([v]) => v === value)) return;
+    if (readOnly) return;
+    if (key === 'lineMode') { if (value !== 'multi' && value !== 'single') return; }
+    else if (key === 'lineColor') { value = Number(value); if (!Number.isInteger(value) || value < -1 || value >= MAPS.palette) return; }
+    else if (!lists[key]?.some(([v]) => v === value)) return;
     snap();
     map[key] = value;
     if (key === 'layout' && value === 'both') M.rebalance(map);   // back from Right only: share the branches between the two sides again

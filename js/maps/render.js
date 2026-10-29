@@ -142,7 +142,8 @@ export function edgesSvg(map, pos, { links = true, selLink = null } = {}) {
       const x1 = right ? parent.x + parent.w : parent.x;
       const x2 = right ? child.x : child.x + child.w;
       const kind = v.level === 0 ? 'root' : v.level === 1 ? 'level1' : 'deep';
-      const attrs = `data-ci="${cv.ci ?? 0}"${cv.cs ? ' data-cs="1"' : ''}`;
+      const lc = Number.isInteger(map.lineColor) ? map.lineColor : 0;                     // Multicolor lines off: every line has the one colour (-1 = grey)
+      const attrs = map.lineMode === 'single' ? (lc >= 0 ? `data-ci="${lc}"` : '') : `data-ci="${cv.ci ?? 0}"${cv.cs ? ' data-cs="1"' : ''}`;
       if (style === 'tapered') {
         const [w1, w2] = MAPS.lines.tapered[kind];
         out.push(`<path class="mm-edge mm-edge--fill" ${attrs} d="${taperPath(x1, parent.cy, x2, child.cy, w1, w2)}"/>`);

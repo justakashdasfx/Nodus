@@ -102,11 +102,11 @@
   --sidebar-hover-radius: 8px;
   /* ---- 7. GALLERY ------------------------------------------------------
      Card height = preview + info + 2px of outline.  144 + 64 + 2 = 210px. Width: 3 cards + 2 gaps = 3×256 + 2×8 = 784px. */
-  --gallery-min: 256px;                     /* narrowest a card gets (more columns appear as the page widens) */
+  --gallery-min: 256px;                    /* narrowest a card gets (more columns appear as the page widens) */
   --gallery-gap: 8px;
   --gallery-preview-h: 144px;               /* the page glimpse */
   --gallery-meta-h: 64px;                   /* the info strip under it (name + notebook · date) */
-  --gallery-preview-fs: 13px;               /* text size inside the glimpse */
+  --gallery-preview-fs: 11px;               /* text size inside the glimpse */
   --gallery-title-fs: 14px;                 /* note name */
   --gallery-sub-fs: 13px;                   /* notebook and date */
 
@@ -580,6 +580,7 @@
 
   /* Nodes */
   --mm-fs:           14px;                  /* font size of a node */
+  --mm-text-nudge:   1px;                   /* moves the words in a node down (+) or up (−) so they sit level with the line that reaches them */
   --mm-node-max:     300px;                 /* a node wraps its text after this width */
   --mm-pad-x:        12px;
   --mm-pad-y:        6px;

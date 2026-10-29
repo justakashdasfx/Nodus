@@ -130,7 +130,7 @@ body.is-pane-resizing, body.is-pane-resizing * { cursor: col-resize !important; 
   height: var(--topbar-height); flex: none;
   display: flex; align-items: center; gap: 10px;
   padding: 0 8px 0 var(--nav-pad-left);
-  margin-bottom: 10px;
+  margin-bottom: 4px;
 }
 .sidebar-logo { width: 24px; height: 24px; flex: none; display: block; border-radius: 6px;}
 .sidebar-brand {

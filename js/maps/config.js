@@ -41,4 +41,4 @@ export const LAYOUTS = [['both', 'Both'], ['right', 'Right'], ['free', 'Free']];
 
 export const SHAPES  = [['round', 'Rounded'], ['pill', 'Pill'], ['square', 'Square']];
 
-export const DEFAULTS = { theme: 'colored', line: 'tapered', layout: 'both', shape: 'round' };
+export const DEFAULTS = { theme: 'colored', line: 'tapered', layout: 'both', shape: 'round', lineMode: 'multi', lineColor: 0 };   // lineMode: 'multi' = every branch its own colour · 'single' = all lines lineColor (0-7, or -1 = grey)

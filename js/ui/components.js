@@ -67,12 +67,22 @@ export function emptyState({ title, text = '', actionHtml = '', art = '' }) {
   return `<div class="empty">${art ? `<div class="empty__art">${emptyArt(art)}</div>` : ''}<p class="empty__title">${escapeHtml(title)}</p>${text ? `<p class="empty__text">${escapeHtml(text)}</p>` : ''}${actionHtml}</div>`;
 }
 
-/** The note's body without its title line, trimmed to a few blocks for the card preview. */
+/** The note's body without its title line, trimmed to a few blocks for the card preview.
+    The title is the note's first line of text (see deriveTitle), whatever kind of block it is. */
 function previewHtml(note) {
   const doc = new DOMParser().parseFromString(`<body>${sanitizeHtml(note.html)}</body>`, 'text/html');
-  const first = doc.body.firstElementChild;
-  if (first && /^H[1-4]$/.test(first.tagName)) first.remove();
-  return [...doc.body.children].slice(0, CONFIG.gallery.previewMaxBlocks).map(el => el.outerHTML).join('');
+  const blocks = [...doc.body.children];
+  const hasText = (el) => !!el.textContent.trim();
+  const hasMedia = (el) => !!el.querySelector('img, table, svg, video');
+
+  // drop everything up to and including the block that holds the title (this also drops empty blocks above it)
+  const titleAt = blocks.findIndex(hasText);
+  if (titleAt >= 0) blocks.splice(0, titleAt + 1);
+
+  // start the preview with real content: no leading dividers or empty blocks
+  while (blocks.length && (blocks[0].tagName === 'HR' || (!hasText(blocks[0]) && !hasMedia(blocks[0])))) blocks.shift();
+
+  return blocks.slice(0, CONFIG.gallery.previewMaxBlocks).map((el) => el.outerHTML).join('');
 }
 
 /** Notion-style gallery card: a glimpse of the page, then title and date. */

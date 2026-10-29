@@ -13,11 +13,13 @@ export function initFocusTracking(root) {
     const el = sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement;
     const block = el?.closest(BLOCKS);
     if (!block || block === root || !root.contains(block)) return;
-    const prev = root.querySelector('.is-active');
-    if (prev === block) return;
-    prev?.classList.remove('is-active');
-    block.classList.add('is-active');
+    root.querySelectorAll('.is-active').forEach((old) => { if (old !== block) old.classList.remove('is-active'); });   // all of them: a duplicated / turned / moved block can leave a second one
+    if (!block.classList.contains('is-active')) block.classList.add('is-active');
   };
+  let frame = 0;
+  const later = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); };
+  const mo = new MutationObserver(later);              // turning into a heading, moving, duplicating: the blocks change but the selection event may not come
+  mo.observe(root, { childList: true, subtree: true });
   document.addEventListener('selectionchange', update);
-  return () => document.removeEventListener('selectionchange', update);
+  return () => { document.removeEventListener('selectionchange', update); mo.disconnect(); cancelAnimationFrame(frame); };
 }
