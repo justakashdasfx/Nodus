@@ -35,7 +35,7 @@ export function render({ id }) {
   const body = notes.length
     ? (style === 'list' ? noteList(notes) : gallery(notes.map(noteCard)))
     : emptyState({ title: 'This notebook is empty', text: 'Add the first note to get started.', art: 'notes',
-        actionHtml: button({ action: 'note-new', iconName: 'plus', label: 'Add a note', variant: 'btn--solid', data: { folder: id } }) });
+        actionHtml: button({ action: 'note-new', iconName: 'plus', label: 'Add a note', variant: 'button', data: { folder: id } }) });
   const subtitle = `${notes.length} ${notes.length === 1 ? 'note' : 'notes'}`;
   const description = folder.description
     ? `<p class="view-head__desc">${escapeHtml(folder.description)}</p>`
