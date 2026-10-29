@@ -127,7 +127,7 @@ export function render() {
   if (filter !== 'all' && !g[filter]?.length) filter = 'all';   // that group just emptied (you ticked its last item)
 
   if (!total) {
-    return { html: `<div class="view">${viewHead({ title: 'Tasks', subtitle: '0 open' })}${emptyState({ title: 'No tasks yet', text: 'Make a checklist in any note, then type @ in an item to give it a date. Every item shows up here.' art: 'tasks', })}</div>` };
+    return { html: `<div class="view">${viewHead({ title: 'Tasks', subtitle: '0 open' })}${emptyState({ title: 'No tasks yet', text: 'Make a checklist in any note, then type @ in an item to give it a date. Every item shows up here.', art: 'tasks', })}</div>` };
   }
 
   const chip = (key, label, n, tone = '') =>

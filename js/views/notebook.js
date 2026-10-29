@@ -10,12 +10,12 @@ const sortNotes = (notes, mode) => [...notes].sort(mode === 'name'
   ? (a, b) => (a.title || 'Untitled').localeCompare(b.title || 'Untitled', undefined, { sensitivity: 'base' })
   : mode === 'created' ? (a, b) => b.createdAt - a.createdAt : (a, b) => b.updatedAt - a.updatedAt);
 
-const notFound = (title, text, actionHtml) => ({ html: `<div class="view">${emptyState({ title, text, actionHtml })}</div>` });
+const notFound = (title, text, actionHtml, art = 'notfound') => ({ html: `<div class="view">${emptyState({ title, text, actionHtml, art })}</div>` });
 
 export function render({ id }) {
   const folder = store.getFolder(id);
   if (!folder) {
-    return notFound('Notebook not found', 'It may have been deleted.', art: 'notfound',
+    return notFound('Notebook not found', 'It may have been deleted.',
       '<a class="btn btn--solid" href="#/notebooks"><span class="btn__label">Back to notebooks</span></a>');
   }
   if (folder.deletedAt) {
@@ -34,7 +34,7 @@ export function render({ id }) {
   const actions = sortBtn + newBtn + moreBtn;
   const body = notes.length
     ? (style === 'list' ? noteList(notes) : gallery(notes.map(noteCard)))
-    : emptyState({ title: 'This notebook is empty', text: 'Add the first note to get started.', art: 'note',
+    : emptyState({ title: 'This notebook is empty', text: 'Add the first note to get started.', art: 'notes',
         actionHtml: button({ action: 'note-new', iconName: 'plus', label: 'Add a note', variant: 'btn--solid', data: { folder: id } }) });
   const subtitle = `${notes.length} ${notes.length === 1 ? 'note' : 'notes'}`;
   const description = folder.description
