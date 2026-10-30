@@ -223,7 +223,7 @@
 .mm-pv[data-ci]:not(.mm-pv--none) { color: var(--mm-c); }
 
 /* Colours */
-.mm-swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.mm-swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding: 8px 0px;}
 .mm-sw { width: 100%; max-width: 32px; aspect-ratio: 1; border-radius: 50%; background: var(--mm-c); border: 2px solid transparent; }
 .mm-sw:hover { transform: scale(1.08); }
 .mm-sw.is-on { box-shadow: 0 0 0 2px var(--mm-panel-bg), 0 0 0 4px var(--mm-text-dim); }
@@ -244,7 +244,7 @@
 
 /* Color panel: two switches and the level button */
 .mm-chips--two { grid-template-columns: repeat(2, 1fr); }
-.mm-level { display: flex; align-items: center; gap: 6px; }
+.mm-level { display: flex; align-items: center; gap: 6px; padding: 4px 0px; }
 .mm-level__apply { flex: 1; padding: 8px 10px; border: 1px solid var(--mm-border); border-radius: 9px; color: var(--text); font-size: 13px; text-align: center; }
 .mm-level__apply:hover:not(:disabled) { background: var(--bg-hover); border-color: var(--mm-select); }
 .mm-level__apply:disabled { opacity: .45; cursor: default; }
@@ -297,10 +297,10 @@
 
 /* ---------- 9. Views (Map / Outline), Find, Outline ---------- */
 
-.mm__views { position: absolute; left: 14px; top: 14px; z-index: 6; display: flex; gap: 2px; padding: 3px; background: var(--mm-panel-bg); border: 1px solid var(--mm-border); border-radius: 10px; }
+.mm__views { position: absolute; left: 14px; bottom: 14px; z-index: 6; display: flex; gap: 2px; padding: 3px; background: var(--grey-100); border: 1px solid var(--grey-200); border-radius: 10px; }
 .mm-views__btn { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 7px; color: var(--text-muted); font-size: 12px; }
-.mm-views__btn:hover { color: var(--text); }
-.mm-views__btn.is-on { background: var(--bg-hover); color: var(--text); }
+.mm-views__btn:hover { color: var(--grey-1150); }
+.mm-views__btn.is-on { background: var(--grey-300); color: var(--grey-1150); }
 
 .mm__find {
   position: absolute; top: 14px; left: 50%; transform: translateX(-50%); z-index: 7; display: flex; align-items: center; gap: 2px;

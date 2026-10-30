@@ -67,7 +67,6 @@ export function notebookList(items) {
       </span>
       <span class="lrow__sub">${sub}</span>
       ${moreBtn(coll ? 'folder' : 'notebook', f.id)}
-      ${caretHtml}
     </a>`;
   }).join('')}</div>`;
 }

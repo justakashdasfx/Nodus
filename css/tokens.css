@@ -566,7 +566,7 @@
 :root,
 :root[data-theme="dark"] {
   /* Canvas */
-  --mm-canvas-bg:    var(--grey-100);
+  --mm-canvas-bg:    var(--grey-200);
   --mm-grid-color:   var(--grey-600);       /* the dots of the grid … */
   --mm-grid-opacity: 100%;                  /* … how visible they are: 0% = gone, 100% = full colour */
   --mm-grid-size:    1.1px;                 /* … and how big each dot is */

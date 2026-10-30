@@ -38,15 +38,8 @@ export function render({ id }) {
         </div>
       </div>
       ${trashed ? `<p class="mm__banner">${note.deletedAt ? 'This mind map is in Trash.' : 'This mind map’s notebook is in Trash.'}</p>` : ''}
-      <div class="mm__zoom" role="group" aria-label="Zoom">
-        <button type="button" class="btn btn--icon" data-mm="out" title="Zoom out (${escapeHtml(comboLabel((KEYMAP.canvas['view.zoomOut'] || [])[0] || ''))})" aria-label="Zoom out">${icon('minus', 16)}</button>
-        <button type="button" class="mm__zoom-value" data-mm="reset" data-mm-zoom title="Back to 100%">100%</button>
-        <button type="button" class="btn btn--icon" data-mm="in" title="Zoom in (${escapeHtml(comboLabel((KEYMAP.canvas['view.zoomIn'] || [])[0] || ''))})" aria-label="Zoom in">${icon('plus', 16)}</button>
-        <button type="button" class="btn btn--icon" data-mm="fit" title="Fit to screen (${escapeHtml(comboLabel((KEYMAP.canvas['view.fit'] || [])[0] || ''))})" aria-label="Fit to screen">${icon('fit', 16)}</button>
-        <span class="mm__zoom-sep" aria-hidden="true"></span>
-        <span class="mm__count" data-mm-count></span>
-      </div>
-      ${trashed ? '' : `<div class="mm__hint">${hint()}</div>`}
+
+
       <div class="mm__views" role="group" aria-label="View">
         <button type="button" class="mm-views__btn is-on" data-mode="map">${icon('mindmap', 16)}<span>Map</span></button>
         <button type="button" class="mm-views__btn" data-mode="outline">${icon('list', 16)}<span>Outline</span></button>
@@ -64,9 +57,6 @@ export function render({ id }) {
         <button type="button" class="mm-bar__btn" data-bar="node" title="Node" aria-label="Node">${icon('shape', 18)}</button>
         <button type="button" class="mm-bar__btn" data-bar="map" title="Map" aria-label="Map">${icon('mindmap', 18)}</button>
         <button type="button" class="mm-bar__btn" data-bar="links" title="Linked from" aria-label="Linked from">${icon('link', 18)}</button>
-        <span class="mm__bar-sep" aria-hidden="true"></span>
-        <button type="button" class="mm-bar__btn" data-bar="undo" title="Undo (${escapeHtml(comboLabel((KEYMAP.canvas['edit.undo'] || [])[0] || ''))})" aria-label="Undo">${icon('undo', 18)}</button>
-        <button type="button" class="mm-bar__btn" data-bar="redo" title="Redo (${escapeHtml(comboLabel((KEYMAP.canvas['edit.redo'] || [])[0] || ''))})" aria-label="Redo">${icon('redo', 18)}</button>
       </div>
       <div class="mm__panel" hidden></div>
     </div>`;

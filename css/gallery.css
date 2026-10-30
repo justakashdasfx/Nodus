@@ -4,7 +4,7 @@
 
 .view { max-width: calc(var(--view-max-width) + 2 * var(--view-gutter)); margin: 0 auto; padding: 36px var(--view-gutter) 64px; }   /* content = 784px */
 
-.view-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 28px; flex-wrap: wrap;}
+.view-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 28px; flex-wrap: wrap;}
 .view-head__title { font-size: var(--fs-title); font-weight: 600; letter-spacing: -0.015em; color: var(--text-dim); }
 .view-head__sub { margin-top: 4px; color: var(--text-muted); }
 .view-head__title[style*="--tag-h"] { color: hsl(var(--tag-h) var(--tag-sat) var(--tag-light)); }
@@ -256,7 +256,7 @@ a.row:hover, .row--static:hover { background: var(--bg-hover); border-radius: va
 /* ---------- Threads page: sleek + minimal (CSS only, no JS change needed) ----------
    Flat rows with hairline dividers, a small faint icon, quiet outlined rule chips.
    Scoped to .lrow--thread so Notebooks / Notes lists keep their look. Kept at the END of the file so it wins over the rules above. */
-.lrow--thread { align-items: flex-start; gap: 12px; min-height: 0; margin-bottom: 0; padding: 16px 12px; border-radius: 16px; border-bottom: 0px solid var(--border);  }
+.lrow--thread { align-items: center; gap: 12px; min-height: 0; margin-bottom: 0; padding: 16px 12px; border-radius: 16px; border-bottom: 0px solid var(--border);  }
 .lrow--thread:hover { background: var(--bg-hover); }
 
 /* the boxed tile becomes a small bare icon */
@@ -311,3 +311,10 @@ a.row:hover, .row--static:hover { background: var(--bg-hover); border-radius: va
 
 /* Rows that end with the ⋯ button: leave room for it */
 .lrow--notebook .lrow__sub { display: inline-flex; align-items: center; gap: 6px; }
+
+
+/* To move the breadcrumb upwards */
+.view-head .crumb,
+.view-head nav {
+  transform: translateY(-12px);
+}

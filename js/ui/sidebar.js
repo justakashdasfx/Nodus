@@ -59,7 +59,7 @@ function folderBlock(folder, route, open) {
   return `<div class="tree-coll${isOpen ? ' is-open' : ''}">
     <div class="tree-row tree-row--folder ${active ? 'is-active' : ''}" data-fid="${folder.id}" data-item="folder:${folder.id}">
       <a class="tree-link" draggable="true" href="#/collection/${folder.id}" data-action="coll-open" data-id="${folder.id}">${icon('folder', ICON)}<span class="tree-row__label">${escapeHtml(folder.name)}</span></a>
-      ${trail('folder', folder, 'notebook-new', 'New notebook', chevron)}
+      ${trail('folder', folder, 'notebook-new', 'New notebook')}
     </div>
     ${isOpen ? `<div class="tree-children">${kids.length ? kids.map(k => (store.isCollection(k) ? folderBlock(k, route, open) : notebookRow(k, route))).join('') : '<div class="tree-empty">No notebooks yet</div>'}</div>` : ''}
   </div>`;

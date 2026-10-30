@@ -39,11 +39,11 @@ export function mountPanel(root, api) {
       <div class="mm-tools">${btn('bold', 'bold', 'Bold')}${btn('italic', 'italic', 'Italic')}${btn('underline', 'underline', 'Underline')}${btn('clear', 'clear', 'Clear formatting')}</div>
       <p class="mm-panel__label">List</p>
       <div class="mm-tools">${btn('ul', 'bullets', 'Bullets')}${btn('ol', 'numbers', 'Numbers')}${btn('todo', 'checklists', 'Checklist')}</div>
+            <div class="mm-panel__sep"></div>
       <p class="mm-panel__label">Text color</p>
       <div class="mm-swatches mm-swatches--text"><button type="button" class="mm-tsw mm-tsw--default" data-tc="default" title="Default color" aria-label="Default color">A</button>${Array.from({ length: MAPS.palette }, (_, i) => tsw('data-tc', i, false)).join('')}</div>
       <p class="mm-panel__label">Text color with background</p>
-      <div class="mm-swatches mm-swatches--text"><button type="button" class="mm-tsw mm-tsw--default" data-tb="default" title="Default color" aria-label="Default color">A</button>${Array.from({ length: MAPS.palette }, (_, i) => tsw('data-tb', i, true)).join('')}</div>
-      <p class="mm-panel__note">Select words while typing, or select a node to change all of it. Ctrl+B / I / U work too.</p>`;
+      <div class="mm-swatches mm-swatches--text"><button type="button" class="mm-tsw mm-tsw--default" data-tb="default" title="Default color" aria-label="Default color">A</button>${Array.from({ length: MAPS.palette }, (_, i) => tsw('data-tb', i, true)).join('')}</div>`;
   }
 
   /* ---------- Color ---------- */
@@ -65,17 +65,14 @@ export function mountPanel(root, api) {
       </div>
       <p class="mm-panel__label">Color</p>
       <div class="mm-swatches">${swatches}</div>
-      <p class="mm-panel__label">Lines</p>
       <button type="button" class="mm-switch-row" role="switch" aria-checked="${multi}" data-lines="toggle"><span>Multicolor lines</span><span class="mm-switch${multi ? ' is-on' : ''}"></span></button>
       ${multi ? '' : `<div class="mm-swatches">${lineSwatches}</div>`}
-      <p class="mm-panel__note">${multi ? 'Every main branch has its own color.' : 'Every line has the same color.'}</p>
-      <p class="mm-panel__label">Whole level</p>
+      <p class="mm-panel__label">Apply style to</p>
       <div class="mm-level">
         <button type="button" class="mm-level__step" data-step="-1" aria-label="Previous level">‹</button>
-        <button type="button" class="mm-level__apply" data-act="applylevel"${sel ? '' : ' disabled'}>Apply to level ${level}</button>
+        <button type="button" class="mm-level__apply" data-act="applylevel"${sel ? '' : ' disabled'}>Level ${level}</button>
         <button type="button" class="mm-level__step" data-step="1" aria-label="Next level">›</button>
-      </div>
-      <p class="mm-panel__note">${sel ? `Copies this node's style to every level ${level} node, and to the ones you add later.` : 'Select a node first.'}</p>`;
+      </div>`;
   }
 
   /* ---------- Node ---------- */
@@ -88,7 +85,6 @@ export function mountPanel(root, api) {
     rows.push(`<button type="button" class="mm-row" data-act="float">${icon('plus', 16)}<span>New floating node</span></button>`);
     if (n && n.fl) rows.push(`<button type="button" class="mm-row${n.sticky ? ' is-on' : ''}" data-act="sticky">${icon('sticky', 16)}<span>Sticky note look</span></button>`);
     if (n && !n.fl && sel !== api.map.root) rows.push(`<button type="button" class="mm-row" data-act="detach">${icon('mindmap', 16)}<span>Detach to floating</span></button>`);
-    rows.push('<p class="mm-panel__note">Pull the small handle under a selected node onto another node to connect them. Alt + drag cuts a node loose.</p>');
     return rows.join('');
   }
 
@@ -99,8 +95,7 @@ export function mountPanel(root, api) {
       <p class="mm-panel__label">Theme</p>${chips('theme', THEMES, m.theme || 'colored')}
       <p class="mm-panel__label">Lines</p>${chips('line', LINES, m.line || 'tapered')}
       <p class="mm-panel__label">Layout</p>${chips('layout', LAYOUTS, m.layout || 'both')}
-      <button type="button" class="mm-row" data-act="balance">${icon('mindmap', 16)}<span>Auto balance and tidy</span></button>
-      <p class="mm-panel__note">Free: drag any node anywhere and it stays there. Auto balance puts every node back.</p>
+      <button type="button" class="mm-row" data-act="balance">${icon('mindmap', 16)}<span>Auto balance nodes</span></button>
       <div class="mm-panel__sep"></div>
       <p class="mm-panel__label">Export</p>
       <div class="mm-chips">
@@ -109,8 +104,7 @@ export function mountPanel(root, api) {
         <button type="button" class="mm-chip mm-chip--text" data-exp="svg">SVG</button>
       </div>
       <div class="mm-panel__sep"></div>
-      <button type="button" class="mm-row" data-action="map-template-save" data-id="${api.noteId}">${icon('copy', 16)}<span>Save as template</span></button>
-      <p class="mm-panel__note">Saves the colours, level styles, lines, layout and the map itself.</p>`;
+      <button type="button" class="mm-row" data-action="map-template-save" data-id="${api.noteId}">${icon('copy', 16)}<span>Save as template</span></button>`;
   }
 
   /* ---------- Links: notes that point at this map ---------- */
@@ -142,9 +136,7 @@ export function mountPanel(root, api) {
     const b = e.target.closest('[data-bar]');
     if (!b) return;
     const k = b.dataset.bar;
-    if (k === 'undo') api.undo();
-    else if (k === 'redo') api.redo();
-    else { open = open === k ? null : k; refresh(); }
+open = open === k ? null : k; refresh();
   });
 
   panel.addEventListener('click', (e) => {
