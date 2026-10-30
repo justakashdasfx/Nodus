@@ -3,7 +3,7 @@
    Italic · Bold · Underline · Quote · Code · Colour (brush) · More (…)
 
    • Brush opens highlight + text-colour swatches. The last colour you used is
-     ringed, and Ctrl/Cmd + Shift + H re-applies the last highlight instantly.
+     ringed, and Ctrl/Cmd + Shift + H toggles the last highlight (apply / remove).
    • More is the same "Turn into" list as the six-dot menu (block-menu.js) plus Clear formatting.
    • Ctrl/Cmd + E toggles inline code.
    ========================================================================== */
@@ -102,6 +102,21 @@ export function initFormatting(root, history = { commit() {}, record() {} }) {
     notify();
   }
 
+  /** Mod+Shift+H: apply last highlight, or remove it if the selection is already that colour. */
+  function toggleLastHighlight() {
+    const range = currentRange();
+    if (!range) return;
+    const last = getLastColor('highlight');
+    if (selectionHasInline(root, range, `mark[data-hl="${last}"]`)) {
+      removeInline(root, range, 'mark[data-hl]');
+    } else {
+      applyInline(root, range, { tag: 'mark', attr: 'data-hl', value: last });
+      setLastColor('highlight', last);
+      updateDot();
+    }
+    notify();
+  }
+
   function setTextColor(id) {
     const range = currentRange();
     if (!range) return;
@@ -175,7 +190,7 @@ export function initFormatting(root, history = { commit() {}, record() {} }) {
     else if (t.dataset.act)   { runMenuAct(t.dataset.act); closePopup(); refreshState(); }
   };
   const onKeydown = (e) => {
-    if (matches(e, CONFIG.shortcuts['format.lastHighlight'])) { e.preventDefault(); setHighlight(getLastColor('highlight')); }
+    if (matches(e, CONFIG.shortcuts['format.lastHighlight'])) { e.preventDefault(); toggleLastHighlight(); }
     else if (matches(e, CONFIG.shortcuts['format.code'])) { e.preventDefault(); toggleCode(); }
   };
 
