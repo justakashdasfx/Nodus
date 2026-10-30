@@ -18,6 +18,11 @@ export function backlinksTo(id) {
   return store.searchableNotes().filter((n) => n.id !== id && String(n.html || '').includes(`data-note-link="${id}"`));
 }
 
+/** Notes (not in Trash) that @mention this note or mind map. */
+export function mentionsOf(id) {
+  return store.searchableNotes().filter((n) => n.id !== id && String(n.html || '').includes(`data-note-mention="${id}"`));
+}
+
 /** Notes this one links to (that still exist). */
 export function outgoing(note) {
   return [...linkIds(note.html)].filter((x) => x !== note.id).map((x) => store.getNote(x)).filter((n) => n && !n.deletedAt);
@@ -26,7 +31,7 @@ export function outgoing(note) {
 /** The line of text around the link to `id` inside `note`. */
 export function snippetFor(note, id) {
   const doc = new DOMParser().parseFromString(`<body>${note.html || ''}</body>`, 'text/html');
-  const link = doc.body.querySelector(`span[data-note-link="${id}"]`);
+  const link = doc.body.querySelector(`span[data-note-link="${id}"], span[data-note-mention="${id}"]`);
   const block = link?.closest('li, p, h1, h2, h3, h4, blockquote, summary') || link;
   const text = (block?.textContent || '').replace(/\s+/g, ' ').trim();
   return text.length > 120 ? `${text.slice(0, 117)}…` : text;

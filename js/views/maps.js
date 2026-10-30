@@ -6,28 +6,30 @@ import { icon } from '../core/icons.js';
 import { escapeHtml, formatDate } from '../core/utils.js';
 import { countNodes } from '../maps/model.js';
 import { thumbSvg } from '../maps/thumb.js';
-import { button, viewHead, gallery, viewSwitch, emptyState } from '../ui/components.js';
+import { button, viewHead, gallery, viewSwitch, emptyState, moreBtn } from '../ui/components.js';
 
 const folderName = (m) => (m.folderId ? store.getFolder(m.folderId)?.name : '') || '';
 
 function mapCard(m) {
   const folder = folderName(m);
-  return `<a class="g-card g-card--map" href="#/map/${m.id}">
+  return `<a class="g-card g-card--map" href="#/map/${m.id}" data-item="map:${m.id}">
     <div class="g-card__preview mm-thumb" data-mm-theme="${escapeHtml(m.map.theme || 'colored')}">${thumbSvg(m.map)}</div>
     <div class="g-card__meta">
       <span class="g-card__titlerow">${icon('mindmap', 16)}<span class="g-card__title">${escapeHtml(m.title || 'Untitled map')}</span></span>
-      <span class="g-card__sub"><span>${formatDate(m.updatedAt)}</span>${folder ? `<span class="g-card__folder">${icon('folder', 12)}${escapeHtml(folder)}</span>` : ''}</span>
+      <span class="g-card__sub"><span>${formatDate(m.updatedAt)}</span>${folder ? `<span class="g-card__folder">${icon('notebook', 12)}${escapeHtml(folder)}</span>` : ''}</span>
     </div>
+    ${moreBtn('map', m.id)}
   </a>`;
 }
 
 function mapList(maps) {
   return `<div class="list">${maps.map((m) => {
     const folder = folderName(m);
-    return `<a class="lrow lrow--note" href="#/map/${m.id}">
+    return `<a class="lrow lrow--note" href="#/map/${m.id}" data-item="map:${m.id}">
       <span class="lrow__lead">${icon('mindmap', 16)}</span>
       <span class="lrow__main"><span class="lrow__title">${escapeHtml(m.title || 'Untitled map')}</span></span>
-      <span class="lrow__meta">${folder ? `<span class="row__where">${icon('folder', 12)}${escapeHtml(folder)}</span>` : ''}<span>${countNodes(m.map)} nodes</span><span>${formatDate(m.updatedAt)}</span></span>
+      <span class="lrow__meta">${folder ? `<span class="row__where">${icon('notebook', 12)}${escapeHtml(folder)}</span>` : ''}<span>${countNodes(m.map)} nodes</span><span>${formatDate(m.updatedAt)}</span></span>
+      ${moreBtn('map', m.id)}
     </a>`;
   }).join('')}</div>`;
 }

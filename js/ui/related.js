@@ -23,7 +23,7 @@ export function mountRelated(el, noteId) {
     const total = new Set([...from.map((n) => n.id), ...to.map((n) => n.id)]).size;
     el.hidden = total === 0;
     if (!total) return;
-    const item = (n, snip) => `<a class="rel__item" href="#/note/${n.id}" data-id="${n.id}"><span class="rel__title">${escapeHtml(n.title || 'Untitled')}</span>${snip ? `<span class="rel__snip">${escapeHtml(snip)}</span>` : ''}</a>`;
+    const item = (n, snip) => `<a class="rel__item" href="#/${n.type === 'map' ? 'map' : 'note'}/${n.id}" data-id="${n.id}" data-type="${n.type}"><span class="rel__title">${n.type === 'map' ? `${icon('mindmap', 14)} ` : ''}${escapeHtml(n.title || (n.type === 'map' ? 'Untitled map' : 'Untitled'))}</span>${snip ? `<span class="rel__snip">${escapeHtml(snip)}</span>` : ''}</a>`;
     const group = (label, list, snip) => list.length ? `<div class="rel__group"><div class="rel__label">${label}</div>${list.map((n) => item(n, snip ? snippetFor(n, noteId) : '')).join('')}</div>` : '';
     el.innerHTML = `<div class="rel__inner">
       <button type="button" class="rel__bar" aria-expanded="${open}">${icon('caret', 12)}<span>Related notes</span><span class="rel__n">${total}</span></button>
@@ -36,7 +36,7 @@ export function mountRelated(el, noteId) {
     const bar = e.target.closest('.rel__bar');
     if (bar) { open = !open; paint(); return; }
     const a = e.target.closest('.rel__item');
-    if (a && e.shiftKey) { e.preventDefault(); pane.openNote(a.dataset.id); }
+    if (a && e.shiftKey && a.dataset.type !== 'map') { e.preventDefault(); pane.openNote(a.dataset.id); }   // (a mind map opens as a full page)
   };
   el.addEventListener('click', onClick);
 

@@ -12,7 +12,7 @@ import { icon } from '../core/icons.js';
 import { groupTasks, setTaskDue } from '../core/tasks.js';
 import { labelFor, dueState, presets } from '../core/dates.js';
 import { pickDate } from '../ui/calendar.js';
-import { viewHead, emptyState } from '../ui/components.js';
+import { viewHead, emptyState, moreBtn } from '../ui/components.js';
 
 const SECTIONS = [['overdue', 'Overdue'], ['today', 'Today'], ['upcoming', 'Upcoming'], ['nodate', 'No date'], ['done', 'Done']];
 let filter = 'all';          // which chip is on; survives the page redrawing when you tick a task
@@ -103,12 +103,12 @@ export function editDue(btn) {
 
 function where(note) {
   const folder = note.folderId ? store.getFolder(note.folderId) : null;
-  const place = note.type === 'journal' ? { ic: 'journal', name: 'Journal' } : folder ? { ic: 'folder', name: folder.name } : { ic: 'inbox', name: 'Inbox' };
+  const place = note.type === 'journal' ? { ic: 'journal', name: 'Journal' } : folder ? { ic: 'notebook', name: folder.name } : { ic: 'inbox', name: 'Inbox' };
   return `<span class="tk-note">${escapeHtml(note.title || 'Untitled')}</span><span class="tk-dotsep" aria-hidden="true">·</span><span class="tk-place">${icon(place.ic, 12)}<span>${escapeHtml(place.name)}</span></span>`;
 }
 
 function taskRow({ note, block, done, due }) {
-  return `<div class="tk-row${done ? ' is-done' : ''}">
+  return `<div class="tk-row${done ? ' is-done' : ''}" data-item="task:${note.id}:${block.id}">
     <button type="button" class="tk-box" role="checkbox" aria-checked="${done}" aria-label="${done ? 'Mark as not done' : 'Mark as done'}" data-action="task-toggle" data-note="${note.id}" data-block="${block.id}">${icon('check', 12)}</button>
     <a class="tk-main" href="#/note/${note.id}/${block.id}">
       <span class="tk-text">${escapeHtml(block.text)}</span>
@@ -117,6 +117,7 @@ function taskRow({ note, block, done, due }) {
     ${due
       ? `<button type="button" class="tk-due" data-state="${dueState(due)}" data-action="task-due" data-note="${note.id}" data-block="${block.id}" data-due="${due}" title="Change the date" aria-haspopup="menu">${icon('calendar', 12)}${escapeHtml(labelFor(due))}</button>`
       : `<button type="button" class="tk-due tk-due--add" data-action="task-due" data-note="${note.id}" data-block="${block.id}" data-due="" title="Add a date" aria-haspopup="menu">${icon('calendar', 12)}Add date</button>`}
+    ${moreBtn('task', `${note.id}:${block.id}`)}
   </div>`;
 }
 

@@ -62,7 +62,7 @@ function close() {
 
 /* ---------- Drawing ---------- */
 
-const ICON = { note: 'note', journal: 'journal', block: 'bullets', tag: 'tag', notebook: 'folder', thread: 'threads', map: 'mindmap', recent: 'clock' };
+const ICON = { note: 'note', journal: 'journal', block: 'bullets', tag: 'tag', notebook: 'notebook', folder: 'folder', thread: 'threads', map: 'mindmap', recent: 'clock' };
 
 function rowHtml(it, i) {
   const ic = it.kind === 'command' ? it.icon : it.kind === 'note' && it.journal ? 'journal' : ICON[it.kind];
@@ -137,6 +137,7 @@ function activate(i, shift) {
   else if (it.kind === 'block') { shift ? pane.openNote(it.noteId, it.id) : go(`#/note/${it.noteId}/${it.id}`); }
   else if (it.kind === 'tag') { shift ? pane.openTag(it.id) : go(`#/tag/${encodeURIComponent(it.id)}`); }
   else if (it.kind === 'notebook') go(`#/notebook/${it.id}`);
+  else if (it.kind === 'folder') go(`#/collection/${it.id}`);
   else if (it.kind === 'thread') go(`#/thread/${it.id}`);
   else if (it.kind === 'map') go(`#/map/${it.id}`);
 }

@@ -17,9 +17,9 @@ export function button({ action, iconName, label, variant = '', data = {}, title
 }
 
 /** Page header inside the card: title (+ optional subtitle / description HTML) on the left, actions on the right. */
-export function viewHead({ title, titleStyle = '', subtitle = '', description = '', actions = '' }) {
+export function viewHead({ title, titleStyle = '', subtitle = '', description = '', actions = '', crumb = '' }) {
   return `<header class="view-head">
-    <div><h1 class="view-head__title"${titleStyle ? ` style="${titleStyle}"` : ''}>${escapeHtml(title)}</h1>${subtitle ? `<p class="view-head__sub">${escapeHtml(subtitle)}</p>` : ''}${description}</div>
+    <div>${crumb}<h1 class="view-head__title"${titleStyle ? ` style="${titleStyle}"` : ''}>${escapeHtml(title)}</h1>${subtitle ? `<p class="view-head__sub">${escapeHtml(subtitle)}</p>` : ''}${description}</div>
     <div class="view-head__actions">${actions}</div>
   </header>`;
 }
@@ -35,29 +35,38 @@ export function viewSwitch(style, { page = '', id = '' } = {}) {
 export const caretHtml = `<span class="lrow__caret">${icon('caret', 16)}</span>`;
 export const countText = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
+/** The ⋯ button of a card or a row: opens that item's menu (js/ui/item-menu.js). kind: note · map · notebook · folder · thread · task. */
+export const moreBtn = (kind, id) =>
+  `<button type="button" class="item-more" data-action="item-more" data-kind="${kind}" data-id="${escapeHtml(id)}" aria-label="More" aria-haspopup="menu" title="More">${icon('more', 16)}</button>`;
+
 /** The List view of notes: note icon · full name ............ notebook · date. */
 export function noteList(notes) {
   return `<div class="list">${notes.map((n) => {
     const folder = n.folderId ? store.getFolder(n.folderId) : null;
-    return `<a class="lrow lrow--note" href="#/note/${n.id}">
+    return `<a class="lrow lrow--note" href="#/note/${n.id}" data-item="note:${n.id}">
       <span class="lrow__lead">${icon('note', 20)}</span>
       <span class="lrow__main">
         <span class="lrow__title">${escapeHtml(n.title || 'Untitled')}</span></span>
-      <span class="lrow__meta">${folder ? `<span class="row__where">${icon('folder', 12)}${escapeHtml(folder.name)}</span>` : ''}<span>${formatDate(n.updatedAt)}</span></span>
+      <span class="lrow__meta">${folder ? `<span class="row__where">${icon('notebook', 12)}${escapeHtml(folder.name)}</span>` : ''}<span>${formatDate(n.updatedAt)}</span></span>
+      ${moreBtn('note', n.id)}
     </a>`;
   }).join('')}</div>`;
 }
 
-/** The List view of notebooks (Linear-style): icon tile · name / note count / description ............ caret. */
-export function notebookList(folders) {
-  return `<div class="list">${folders.map((f) => {
-    const count = store.noteCount(f.id);
-    return `<a class="lrow lrow--notebook" href="#/notebook/${f.id}">
-      <span class="lrow__tile">${icon('folder', 22)}</span>
+/** The List view of notebooks and folders (Linear-style): icon tile · name ............ count · ⋯ · caret.
+    A folder opens its own page (#/collection/<id>); a notebook opens its notes. Both can be dragged (js/ui/folder-dnd.js). */
+export function notebookList(items) {
+  return `<div class="list">${items.map((f) => {
+    const coll = store.isCollection(f);
+    const href = coll ? `#/collection/${f.id}` : `#/notebook/${f.id}`;
+    const sub = coll ? `${icon('notebook', 14)}${countText(store.notebookCount(f.id), 'notebook', 'notebooks')}` : `${icon('note', 14)}${countText(store.noteCount(f.id), 'note', 'notes')}`;
+    return `<a class="lrow lrow--notebook${coll ? ' lrow--folder' : ''}" href="${href}" draggable="true" data-fid="${f.id}" data-item="${coll ? 'folder' : 'notebook'}:${f.id}">
+      <span class="lrow__tile">${icon(coll ? 'folder' : 'notebook', 22)}</span>
       <span class="lrow__main">
         <span class="lrow__title">${escapeHtml(f.name)}</span>
       </span>
-       <span class="lrow__sub">${icon('note', 14)}${countText(count, 'note', 'notes')}</span>
+      <span class="lrow__sub">${sub}</span>
+      ${moreBtn(coll ? 'folder' : 'notebook', f.id)}
       ${caretHtml}
     </a>`;
   }).join('')}</div>`;
@@ -89,29 +98,46 @@ function previewHtml(note) {
 export function noteCard(note) {
   const folder = note.folderId ? store.getFolder(note.folderId) : null;
   const preview = previewHtml(note);
-  return `<a class="g-card" href="#/note/${note.id}">
+  return `<a class="g-card" href="#/note/${note.id}" data-item="note:${note.id}">
     <div class="g-card__preview prose prose--mini">${preview || '<span class="g-card__empty">No content yet</span>'}</div>
     <div class="g-card__meta">
       <span class="g-card__title">${escapeHtml(note.title || 'Untitled')}</span>
-      <span class="g-card__sub"><span>${formatDate(note.updatedAt)}</span>${folder ? `<span class="g-card__folder">${icon('folder', 12)}${escapeHtml(folder.name)}</span>` : ''}</span>
+      <span class="g-card__sub"><span>${formatDate(note.updatedAt)}</span>${folder ? `<span class="g-card__folder">${icon('notebook', 12)}${escapeHtml(folder.name)}</span>` : ''}</span>
     </div>
+    ${moreBtn('note', note.id)}
   </a>`;
 }
 
-/** Notebook gallery card: description + latest notes on top, icon · name · count · date below. Same 210px as a note card. */
+/** Gallery card of a notebook or a folder. A notebook: description + latest notes on top, notebook icon · name · count below.
+    A folder: the names of its notebooks on top, folder icon · name · count below. Same 210px as a note card. */
 export function notebookCard(folder) {
+  if (store.isCollection(folder)) return folderCard(folder);
   const notes = store.notesInFolder(folder.id);
   const latest = [...notes].sort((x, y) => y.updatedAt - x.updatedAt);
   const peek = latest.slice(0, 4).map(n => `<span class="g-card__peek-note">${icon('note', 12)}<span>${escapeHtml(n.title || 'Untitled')}</span></span>`).join('');
   const updated = latest[0] ? ` · ${formatDate(latest[0].updatedAt)}` : '';
-  return `<a class="g-card g-card--notebook" href="#/notebook/${folder.id}">
+  return `<a class="g-card g-card--notebook" href="#/notebook/${folder.id}" draggable="true" data-fid="${folder.id}" data-axis="x" data-item="notebook:${folder.id}">
     <div class="g-card__peek">
       ${folder.description ? `<span class="g-card__peek-desc">${escapeHtml(folder.description)}</span>` : ''}
       ${peek || (folder.description ? '' : '<span class="g-card__empty">No notes yet</span>')}
     </div>
     <div class="g-card__meta">
-      <span class="g-card__titlerow">${icon('folder', 16)}<span class="g-card__title">${escapeHtml(folder.name)}</span></span>
+      <span class="g-card__titlerow">${icon('notebook', 16)}<span class="g-card__title">${escapeHtml(folder.name)}</span></span>
       <span class="g-card__sub"><span>${countText(notes.length, 'note', 'notes')}${updated}</span></span>
     </div>
+    ${moreBtn('notebook', folder.id)}
+  </a>`;
+}
+
+function folderCard(folder) {
+  const kids = store.childrenOf(folder.id);
+  const peek = kids.slice(0, 4).map(k => `<span class="g-card__peek-note">${icon(store.isCollection(k) ? 'folder' : 'notebook', 12)}<span>${escapeHtml(k.name)}</span></span>`).join('');
+  return `<a class="g-card g-card--notebook g-card--folder" href="#/collection/${folder.id}" draggable="true" data-fid="${folder.id}" data-axis="x" data-item="folder:${folder.id}">
+    <div class="g-card__peek">${peek || '<span class="g-card__empty">No notebooks yet</span>'}</div>
+    <div class="g-card__meta">
+      <span class="g-card__titlerow">${icon('folder', 16)}<span class="g-card__title">${escapeHtml(folder.name)}</span></span>
+      <span class="g-card__sub"><span>${countText(store.notebookCount(folder.id), 'notebook', 'notebooks')}</span></span>
+    </div>
+    ${moreBtn('folder', folder.id)}
   </a>`;
 }

@@ -86,7 +86,7 @@ function moreHtml() {
 function notebookHtml(noteId) {
   const note = store.getNote(noteId);
   if (!note) return '';
-  const rows = [{ id: '', name: 'Inbox', ic: 'inbox' }, ...store.folders().map(f => ({ id: f.id, name: f.name, ic: 'folder' }))];
+  const rows = [{ id: '', name: 'Inbox', ic: 'inbox' }, ...store.folders().map(f => ({ id: f.id, name: store.folderPath(f.id), ic: 'notebook' }))];
   return '<div class="menu-search"><input type="text" class="menu-search__input" placeholder="Search notebooks" aria-label="Search notebooks" autocomplete="off" spellcheck="false"></div>'
     + '<div class="block-menu__title">Move to</div>'
     + rows.map(r => item({ action: 'note-move-to', ic: r.ic, label: r.name, current: (note.folderId || '') === r.id, tick: true, data: { id: noteId, folder: r.id } })).join('')

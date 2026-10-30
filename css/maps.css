@@ -330,3 +330,18 @@
 .mo-row[data-level="0"] .mo-text { font-size: 24px; font-weight: 600; }
 .mo-row[data-level="0"] .mo-text:empty::before { content: 'Central idea'; }
 .mo-label { margin: 28px 0 6px 24px; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-faint); }
+
+/* A map in the side pane fills the pane (the pane's own scrolling is not used: the canvas pans itself) */
+.pane__scroll:has(.mm) { position: relative; overflow: hidden; }
+
+/* ---------- 10. Mind maps linked from notes ---------- */
+
+/* A [[link]] or @mention that points at a mind map gets a small map icon in front of its name */
+.prose span[data-kind="map"]::before {
+  content: ''; display: inline-block; width: .95em; height: .95em; margin-right: .3em; vertical-align: -.12em; background: currentColor;
+  -webkit-mask: url(/icons-ui/mindmap.svg) center / contain no-repeat; mask: url(/icons-ui/mindmap.svg) center / contain no-repeat;
+}
+.mm-ref { display: flex; flex-direction: column; gap: 2px; padding: 8px; border-radius: 9px; color: var(--text-dim); text-decoration: none; }
+.mm-ref:hover { background: var(--bg-hover); color: var(--text); }
+.mm-ref__title { font-size: 13px; font-weight: 500; }
+.mm-ref__snip { font-size: 12px; line-height: 1.4; color: var(--text-faint); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

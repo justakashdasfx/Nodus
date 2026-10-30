@@ -84,7 +84,7 @@
   --pane-min: 320px;                        /* side pane: narrowest either side may get */
   --pane-divider-w: 8px;                   /* side pane: gap between the two cards (and the divider's grab area) */
   --tree-guide-width: 1.5px;                /* vertical guide line under an open notebook */
-  --tree-guide-indent: 12px;                /* its distance from the sidebar's left edge */
+  --tree-guide-indent: 18px;                /* its distance from the sidebar's left edge */
 
   /* ---- 6. SIDEBAR ROWS: BAR WIDTH AND SELECTED INDENT ------------------
      A selected row gets a thin bar on its left (colour: --border-left).
@@ -237,7 +237,7 @@
 --border-400:        var(--grey-500);
 --border-strong: var(--grey-700);         /* inputs, strong dividers */
   --border-left:   var(--c-steel);          /* the bar on the selected sidebar row */
-  --tree-guide:    var(--border);           /* the guide line under an open notebook */
+  --tree-guide:    var(--grey-400);           /* the guide line under an open notebook */
   --focus-ring:    var(--accent);
 
   /* Text */

@@ -26,7 +26,7 @@ export function blockRows(hits) {
   return hits.map(({ note, block }) => {
     const folder = note.folderId ? store.getFolder(note.folderId) : null;
     const place = note.type === 'journal' ? { ic: 'journal', name: 'Journal' }
-      : folder ? { ic: 'folder', name: folder.name }
+      : folder ? { ic: 'notebook', name: folder.name }
       : { ic: 'inbox', name: 'Inbox' };                  // a note with no notebook lives in the Inbox
     const item = (ic, name) => `<span class="where__item">${icon(ic, 14)}<span class="where__name">${escapeHtml(name)}</span></span>`;
     const where = `${item('note', note.title || 'Untitled')}<span class="where__sep" aria-hidden="true">·</span>${item(place.ic, place.name)}`;

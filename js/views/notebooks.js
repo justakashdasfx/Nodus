@@ -1,14 +1,16 @@
-/* NOTEBOOKS — every notebook as a card with its note count. */
+/* NOTEBOOKS — your notebooks and folders (a folder holds notebooks) as cards or a list, with Add notebook and New folder.
+   Drag one notebook onto another to make a folder of the two; drag onto a folder to put it inside (js/ui/folder-dnd.js). */
 import * as store from '../core/store.js';
 import * as settings from '../core/settings.js';
 import { button, viewHead, gallery, notebookCard, notebookList, viewSwitch, emptyState } from '../ui/components.js';
 
 export function render() {
-  const folders = store.folders();
+  const items = store.topLevel();
   const style = settings.getViewStyle('notebooks');
   const add = button({ action: 'notebook-new', iconName: 'plus', label: 'Add notebook', variant: 'button' });
-  const body = folders.length
-    ? (style === 'list' ? notebookList(folders) : gallery(folders.map(notebookCard)))
-    : emptyState({ title: 'No notebooks yet', text: 'Notebooks group related notes together.', art: 'notebooks', actionHtml: add });
-  return { html: `<div class="view">${viewHead({ title: 'Notebooks', actions: folders.length ? viewSwitch(style, { page: 'notebooks' }) + add : '' })}${body}</div>` };
+  const addFolder = button({ action: 'coll-new', iconName: 'folder', label: 'New folder' });
+  const body = items.length
+    ? (style === 'list' ? notebookList(items) : gallery(items.map(notebookCard)))
+    : emptyState({ title: 'No notebooks yet', text: 'Notebooks group related notes together. Drag one notebook onto another to make a folder.', art: 'notebooks', actionHtml: add });
+  return { html: `<div class="view">${viewHead({ title: 'Notebooks', actions: items.length ? viewSwitch(style, { page: 'notebooks' }) + addFolder + add : addFolder })}${body}</div>` };
 }

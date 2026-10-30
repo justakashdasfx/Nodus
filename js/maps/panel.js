@@ -10,6 +10,7 @@
    ========================================================================== */
 
 import { icon } from '../core/icons.js';
+import { escapeHtml } from '../core/utils.js';
 import { MAPS, THEMES, LINES, LAYOUTS, SHAPES } from './config.js';
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -112,8 +113,17 @@ export function mountPanel(root, api) {
       <p class="mm-panel__note">Saves the colours, level styles, lines, layout and the map itself.</p>`;
   }
 
-  const BODY = { text: textHtml, color: colorHtml, node: nodeHtml, map: mapHtml };
-  const TITLE = { text: 'Text', color: 'Color', node: 'Node', map: 'Map' };
+  /* ---------- Links: notes that point at this map ---------- */
+  function linksHtml() {
+    const { links, mentions } = api.linkedFrom();
+    const row = (n) => `<a class="mm-ref" href="#/note/${n.id}" data-ref="${n.id}"><span class="mm-ref__title">${escapeHtml(n.title || 'Untitled')}</span>${n.snip ? `<span class="mm-ref__snip">${escapeHtml(n.snip)}</span>` : ''}</a>`;
+    const group = (label, list) => (list.length ? `<p class="mm-panel__label">${label} · ${list.length}</p>${list.map(row).join('')}` : '');
+    return group('Linked from', links) + group('Mentioned in', mentions)
+      || '<p class="mm-panel__note">No note points at this map yet. In a note, type <b>[[</b> or <b>@</b> and pick it. Shift+click a note here to open it in the side pane.</p>';
+  }
+
+  const BODY = { text: textHtml, color: colorHtml, node: nodeHtml, map: mapHtml, links: linksHtml };
+  const TITLE = { text: 'Text', color: 'Color', node: 'Node', map: 'Map', links: 'Linked from' };
 
   function refresh() {
     bar.querySelectorAll('[data-bar]').forEach((b) => b.classList.toggle('is-on', b.dataset.bar === open));
@@ -140,7 +150,8 @@ export function mountPanel(root, api) {
   panel.addEventListener('click', (e) => {
     const t = e.target;
     let b;
-    if ((b = t.closest('[data-fmt]'))) api.format(b.dataset.fmt);
+    if ((b = t.closest('[data-ref]'))) { if (e.shiftKey) { e.preventDefault(); api.openPane(b.dataset.ref); } }
+    else if ((b = t.closest('[data-fmt]'))) api.format(b.dataset.fmt);
     else if ((b = t.closest('[data-tc]'))) api.colourText('tc', b.dataset.tc === 'default' ? -1 : Number(b.dataset.tc));
     else if ((b = t.closest('[data-tb]'))) api.colourText('tb', b.dataset.tb === 'default' ? -1 : Number(b.dataset.tb));
     else if ((b = t.closest('[data-toggle]'))) {

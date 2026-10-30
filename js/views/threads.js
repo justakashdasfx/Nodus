@@ -3,7 +3,7 @@ import * as store from '../core/store.js';
 import { escapeHtml, tagHue } from '../core/utils.js';
 import { matchBlocks, ruleCount } from '../core/threads.js';
 import { icon } from '../core/icons.js';
-import { button, viewHead, emptyState, caretHtml, countText } from '../ui/components.js';
+import { button, viewHead, emptyState, caretHtml, countText, moreBtn } from '../ui/components.js';
 
 /** Small readable summary of a thread's rules: coloured #tags, then words and keywords. */
 export function rulesSummary(rules) {
@@ -31,13 +31,14 @@ export function render() {
   const rows = list.map((t) => {
     const count = t.live ? matchBlocks(notes, t.rules).length : (t.frozen || []).length;
     const state = t.live ? '' : '<span class="badge">Paused</span>';
-    return `<a class="lrow lrow--thread" href="#/thread/${t.id}">
+    return `<a class="lrow lrow--thread" href="#/thread/${t.id}" data-item="thread:${t.id}">
       <span class="lrow__lead">${icon('threads', 16)}</span>
       <span class="lrow__main">
         <span class="lrow__title">${escapeHtml(t.title)}</span>
       </span>
       <span class="lrow__rules">${ruleCount(t.rules) ? rulesSummary(t.rules) : '<span class="lrow__desc">No rules yet</span>'}</span>
       <span class="lrow__meta">${state}<span>${countText(count, 'block', 'blocks')}</span></span>
+      ${moreBtn('thread', t.id)}
       ${caretHtml}
     </a>`;
   }).join('');

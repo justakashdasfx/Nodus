@@ -233,7 +233,7 @@ border-radius: var(--search-radius);
 /* The guide line: runs down from the chevron along the notes of an open notebook */
 .tree-children {
   margin-left: var(--tree-guide-indent);
-  padding-left: 8px;
+  padding-left: 6px;
   border-left: var(--tree-guide-width) solid var(--tree-guide);
 }
 .tree-empty { padding: 4px 10px; font-size: var(--fs-small); color: var(--text-muted); }
@@ -322,3 +322,26 @@ border-radius: var(--search-radius);
 
 /* Page card and side-pane card: border and shadow */
 .card__scroll, .pane { border: var(--card-border); box-shadow: var(--card-shadow); }
+
+/* ---------- Folders of notebooks in the sidebar (js/ui/sidebar.js) ----------
+   A notebook row and a folder row both end in a small slot: + (new note / new notebook) and ⋯ (menu) show on hover; a folder's chevron always shows. */
+.tree-row--folder .tree-trail { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.tree-row--folder .tree-trail > * { grid-area: auto; }
+.tree-row--folder .tree-add { width: 0; opacity: 0; overflow: hidden; }                       /* take no room until the row is hovered */
+.tree-row--folder:hover .tree-add, .tree-row--folder:focus-within .tree-add { width: 22px; opacity: 1; }
+.tree-chev { width: 22px; height: 22px; flex: none; display: grid; place-items: center; border-radius: var(--r-sm); color: var(--text-muted); }
+.tree-chev:hover { background: var(--bg-pressed); color: var(--text); }
+.tree-chev .icon { transition: transform var(--t-fast) var(--ease); }
+.tree-coll.is-open > .tree-row .tree-chev .icon { transform: rotate(90deg); }
+@media (hover: none) { .tree-row--folder .tree-add { width: 22px; opacity: 1; } }
+
+/* Dragging a notebook or a folder (js/ui/folder-dnd.js): the one you hold fades; the target shows where it will land */
+[data-fid].is-dragging { opacity: 0.45; }
+.is-drop-into { background: var(--bg-hover); box-shadow: inset 0 0 0 1px var(--accent); }                       /* into this folder / group with this notebook */
+.is-drop-before { box-shadow: inset 0 2px 0 0 var(--accent); }                                                  /* a line above (rows) … */
+.is-drop-after  { box-shadow: inset 0 -2px 0 0 var(--accent); }                                                 /* … or below */
+.g-card.is-drop-before { box-shadow: inset 3px 0 0 0 var(--accent); }                                           /* gallery cards: a line on the left … */
+.g-card.is-drop-after  { box-shadow: inset -3px 0 0 0 var(--accent); }                                          /* … or right */
+.g-card.is-drop-into { border-color: var(--accent); box-shadow: none; }
+.nav-item.is-drop-root, .sidebar__label-row.is-drop-root { background: var(--bg-hover); box-shadow: inset 0 0 0 1px var(--accent); }   /* drop on "Notebooks" = out of its folder */
+.view.is-drop-into { box-shadow: none; outline: 1px dashed var(--accent); outline-offset: -8px; background: transparent; }   /* empty space on a folder's page */

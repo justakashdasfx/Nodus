@@ -275,3 +275,39 @@ a.row:hover, .row--static:hover { background: var(--bg-hover); border-radius: va
 /* rule chips inside a thread row: outlined, normal case; the tag's hue is only the text + border colour */
 .lrow--thread .rule-chip { height: 22px; padding: 0 9px; border: 1px solid var(--border); border-radius: 999px; background: transparent; color: var(--text-muted); font-size: var(--fs-tiny); }
 .lrow--thread .rule-chip--tag { font-family: inherit; text-transform: none; letter-spacing: 0; background: transparent; border-color: hsl(var(--tag-h) 35% 50% / .35); color: hsl(var(--tag-h) var(--tag-sat) var(--tag-light)); }
+
+/* ---------- Folders, the ⋯ button, and the folder page ---------- */
+
+/* The ⋯ button on a card or a row. It shows on hover (always on touch screens); a card's sits in its top-right corner. */
+.item-more {
+  flex: none; width: 28px; height: 28px; display: grid; place-items: center;
+  border-radius: var(--r-sm); color: var(--text-muted); opacity: 0;
+  transition: opacity var(--t-fast), background var(--t-fast), color var(--t-fast);
+}
+.item-more:hover { background: var(--bg-pressed); color: var(--text); }
+.lrow:hover .item-more, .tk-row:hover .item-more, .item-more:focus-visible { opacity: 1; }
+.g-card { position: relative; }
+.g-card > .item-more { position: absolute; top: 8px; right: 8px; z-index: 2; background: var(--bg-card); box-shadow: 0 0 0 1px var(--border); }
+.g-card:hover > .item-more, .g-card > .item-more:focus-visible { opacity: 1; }
+@media (hover: none) { .item-more { opacity: 0.75; } }
+.view-head__actions .btn--icon { margin-left: 4px; }
+
+/* A folder: same card as a notebook, a folder icon, and a line of notebook names on top */
+.g-card--folder .g-card__titlerow .icon { color: var(--text-dim); }
+.lrow--folder .lrow__tile { color: var(--text-dim); }
+
+/* The way back up (above a folder's name, and above a notebook that sits in a folder) */
+.crumb { display: inline-flex; align-items: center; gap: 4px; margin-bottom: 6px; color: var(--text-muted); font-size: var(--fs-small); transition: color var(--t-fast); }
+.crumb:hover { color: var(--text); }
+
+/* A folder's name: an input that looks like the page title, click to rename */
+.coll__title {
+  display: block; width: 100%; max-width: 520px; padding: 0 4px; margin-left: -4px; border: 0; border-radius: var(--r-sm); outline: none; background: transparent;
+  font: inherit; font-size: var(--fs-title); font-weight: 600; letter-spacing: -0.015em; color: var(--text-dim);
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.coll__title:hover { background: var(--bg-hover); }
+.coll__title:focus { background: var(--bg-hover); color: var(--text); box-shadow: 0 1px 0 var(--accent); }
+
+/* Rows that end with the ⋯ button: leave room for it */
+.lrow--notebook .lrow__sub { display: inline-flex; align-items: center; gap: 6px; }

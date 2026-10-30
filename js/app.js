@@ -36,12 +36,15 @@ import * as thread from './views/thread.js';
 import * as inbox from './views/inbox.js';
 import * as tasks from './views/tasks.js';
 import * as tags from './views/tags.js';
+import * as collection from './views/collection.js';
 import * as maps from './views/maps.js';
 import * as map from './views/map.js';
 import { openPopMenu } from './ui/popmenu.js';
 import { initSidebarDnd } from './ui/sidebar-dnd.js';
+import { initFolderDnd } from './ui/folder-dnd.js';
+import { initItemMenu } from './ui/item-menu.js';
 
-const VIEWS = { home, inbox, notebooks, notebook, journal, trash, note, tag, threads, thread, tasks, tags, maps, map };
+const VIEWS = { home, inbox, notebooks, notebook, collection, journal, trash, note, tag, threads, thread, tasks, tags, maps, map };
 const els = { sidebar: $('#sidebar'), topbar: $('#topbar'), view: $('#view'), card: $('#card'), pane: $('#pane'), divider: $('#divider') };
 
 let route = parseRoute();
@@ -63,6 +66,14 @@ function drawView({ resetScroll = false } = {}) {
   if (resetScroll) els.view.scrollTop = 0;
 }
 
+/** Unfolds the folders around a notebook (or folder) so it shows in the sidebar. */
+function revealFolder(id) {
+  const open = settings.getExpanded();
+  let changed = false;
+  for (let p = store.parentFolder(id); p; p = store.parentFolder(p.id)) if (!open.has(p.id)) { open.add(p.id); changed = true; }
+  if (changed) settings.setExpanded(open);
+}
+
 let lastNoteFolder = null; // so a folder you collapsed stays collapsed while you move between its notes
 
 function onRoute(next) {
@@ -73,10 +84,13 @@ function onRoute(next) {
       const open = settings.getExpanded();
       open.add(folderId);
       settings.setExpanded(open);
+      revealFolder(folderId);
     }
     lastNoteFolder = folderId;
   } else {
     lastNoteFolder = null;
+    if (route.view === 'notebook') revealFolder(route.id);                                   // a notebook inside a folder: unfold the folder around it
+    if (route.view === 'collection') { revealFolder(route.id); const open = settings.getExpanded(); open.add(route.id); settings.setExpanded(open); }
   }
   if (settings.isMobile()) document.documentElement.classList.add('sidebar-collapsed');
   pane.onRoute(route); // a note can't be the page and in the pane at once
@@ -245,12 +259,17 @@ registerActions({
     });
     if (!ok) return;
     store.deleteThread(t.id);
-    go('#/threads');
+    if (route.view === 'thread') go('#/threads'); else drawView();   // from the list: stay on it (a thread change does not redraw by itself)
   },
 
-  'notebook-new': async () => {
+  'notebook-new': async (el) => {
+    const parent = el.dataset.parent && store.getFolder(el.dataset.parent) ? el.dataset.parent : null;   // from a folder: the notebook is made inside it
     const name = await modal.prompt({ title: 'New notebook', label: 'Notebook name', placeholder: 'Notebook name', confirmLabel: 'Create' });
-    if (name && name.trim()) { store.createFolder(name); go('#/notebooks'); }   // stay on the Notebooks page; the new notebook appears there
+    if (!name || !name.trim()) return;
+    const folder = store.createFolder(name, { parentId: parent });
+    if (!parent) { go('#/notebooks'); return; }                                   // stay on the Notebooks page; the new notebook appears there
+    const open = settings.getExpanded(); open.add(parent); settings.setExpanded(open);
+    if (!(route.view === 'collection' && route.id === parent)) go(`#/notebook/${folder.id}`);   // from the sidebar: open the new notebook
   },
   'notebook-edit': async (el) => {
     const folder = store.getFolder(el.dataset.id);
@@ -283,7 +302,26 @@ registerActions({
         : 'The notebook will move to Trash. You can restore it from there.',
       confirmLabel: 'Move to Trash',
     });
-    if (ok) { store.trashFolder(folder.id); go('#/notebooks'); toastUndo('Notebook moved to Trash', () => store.restoreFolder(folder.id)); }
+    if (!ok) return;
+    const up = store.parentFolder(folder.id);
+    store.trashFolder(folder.id);
+    if (route.view === 'notebook' && route.id === folder.id) go(up ? `#/collection/${up.id}` : '#/notebooks');   // only leave the page if you were on it
+    toastUndo('Notebook moved to Trash', () => store.restoreFolder(folder.id));
+  },
+  /* Folders in the sidebar: click opens the page and unfolds it; the chevron only unfolds / folds */
+  'coll-open': (el) => {
+    const id = el.dataset.id;
+    const open = settings.getExpanded();
+    if (route.view === 'collection' && route.id === id) { if (open.has(id)) open.delete(id); else open.add(id); settings.setExpanded(open); drawSidebar(); return; }   // already here: toggle
+    open.add(id);
+    settings.setExpanded(open);
+    go(`#/collection/${id}`);
+  },
+  'coll-toggle': (el) => {
+    const open = settings.getExpanded();
+    if (open.has(el.dataset.id)) open.delete(el.dataset.id); else open.add(el.dataset.id);
+    settings.setExpanded(open);
+    drawSidebar();
   },
   'notebook-restore': (el) => store.restoreFolder(el.dataset.id),
   'notebook-delete-forever': async (el) => {
@@ -309,8 +347,13 @@ registerActions({
     const id = el.dataset.id;
     const f = store.getFolder(id);
     const style = f?.viewStyle === 'list' || f?.viewStyle === 'gallery' ? f.viewStyle : CONFIG.defaults.views.notebook;
+    const parent = store.parentFolder(id);
+    const hasHome = store.collections().some(c => store.canPlace(id, c.id) && parent?.id !== c.id);
     openPopMenu(el, [
+      { label: 'Rename', ic: 'pencil', action: 'notebook-rename', data: { id } },
       { label: 'Edit notebook', ic: 'pencil', action: 'notebook-edit', data: { id } },
+      ...(hasHome ? [{ label: 'Move to folder…', ic: 'folder', action: 'notebook-move-pick', data: { id } }] : []),
+      ...(parent ? [{ label: 'Remove from folder', ic: 'arrowUp', action: 'notebook-unparent', data: { id } }] : []),
       { sep: true },
       { label: 'Gallery view', ic: 'notebooks', action: 'view-style', data: { style: 'gallery', page: 'notebook', id }, check: style === 'gallery' },
       { label: 'List view', ic: 'bullets', action: 'view-style', data: { style: 'list', page: 'notebook', id }, check: style === 'list' },
@@ -365,7 +408,7 @@ registerActions({
     if (!ok) return;
     store.trashNote(n.id);
     toastUndo('Moved to Trash', () => { store.restoreNote(n.id); go(`#/${n.type === 'map' ? 'map' : 'note'}/${n.id}`); });
-    go(n.type === 'map' ? '#/maps' : n.type === 'journal' ? '#/journal' : n.folderId ? `#/notebook/${n.folderId}` : '#/home');
+    if ((route.view === 'note' || route.view === 'map') && route.id === n.id) go(n.type === 'map' ? '#/maps' : n.type === 'journal' ? '#/journal' : n.folderId ? `#/notebook/${n.folderId}` : '#/home');   // only leave the page if you were on it
   },
   'note-restore': (el) => store.restoreNote(el.dataset.id),
   'note-delete': async (el) => {
@@ -549,11 +592,47 @@ window.addEventListener('app-command', (e) => {
   }
 });
 
+/* ---------- Dragging notebooks and folders (where it lands: js/ui/folder-dnd.js) ---------- */
+
+async function dropFolder({ dragId, zone, targetId }) {
+  const f = store.getFolder(dragId);
+  if (!f) return;
+  const snap = store.foldersSnapshot();
+  const before = store.parentFolder(dragId)?.id || null;
+  const open = settings.getExpanded();
+
+  if (zone === 'group') {                                  // notebook onto notebook: a new folder with both, then name it
+    const c = store.groupFolders(dragId, targetId);
+    if (!c) return;
+    open.add(c.id);
+    settings.setExpanded(open);
+    drawSidebar();
+    const name = await modal.prompt({ title: 'Name this folder', label: 'Folder name', value: 'New folder', confirmLabel: 'Save' });
+    if (name && name.trim()) store.renameFolder(c.id, name);
+    toastUndo('Folder created', () => store.restoreFoldersSnapshot(snap));
+    return;
+  }
+
+  let ok;
+  if (zone === 'into') { ok = store.placeFolder(dragId, { parentId: targetId }); open.add(targetId); }
+  else if (zone === 'root') ok = store.placeFolder(dragId, { parentId: null });
+  else ok = store.placeFolder(dragId, { parentId: store.parentFolder(targetId)?.id || null, [zone]: targetId });   // zone is 'before' or 'after'
+  if (!ok) return;
+  settings.setExpanded(open);
+  const now = store.parentFolder(dragId)?.id || null;
+  if (now !== before) {                                    // it changed folder: say so, with Undo (a plain re-order needs no message)
+    const msg = now ? `Moved “${f.name}” into “${store.getFolder(now)?.name}”` : `Moved “${f.name}” out of its folder`;
+    toastUndo(msg, () => store.restoreFoldersSnapshot(snap));
+  }
+}
+
 /* ---------- Boot ---------- */
 
 store.load();
 initActions();
 initMoreMenu({ route: () => route });
+initItemMenu({ toast, toastUndo, redraw: () => drawView() });
+initFolderDnd(dropFolder);
 initSearch({ route: () => route });
 pane.initPane({ card: els.card, view: els.view, pane: els.pane, divider: els.divider, route: () => route });
 if (localStorage.getItem(CONFIG.storage.sidebar) === null && settings.isMobile()) {

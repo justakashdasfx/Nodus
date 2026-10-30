@@ -14,7 +14,7 @@ export function render() {
     const count = store.noteCount(f.id);
     return `
     <div class="row row--static">
-      <a class="row__title row__title--icon" href="#/notebook/${f.id}">${icon('folder', 16)}<span>${escapeHtml(f.name)}</span></a>
+      <a class="row__title row__title--icon" href="#/notebook/${f.id}">${icon('notebook', 16)}<span>${escapeHtml(f.name)}</span></a>
       <span class="row__text">${count} ${count === 1 ? 'note' : 'notes'} · Deleted ${formatDate(f.deletedAt)}</span>
       <span class="row__actions">
         ${button({ action: 'notebook-restore', iconName: 'restore', label: 'Restore', data: { id: f.id } })}

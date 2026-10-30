@@ -7,7 +7,10 @@
      and listen with subscribe().
 
    Data model
-     folder: { id, name, description, createdAt, deletedAt }
+     folder: { id, name, description, createdAt, deletedAt,
+               kind?: 'collection'  (a folder that holds notebooks; no kind = a notebook),
+               parentId?: the collection it sits in (none = top level),
+               ord?: its place among its siblings }
      note:   { id, type: 'note' | 'journal', date, folderId, html, title,
                blocks, createdAt, updatedAt, deletedAt }
      • blocks = small index of the note's blocks (id, type, text, tags) — see core/blockindex.js
@@ -105,9 +108,60 @@ export const getFolder = (id) => state.folders.find(f => f.id === id) || null;
 
 const folderTrashed = (n) => !!(n.folderId && getFolder(n.folderId)?.deletedAt);
 
-/** Notebooks that are not in Trash. */
-export const folders = () => state.folders.filter(f => !f.deletedAt).sort((a, b) => a.createdAt - b.createdAt);
-export const trashedFolders = () => state.folders.filter(f => f.deletedAt).sort((a, b) => b.deletedAt - a.deletedAt);
+/* ---------- Notebook folders ----------
+   A "collection" (shown as a Folder) is a folder record with kind: 'collection'. It holds notebooks (parentId on the notebook).
+   How deep folders may go: config.js → folders.maxLevels (1 = a folder holds notebooks only). Everything below is written for any depth. */
+
+export const isCollection = (f) => f?.kind === 'collection';
+const maxLevels = () => Math.max(1, CONFIG.folders?.maxLevels || 1);
+const ordKey = (f) => (Number.isFinite(f.ord) ? f.ord : Infinity);
+const bySlot = (a, b) => (ordKey(a) - ordKey(b)) || (a.createdAt - b.createdAt);   // Infinity - Infinity is NaN → falls through to the date
+
+/** The folder that holds this one, or null (a parent that is gone counts as "top level"). */
+const parentOf = (f) => {
+  const p = f?.parentId ? getFolder(f.parentId) : null;
+  return p && isCollection(p) && !p.deletedAt && p.id !== f.id ? p : null;
+};
+export const parentFolder = (id) => parentOf(getFolder(id));
+const depthOf = (f) => { let d = 0, p = parentOf(f), guard = 0; while (p && guard++ < 50) { d += 1; p = parentOf(p); } return d; };
+const isInside = (f, ancestorId) => { let p = parentOf(f), guard = 0; while (p && guard++ < 50) { if (p.id === ancestorId) return true; p = parentOf(p); } return false; };
+/** How many folder levels sit below this folder (0 = it holds no folders). */
+const levelsBelow = (f) => Math.max(0, ...state.folders.filter(c => !c.deletedAt && isCollection(c) && parentOf(c)?.id === f.id).map(c => 1 + levelsBelow(c)));
+
+/** Can this notebook / folder sit inside that folder (null = top level)? */
+export function canPlace(id, parentId) {
+  const item = getFolder(id);
+  if (!item) return false;
+  if (!parentId) return true;
+  const parent = getFolder(parentId);
+  if (!parent || !isCollection(parent) || parent.deletedAt || parent.id === id || isInside(parent, id)) return false;
+  const above = depthOf(parent) + 1;                                       // folders above the item once it is in
+  return isCollection(item) ? above + 1 + levelsBelow(item) <= maxLevels() : above <= maxLevels();
+}
+
+const liveFolders = () => state.folders.filter(f => !f.deletedAt);
+/** What sits directly inside a folder (null = the top level): notebooks and folders, in the order you arranged them. */
+export const childrenOf = (parentId = null) => liveFolders().filter(f => (parentOf(f)?.id || null) === (parentId || null)).sort(bySlot);
+export const topLevel = () => childrenOf(null);
+/** Every notebook that is not in Trash, in sidebar order (folders are left out: this feeds pickers, search and counts). */
+export function folders() {
+  const out = [];
+  const walk = (pid) => childrenOf(pid).forEach(f => (isCollection(f) ? walk(f.id) : out.push(f)));
+  walk(null);
+  return out;
+}
+export const collections = () => liveFolders().filter(isCollection).sort(bySlot);
+export const trashedFolders = () => state.folders.filter(f => f.deletedAt && !isCollection(f)).sort((a, b) => b.deletedAt - a.deletedAt);
+/** "Work / Projects": a notebook's name with the folders around it. */
+export function folderPath(id) {
+  const f = getFolder(id);
+  if (!f) return '';
+  const names = [f.name];
+  for (let p = parentOf(f), guard = 0; p && guard++ < 50; p = parentOf(p)) names.unshift(p.name);
+  return names.join(' / ');
+}
+/** Notebooks inside a folder (and the folders under it), counted. */
+export const notebookCount = (id) => childrenOf(id).reduce((sum, f) => sum + (isCollection(f) ? notebookCount(f.id) : 1), 0);
 export const notesInFolder = (folderId) =>
   state.notes.filter(n => n.type === 'note' && live(n) && n.folderId === folderId).sort(byUpdated);
 export const looseNotes = () =>
@@ -366,11 +420,92 @@ function touchFolders() {
   emit('dirty');
 }
 
-export function createFolder(name) {
+export function createFolder(name, { parentId = null } = {}) {
   const folder = { id: uid(), name: name.trim() || 'Untitled notebook', description: '', createdAt: Date.now() };
   state.folders.push(folder);
+  if (parentId && canPlace(folder.id, parentId)) folder.parentId = parentId;
   touchFolders();
   return folder;
+}
+
+/** A folder for notebooks. */
+export function createCollection(name, { parentId = null } = {}) {
+  const folder = { id: uid(), kind: 'collection', name: (name || '').trim() || 'New folder', description: '', createdAt: Date.now() };
+  state.folders.push(folder);
+  if (parentId && canPlace(folder.id, parentId)) folder.parentId = parentId;
+  touchFolders();
+  return folder;
+}
+
+/** Puts every sibling of a container in order, with the moved item at `index`. No save. */
+function arrange(parentId, item, index) {
+  const sibs = childrenOf(parentId).filter(x => x.id !== item.id);
+  sibs.splice(Math.max(0, Math.min(index, sibs.length)), 0, item);
+  sibs.forEach((x, i) => { x.ord = i; });
+}
+const indexIn = (parentId, id, itemId) => childrenOf(parentId).filter(x => x.id !== itemId).findIndex(x => x.id === id);
+
+/** Moves a notebook or folder: into a folder (parentId) or to the top level (null), optionally right before / after a sibling. */
+export function placeFolder(id, { parentId = null, before = null, after = null } = {}) {
+  const f = getFolder(id);
+  if (!f || !canPlace(id, parentId)) return false;
+  let index = Infinity;
+  const ref = before || after;
+  if (ref) { const i = indexIn(parentId, ref, id); if (i >= 0) index = before ? i : i + 1; }
+  if (parentId) f.parentId = parentId; else delete f.parentId;
+  arrange(parentId, f, index);
+  touchFolders();
+  return true;
+}
+
+/** Can notebook A be dropped onto notebook B to make a folder of the two? (Not when there is no room for one more folder level.) */
+export function canGroup(dragId, targetId) {
+  const a = getFolder(dragId), b = getFolder(targetId);
+  if (!a || !b || a.id === b.id || isCollection(a) || isCollection(b)) return false;
+  const parent = parentOf(b);
+  return (parent ? depthOf(parent) + 1 : 0) + 1 <= maxLevels();
+}
+
+/** Drop a notebook onto another notebook: both go into a new folder that takes the target's place. → the new folder, or null. */
+export function groupFolders(dragId, targetId, name = 'New folder') {
+  if (!canGroup(dragId, targetId)) return null;
+  const a = getFolder(dragId), b = getFolder(targetId);
+  const parent = parentOf(b);
+  const coll = { id: uid(), kind: 'collection', name, description: '', createdAt: Date.now() };
+  state.folders.push(coll);
+  const parentId = parent?.id || null;
+  if (parentId) coll.parentId = parentId;
+  arrange(parentId, coll, indexIn(parentId, b.id, coll.id));
+  b.parentId = coll.id; b.ord = 0;
+  a.parentId = coll.id; a.ord = 1;
+  touchFolders();
+  return coll;
+}
+
+/** Deletes a folder but keeps what is inside: its notebooks move up to where the folder was. */
+export function ungroupCollection(id) {
+  const c = getFolder(id);
+  if (!isCollection(c)) return false;
+  const parentId = parentOf(c)?.id || null;
+  const sibs = childrenOf(parentId);
+  const at = sibs.findIndex(x => x.id === id);
+  const kids = state.folders.filter(f => f.parentId === id);          // includes notebooks in Trash: they come back at the top level
+  const live = kids.filter(f => !f.deletedAt).sort(bySlot);
+  kids.forEach(f => { if (parentId) f.parentId = parentId; else delete f.parentId; });
+  state.folders = state.folders.filter(f => f.id !== id);
+  const order = sibs.filter(x => x.id !== id);
+  order.splice(at < 0 ? order.length : at, 0, ...live);
+  order.forEach((x, i) => { x.ord = i; });
+  touchFolders();
+  return true;
+}
+
+/** A copy of the folder list, so a move can be undone. */
+export const foldersSnapshot = () => JSON.parse(JSON.stringify(state.folders));
+export function restoreFoldersSnapshot(snapshot) {
+  if (!Array.isArray(snapshot)) return;
+  state.folders = JSON.parse(JSON.stringify(snapshot));
+  touchFolders();
 }
 
 /** Edit panel: name, description and how the notebook's notes are shown ('gallery' | 'list'). */
@@ -415,9 +550,70 @@ export function restoreFolder(id) {
 
 /** Removes a notebook and every note inside it, for good. */
 export function deleteFolderPermanently(id) {
+  if (isCollection(getFolder(id))) return ungroupCollection(id);
   state.notes.filter(n => n.folderId === id).forEach(n => deleteNotePermanently(n.id));
   state.folders = state.folders.filter(f => f.id !== id);
   touchFolders();
+}
+
+/* ---------- Rename and duplicate (the ⋯ menus) ---------- */
+
+/** A note's name is its first line of text: renaming rewrites that line (or adds a heading when the note starts with something else). */
+export function renameNote(id, title) {
+  const note = getNote(id);
+  const t = String(title || '').replace(/\s+/g, ' ').trim().slice(0, 200);
+  if (!note || note.type === 'map' || !t) return false;
+  const body = new DOMParser().parseFromString(`<body>${sanitizeHtml(note.html || '')}</body>`, 'text/html').body;
+  const first = [...body.children].find(el => el.textContent.trim());
+  if (first && /^(H[1-4]|P|DIV|BLOCKQUOTE)$/.test(first.tagName)) first.textContent = t;
+  else body.insertAdjacentHTML('afterbegin', `<h1>${escapeHtml(t)}</h1>`);
+  note.html = body.innerHTML;
+  note.title = deriveTitle(note.html);
+  note.blocks = indexHtml(note.html);
+  touch(note, 'change');
+  return true;
+}
+
+/** A copy of a note (or map) next to the original. */
+export function duplicateNote(id) {
+  const src = getNote(id);
+  if (!src || (src.type !== 'note' && src.type !== 'map')) return null;
+  const now = Date.now();
+  const copy = JSON.parse(JSON.stringify(src));
+  Object.assign(copy, { id: uid(), createdAt: now, updatedAt: now, deletedAt: null, pinned: false });
+  if (copy.type === 'map') {
+    copy.title = `${src.title || 'Untitled map'} copy`;
+    const root = copy.map?.nodes?.[copy.map.root];
+    if (root) root.t = [copy.title, ...(root.t || '').split('\n').slice(1)].join('\n');
+  } else {
+    const fresh = migrateHtml((src.html || '').replace(/\sdata-bid="[^"]*"/g, ''), copy.id);   // the blocks of the copy get ids of their own
+    copy.html = fresh.html;
+    copy.blocks = fresh.blocks;
+    copy.title = deriveTitle(copy.html);
+  }
+  state.notes.push(copy);
+  touch(copy);
+  return copy;
+}
+
+/** A map's name is the first line of its central node. */
+export function renameMap(id, title) {
+  const n = getNote(id);
+  const t = String(title || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+  if (!n || n.type !== 'map' || !t) return false;
+  const root = n.map.nodes[n.map.root];
+  const rest = (root.t || '').split('\n').slice(1);
+  root.t = [t, ...rest].join('\n');
+  n.title = mapTitle(n.map);
+  touch(n, 'change');
+  return true;
+}
+
+/** A copy of a thread with the same rules. */
+export function duplicateThread(id) {
+  const t = getThread(id);
+  if (!t) return null;
+  return createThread({ title: `${t.title} copy`, rules: JSON.parse(JSON.stringify(t.rules)) });
 }
 
 /* ---------- Sync support (used only by sync.js) ---------- */

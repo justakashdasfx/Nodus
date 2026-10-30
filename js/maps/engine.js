@@ -19,6 +19,8 @@ import { readNode, format as fmt, colour as colourFmt, toggleList, inList, fixCh
 import { outlineText, parseOutline } from './clip.js';
 import { mountOutline } from './outline.js';
 import { markdownOf, svgOf, pngOf, download } from './export.js';
+import { backlinksTo, mentionsOf, snippetFor } from '../core/links.js';
+import * as pane from '../ui/pane.js';
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const viewKey = (id) => `nodus.mapview.${id}`;   // pan / zoom of each map is remembered on this device only
@@ -34,6 +36,8 @@ export function mountMap(root, note, { readOnly = false, onSave = () => {} } = {
   const svg = root.querySelector('.mm__edges');
   const layer = root.querySelector('.mm__nodes');
   const zoomLabel = root.querySelector('[data-mm-zoom]');
+  const inPane = !!root.closest('.pane');                  // in the side pane: keys only work while the map has the focus (never from the empty page)
+  const mine = (t) => root.contains(t) || (t === document.body && !inPane);
   const countLabel = root.querySelector('[data-mm-count]');
 
   const els = new Map();                      // node id → element
@@ -603,7 +607,7 @@ export function mountMap(root, note, { readOnly = false, onSave = () => {} } = {
   function onKey(e) {
     if (mode !== 'map' || e.isComposing || document.querySelector('.modal')) return;   // the outline has its own keys
     if (e.target.closest?.('.mm__find')) return;       // typing with an IME, or a dialog / the search window is open
-    if (e.target !== document.body && !root.contains(e.target)) return;  // typing somewhere else (a menu, an input)
+    if (!mine(e.target)) return;                                         // typing somewhere else (a menu, an input, the page beside the pane)
     const action = matchAction(e, editing != null ? KEYMAP.editing : KEYMAP.canvas);
     if (!action) return;
     if (action === 'edit.next' && inList()) return;                      // Enter inside a list adds an item (on an empty item it leaves the list)
@@ -618,7 +622,7 @@ export function mountMap(root, note, { readOnly = false, onSave = () => {} } = {
   function setHand(on) { spaceDown = on; viewport.classList.toggle('is-hand', on); }
   function onHandKey(e) {
     if (mode !== 'map' || e.code !== HAND_CODE || editing != null || e.isComposing || document.querySelector('.modal')) return;
-    if (e.target !== document.body && !root.contains(e.target)) return;
+    if (!mine(e.target)) return;
     e.preventDefault();
     setHand(e.type === 'keydown');
   }
@@ -900,6 +904,11 @@ export function mountMap(root, note, { readOnly = false, onSave = () => {} } = {
     styleOf: (id) => ({ ...M.styleOf(map, id), ci: meta[id]?.ci ?? null }),
     applyStyle, applyToLevel, setOption, autoBalance, undo, redo,
     format: formatKind, colourText, exportAs,
+    linkedFrom: () => {                                                       // the notes that [[link]] or @mention this map
+      const row = (n) => ({ id: n.id, title: n.title, snip: snippetFor(n, note.id) });
+      return { links: backlinksTo(note.id).map(row), mentions: mentionsOf(note.id).map(row) };
+    },
+    openPane: (id) => pane.openNote(id),
     addFloat: addFloatCenter, toggleSticky, detach: detachSelected,
   });
 

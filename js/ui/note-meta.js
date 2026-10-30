@@ -21,6 +21,6 @@ export function noteLocation(note, trashed) {
   const { folder } = noteState(note);
   return `<button type="button" class="notebook-pick" data-action="notebook-menu" data-id="${note.id}" aria-haspopup="menu" aria-expanded="false"
       title="Move to another notebook" ${trashed ? 'disabled' : ''}>
-    ${icon(folder ? 'folder' : 'inbox', 14)}<span class="notebook-pick__name">${escapeHtml(folder ? folder.name : 'Inbox')}</span>${icon('caret', 12).replace('class="icon"', 'class="icon notebook-pick__caret"')}
+    ${icon(folder ? 'notebook' : 'inbox', 14)}<span class="notebook-pick__name">${escapeHtml(folder ? folder.name : 'Inbox')}</span>${icon('caret', 12).replace('class="icon"', 'class="icon notebook-pick__caret"')}
   </button>`;
 }

@@ -5,6 +5,7 @@
      • a note        → Shift+click any note link (sidebar, galleries, tag/thread lists);
                        a plain click on a block in a thread or tag list opens it here too
      • a tag's blocks → Shift+click a tag chip in a note
+     • a mind map    → Shift+click a map link anywhere (a [[link]] or @mention in a note, a card, the sidebar). It is the full editable map.
 
    Rules
      • Inside the pane, clicking a block of a tag list swaps the pane to that note; ← goes back to the list.
@@ -28,15 +29,16 @@ import { debounce, escapeHtml, tagHue } from '../core/utils.js';
 import * as noteView from '../views/note.js';
 import * as tagView from '../views/tag.js';
 import * as threadView from '../views/thread.js';
+import * as mapView from '../views/map.js';
 
 let els = null;                    // { card, view, pane, divider }
 let getRoute = () => ({});
-let state = null;                  // { kind: 'note' | 'tag', id, block?, prev? }  — prev = what the ← button returns to
+let state = null;                  // { kind: 'note' | 'tag' | 'thread' | 'map', id, block?, prev? }  — prev = what the ← button returns to
 let stopContent = null;            // tears down the pane's editor (flushes its save)
 let frac = CONFIG.pane.defaultWidth;
 let pushed = false;                // phones: the sheet added a history entry, so Back closes it
 
-const LINK = /^#\/(note|tag)\/([^/?#]+)(?:\/([^/?#]+))?$/;
+const LINK = /^#\/(note|tag|map)\/([^/?#]+)(?:\/([^/?#]+))?$/;
 
 /* ---------- Width ---------- */
 
@@ -101,7 +103,7 @@ function initDivider() {
 const paneScroller = () => els.pane.querySelector('.pane__scroll');
 const paneEditor = () => els.pane.querySelector('.editor');
 const mainEditor = () => els.view.querySelector('.editor');
-const editingInPane = () => { const a = document.activeElement; return !!a && a.classList.contains('editor') && els.pane.contains(a); };
+const editingInPane = () => { const a = document.activeElement; return !!a && els.pane.contains(a) && (a.classList.contains('editor') || !!a.closest?.('.mm')); };   // (a note's editor, or a map's canvas)
 
 function draw({ keepScroll = false } = {}) {
   const keep = keepScroll ? (paneScroller()?.scrollTop || 0) : 0;
@@ -120,6 +122,9 @@ function draw({ keepScroll = false } = {}) {
   if (state.kind === 'note') {
     out = noteView.render({ id: state.id, block: state.block }, { pane: true });
     title = store.getNote(state.id)?.title || 'Untitled';
+  } else if (state.kind === 'map') {
+    out = mapView.render({ id: state.id }, { pane: true });
+    title = store.getNote(state.id)?.title || 'Untitled map';
   } else if (state.kind === 'thread') {
     out = threadView.render({ id: state.id });
     title = store.getThread(state.id)?.title || 'Thread';
@@ -164,6 +169,18 @@ export function openNote(id, block = null, { fromPane = false } = {}) {
   if (route.view === 'note' && route.id === id) { noteView.revealBlock(mainEditor(), block); return; }    // already the page
   if (state?.kind === 'note' && state.id === id) { noteView.revealBlock(paneEditor(), block); return; }  // already in the pane
   state = { kind: 'note', id, block, prev: fromPane && state ? { ...state, prev: null } : null };
+  draw();
+  pushSheet();
+}
+
+/** A mind map in the pane: the same full, editable map as its own page. */
+export function openMap(id) {
+  const n = store.getNote(id);
+  if (!n || n.type !== 'map') return;
+  const route = getRoute();
+  if (route.view === 'map' && route.id === id) return;           // already the page
+  if (state?.kind === 'map' && state.id === id) return;          // already in the pane
+  state = { kind: 'map', id, prev: null };
   draw();
   pushSheet();
 }
@@ -224,6 +241,7 @@ export function onStore(kind, detail) {
 /** Called by app.js when the page changes: a note can't be both the page and in the pane. */
 export function onRoute(route) {
   if (state?.kind === 'note' && route.view === 'note' && route.id === state.id) close();
+  if (state?.kind === 'map' && route.view === 'map' && route.id === state.id) close();
 }
 
 /* ---------- Links ---------- */
@@ -245,20 +263,21 @@ function wantsPane(e, a, link) {
 
 function onClick(e) {
   if (e.defaultPrevented) return;
-  const a = e.target.closest?.('a[href^="#/note/"], a[href^="#/tag/"]');
+  const a = e.target.closest?.('a[href^="#/note/"], a[href^="#/tag/"], a[href^="#/map/"]');
   const link = a && parse(a);
   if (!link || !wantsPane(e, a, link)) return;
   e.preventDefault();
   e.stopPropagation();
   const fromPane = els.pane.contains(a);
   if (link.kind === 'note') openNote(link.id, link.block, { fromPane });
+  else if (link.kind === 'map') openMap(link.id);
   else openTag(link.id, { fromPane });
 }
 
 /** Shift+mousedown would start selecting text across the page; the link is what was meant. */
 function onMouseDown(e) {
   if (!e.shiftKey || e.button !== 0) return;
-  const a = e.target.closest?.('a[href^="#/note/"], a[href^="#/tag/"]');
+  const a = e.target.closest?.('a[href^="#/note/"], a[href^="#/tag/"], a[href^="#/map/"]');
   if (a && !settings.isMobile()) e.preventDefault();
 }
 
@@ -283,7 +302,7 @@ export function initPane({ card, view, pane, divider, route }) {
     'pane-full': () => {
       if (!state) return;
       const s = state;
-      const target = s.kind === 'note' ? `#/note/${s.id}${s.block ? '/' + s.block : ''}` : s.kind === 'thread' ? `#/thread/${s.id}` : `#/tag/${encodeURIComponent(s.id)}`;
+      const target = s.kind === 'note' ? `#/note/${s.id}${s.block ? '/' + s.block : ''}` : s.kind === 'map' ? `#/map/${s.id}` : s.kind === 'thread' ? `#/thread/${s.id}` : `#/tag/${encodeURIComponent(s.id)}`;
       if (pushed) { // phones: let go of the sheet's history entry, then open the page
         pushed = false;
         state = null; draw();

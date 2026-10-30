@@ -1,7 +1,8 @@
 /* ============================================================================
    SIDEBAR — search box shell, Home · Notebooks · Tags · Threads · Tasks, Pinned, then the Notebook section
    (Inbox · Journal · every notebook; click the "Notebook" label to hide or show the whole section), Trash.
-   Notebooks have no caret: clicking one opens it. Notes are listed on the notebook's own page, not here.
+   A notebook has no caret: clicking it opens it. A folder (a collection of notebooks) opens its own page AND unfolds to show its notebooks;
+   its chevron only unfolds. Notebooks and folders can be dragged onto each other (js/ui/folder-dnd.js). Notes are listed on the notebook's own page, not here.
    Every row uses the same icon size (18) and the same gap — see css/layout.css → "Sidebar rows".
    Pure render function; clicks are handled in app.js through data-action.
    ========================================================================== */
@@ -9,7 +10,7 @@
 import { CONFIG } from '../core/config.js';
 import { icon } from '../core/icons.js';
 import * as store from '../core/store.js';
-import { getPinnedOpen, getNotebooksOpen } from '../core/settings.js';
+import { getPinnedOpen, getNotebooksOpen, getExpanded } from '../core/settings.js';
 import { escapeHtml } from '../core/utils.js';
 import { comboLabel } from '../core/keys.js';
 import { openCount } from '../core/tasks.js';
@@ -32,16 +33,35 @@ const treeLink = ({ href, iconName, label, active }) =>
     <a class="tree-link" href="${href}">${icon(iconName, ICON)}<span class="tree-row__label">${label}</span></a>
   </div>`;
 
+/** The + (new note / new notebook) and ⋯ buttons on the right of a notebook or folder row. */
+const trail = (kind, f, addAction, addLabel, extra = '') => `<span class="tree-trail">
+        <button type="button" class="tree-add" data-action="${addAction}" ${kind === 'folder' ? `data-parent="${f.id}"` : `data-folder="${f.id}"`} aria-label="${addLabel} in ${escapeHtml(f.name)}" title="${addLabel}">${icon('plus', 14)}</button>
+        <button type="button" class="tree-add tree-more" data-action="item-more" data-kind="${kind}" data-id="${f.id}" aria-label="More" aria-haspopup="menu" title="More">${icon('more', 14)}</button>${extra}
+      </span>`;
+
 /** A notebook: no caret, no list of notes. The + adds a note to it. */
-function folderBlock(folder, route) {
+function notebookRow(folder, route) {
   const active = route.view === 'notebook' && route.id === folder.id;
   return `<div class="tree-folder">
-    <div class="tree-row tree-row--folder ${active ? 'is-active' : ''}">
-      <a class="tree-link" href="#/notebook/${folder.id}">${icon('folder', ICON)}<span class="tree-row__label">${escapeHtml(folder.name)}</span></a>
-      <span class="tree-trail">
-        <button type="button" class="tree-add" data-action="note-new" data-folder="${folder.id}" aria-label="New note in ${escapeHtml(folder.name)}" title="New note">${icon('plus', 14)}</button>
-      </span>
+    <div class="tree-row tree-row--folder ${active ? 'is-active' : ''}" data-fid="${folder.id}" data-item="notebook:${folder.id}">
+      <a class="tree-link" draggable="true" href="#/notebook/${folder.id}">${icon('notebook', ICON)}<span class="tree-row__label">${escapeHtml(folder.name)}</span></a>
+      ${trail('notebook', folder, 'note-new', 'New note')}
     </div>
+  </div>`;
+}
+
+/** A folder of notebooks: click it to open its page (and unfold it); the chevron only unfolds. */
+function folderBlock(folder, route, open) {
+  const active = route.view === 'collection' && route.id === folder.id;
+  const isOpen = open.has(folder.id);
+  const kids = store.childrenOf(folder.id);
+  const chevron = `<button type="button" class="tree-chev" data-action="coll-toggle" data-id="${folder.id}" aria-expanded="${isOpen}" aria-label="${isOpen ? 'Fold' : 'Unfold'} ${escapeHtml(folder.name)}">${icon('caret', 14)}</button>`;
+  return `<div class="tree-coll${isOpen ? ' is-open' : ''}">
+    <div class="tree-row tree-row--folder ${active ? 'is-active' : ''}" data-fid="${folder.id}" data-item="folder:${folder.id}">
+      <a class="tree-link" draggable="true" href="#/collection/${folder.id}" data-action="coll-open" data-id="${folder.id}">${icon('folder', ICON)}<span class="tree-row__label">${escapeHtml(folder.name)}</span></a>
+      ${trail('folder', folder, 'notebook-new', 'New notebook', chevron)}
+    </div>
+    ${isOpen ? `<div class="tree-children">${kids.length ? kids.map(k => (store.isCollection(k) ? folderBlock(k, route, open) : notebookRow(k, route))).join('') : '<div class="tree-empty">No notebooks yet</div>'}</div>` : ''}
   </div>`;
 }
 
@@ -54,7 +74,8 @@ function searchBox() {
 }
 
 export function renderSidebar(route) {
-  const folders = store.folders();
+  const items = store.topLevel();
+  const expanded = getExpanded();
   const pinned = store.pinnedNotes();
   const pinnedOpen = getPinnedOpen();
   const notebooksOpen = getNotebooksOpen();
@@ -87,7 +108,7 @@ return `
         ${treeLink({ href: '#/inbox', iconName: 'inbox', label: 'Inbox', active: route.view === 'inbox' })}
         ${treeLink({ href: '#/journal', iconName: 'journal', label: 'Journal', active: route.view === 'journal' })}
       </div>
-      ${folders.length ? `<div class="tree-group tree-group--mine">${folders.map(f => folderBlock(f, route)).join('')}</div>` : ''}` : ''}
+      ${items.length ? `<div class="tree-group tree-group--mine">${items.map(f => (store.isCollection(f) ? folderBlock(f, route, expanded) : notebookRow(f, route))).join('')}</div>` : ''}` : ''}
     </div>
     <div class="sidebar__foot">
       ${navItem({ href: '#/trash', iconName: 'trash', label: 'Trash', active: route.view === 'trash', count: trashCount })}

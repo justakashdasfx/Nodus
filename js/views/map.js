@@ -63,6 +63,7 @@ export function render({ id }) {
         <button type="button" class="mm-bar__btn" data-bar="color" title="Color" aria-label="Color">${icon('palette', 18)}</button>
         <button type="button" class="mm-bar__btn" data-bar="node" title="Node" aria-label="Node">${icon('shape', 18)}</button>
         <button type="button" class="mm-bar__btn" data-bar="map" title="Map" aria-label="Map">${icon('mindmap', 18)}</button>
+        <button type="button" class="mm-bar__btn" data-bar="links" title="Linked from" aria-label="Linked from">${icon('link', 18)}</button>
         <span class="mm__bar-sep" aria-hidden="true"></span>
         <button type="button" class="mm-bar__btn" data-bar="undo" title="Undo (${escapeHtml(comboLabel((KEYMAP.canvas['edit.undo'] || [])[0] || ''))})" aria-label="Undo">${icon('undo', 18)}</button>
         <button type="button" class="mm-bar__btn" data-bar="redo" title="Redo (${escapeHtml(comboLabel((KEYMAP.canvas['edit.redo'] || [])[0] || ''))})" aria-label="Redo">${icon('redo', 18)}</button>

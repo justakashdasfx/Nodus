@@ -43,7 +43,9 @@ export function mountNoteLinks(root, { readOnly = false, history = null } = {}) 
       const n = store.getNote(s.getAttribute('data-note-link'));
       const missing = !n || !!n.deletedAt;
       s.classList.toggle('is-missing', missing);
-      s.title = missing ? 'This note no longer exists' : (readOnly ? 'Open · Shift+click: side pane' : 'Open · Shift+click: side pane · Alt+click: short name');
+      const isMap = n?.type === 'map';
+      if (isMap) s.setAttribute('data-kind', 'map'); else s.removeAttribute('data-kind');   // (css/maps.css gives a mind map link its little icon)
+      s.title = missing ? 'This note no longer exists' : isMap ? 'Open the mind map · Shift+click: side pane' + (readOnly ? '' : ' · Alt+click: short name') : (readOnly ? 'Open · Shift+click: side pane' : 'Open · Shift+click: side pane · Alt+click: short name');
       if (n && !s.hasAttribute('data-alias') && s.textContent !== titleOf(n)) s.textContent = titleOf(n);
     });
   }
@@ -64,7 +66,8 @@ export function mountNoteLinks(root, { readOnly = false, history = null } = {}) 
     const id = s.getAttribute('data-note-link');
     if (e.altKey && !readOnly) { editAlias(s); return; }
     if (!store.getNote(id)) return;
-    if (e.shiftKey) pane.openNote(id); else go(`#/note/${id}`);
+    if (store.getNote(id).type === 'map') { if (e.shiftKey) pane.openMap(id); else go(`#/map/${id}`); }   // a mind map: Shift+click = the side pane (fully editable)
+    else if (e.shiftKey) pane.openNote(id); else go(`#/note/${id}`);
   };
   root.addEventListener('click', onClick);
   if (readOnly) return () => { root.removeEventListener('click', onClick); root.removeEventListener('mousedown', onMouseDown); };
@@ -132,7 +135,7 @@ export function mountNoteLinks(root, { readOnly = false, history = null } = {}) 
     const needle = q.trim().toLowerCase();
     if (!needle) return [];                                       // nothing until you type
     const here = hostId();
-    const list = store.searchableNotes().filter((n) => n.id !== here && titleOf(n).toLowerCase().includes(needle))
+    const list = [...store.searchableNotes(), ...store.maps()].filter((n) => n.id !== here && titleOf(n).toLowerCase().includes(needle))
       .map((n) => ({ note: n, starts: titleOf(n).toLowerCase().startsWith(needle) }))
       .sort((a, b) => (b.starts - a.starts) || ((b.note.updatedAt || 0) - (a.note.updatedAt || 0)))
       .slice(0, MAX_ITEMS);
@@ -159,7 +162,7 @@ export function mountNoteLinks(root, { readOnly = false, history = null } = {}) 
       const t = titleOf(it.note); const at = t.toLowerCase().indexOf(q);
       const name = at >= 0 ? `${escapeHtml(t.slice(0, at))}<b>${escapeHtml(t.slice(at, at + q.length))}</b>${escapeHtml(t.slice(at + q.length))}` : escapeHtml(t);
       const folder = it.note.folderId ? store.getFolder(it.note.folderId)?.name : '';
-      return `<button type="button" role="option" class="link-suggest__item${i === active ? ' is-active' : ''}" data-i="${i}">${icon('note', 14)}<span class="link-suggest__name">${name}</span>${folder ? `<span class="link-suggest__where">${escapeHtml(folder)}</span>` : ''}</button>`;
+      return `<button type="button" role="option" class="link-suggest__item${i === active ? ' is-active' : ''}" data-i="${i}">${icon(it.note.type === 'map' ? 'mindmap' : 'note', 14)}<span class="link-suggest__name">${name}</span>${it.note.type === 'map' || folder ? `<span class="link-suggest__where">${escapeHtml(it.note.type === 'map' ? (folder ? `Mind map · ${folder}` : 'Mind map') : folder)}</span>` : ''}</button>`;
     }).join('');
   }
 
@@ -215,7 +218,7 @@ export function mountNoteLinks(root, { readOnly = false, history = null } = {}) 
     const typed = before.toString().replace(/\u00a0/g, ' ');
     const m = typed.match(/\[\[([^[\]]+)\]\]$/);
     if (!m) return false;
-    const note = store.searchableNotes().find((n) => n.id !== hostId() && titleOf(n).toLowerCase() === m[1].trim().toLowerCase());
+    const note = [...store.searchableNotes(), ...store.maps()].find((n) => n.id !== hostId() && titleOf(n).toLowerCase() === m[1].trim().toLowerCase());
     if (!note) return false;
     changed(() => insertLink({ block, start: typed.length - m[0].length, end: typed.length }, note, ''));
     return true;

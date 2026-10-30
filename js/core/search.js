@@ -108,6 +108,10 @@ function build() {
     const c = store.noteCount(f.id);
     return { kind: 'notebook', id: f.id, title: f.name, sub: `${c} ${c === 1 ? 'note' : 'notes'}`, t: f.createdAt, f: [[uniqueWords(f.name), 3], [uniqueWords(f.description), 0.8]] };
   });
+  for (const c of store.collections()) {                     // folders of notebooks are listed with the notebooks
+    const n = store.notebookCount(c.id);
+    notebooks.push({ kind: 'folder', id: c.id, title: c.name, sub: `Folder · ${n} ${n === 1 ? 'notebook' : 'notebooks'}`, t: c.createdAt, f: [[uniqueWords(c.name), 3]] });
+  }
   const threads = store.threads().map(t => ({ kind: 'thread', id: t.id, title: t.title || 'Untitled thread', sub: 'Thread', t: t.updatedAt, f: [[uniqueWords(t.title), 3]] }));
   const maps = store.maps().map(m => {
     const folder = m.folderId ? store.getFolder(m.folderId) : null;

@@ -40,5 +40,7 @@ export function render({ id }) {
   const description = folder.description
     ? `<p class="view-head__desc">${escapeHtml(folder.description)}</p>`
     : `<button type="button" class="view-head__add-desc" data-action="notebook-edit" data-id="${id}">Add a description</button>`;
-  return { html: `<div class="view">${viewHead({ title: folder.name, description, actions })}${body}</div>` };
+  const parent = store.parentFolder(id);   // a notebook inside a folder: a link back up
+  const crumb = parent ? `<a class="crumb" href="#/collection/${parent.id}">${icon('arrowLeft', 14)}<span>${escapeHtml(parent.name)}</span></a>` : '';
+  return { html: `<div class="view">${viewHead({ title: folder.name, description, actions, crumb })}${body}</div>` };
 }

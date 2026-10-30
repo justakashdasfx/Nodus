@@ -33,6 +33,11 @@ export const CONFIG = {
     views: 'notes.viewStyles',      // Gallery or List for each page, on this device
   },
 
+  /* ---- Notebook folders ---- */
+  folders: {
+    maxLevels: 1,   // how many folders may sit inside each other: 1 = a folder holds notebooks only · 2, 3 … = folders inside folders
+  },
+
   /* ---- Timing (milliseconds) ---- */
   timing: {
     saveDebounce: 600,   // typing pause before the note is saved locally
@@ -48,7 +53,7 @@ export const CONFIG = {
     noteFont: 'sans',    // font of a note that has none chosen: 'sans' | 'mono' | 'serif'
     statsMode: 'words',  // the top bar count: 'words' or 'chars'
     views: {             // Gallery or List until you choose (a notebook keeps its own choice, set in its Edit dialog)
-      home: 'gallery', inbox: 'gallery', notebooks: 'gallery', notebook: 'gallery', journal: 'list', maps: 'gallery',
+      home: 'gallery', inbox: 'gallery', notebooks: 'gallery', notebook: 'gallery', collection: 'gallery', journal: 'list', maps: 'gallery',
     },
     /* How strongly non-active paragraphs are muted while writing:
          'subtle' → inactive paragraphs a little dimmer (matches your screenshots)
@@ -172,7 +177,7 @@ export const CONFIG = {
     { id: 'journal.today',  label: "Open today's journal", words: 'daily diary entry',          kind: 'action', target: 'journal-today',  icon: 'journal' },
     { id: 'map.new',        label: 'New mind map',        words: 'create add mindmap diagram brainstorm', kind: 'action', target: 'map-new',    icon: 'mindmap' },
     { id: 'map.template',   label: 'New mind map from template', words: 'create mindmap style', kind: 'action', target: 'map-template-pick', icon: 'mindmap' },
-    { id: 'notebook.new',   label: 'New notebook',        words: 'create add folder',           kind: 'action', target: 'notebook-new',   icon: 'folder' },
+    { id: 'notebook.new',   label: 'New notebook',        words: 'create add folder',           kind: 'action', target: 'notebook-new',   icon: 'notebook' },
     { id: 'thread.new',     label: 'New thread',          words: 'create add filter live',      kind: 'action', target: 'thread-new',     icon: 'threads' },
     { id: 'go.home',        label: 'Go to Home',          words: 'open recent',                 kind: 'go',     target: '#/home',         icon: 'home' },
     { id: 'go.inbox',       label: 'Go to Inbox',         words: 'open unfiled',                kind: 'go',     target: '#/inbox',        icon: 'inbox' },

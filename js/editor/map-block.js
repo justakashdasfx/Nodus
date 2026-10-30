@@ -25,6 +25,7 @@ import { mountPreview } from '../maps/preview.js';
 import { renderMenu, placeMenu } from './block-menu.js';
 import { idFactory } from './block-ops.js';
 import { appSheets } from './thread-block.js';
+import * as pane from '../ui/pane.js';
 
 const EMBED_BLEED = 170;                       // px the map may stick out on each side of the text column (less if the page is narrow)
 const H_DEFAULT = 380, H_MIN = 180, H_MAX = 900;   // height of the map area
@@ -111,7 +112,7 @@ export function mountMapBlocks(root, { readOnly = false, history = null } = {}) 
     if (note) {
       wrap.innerHTML = `
         <div class="mb__head">
-          <button type="button" class="mb__title" data-mb="open" title="Open the map">${icon('mindmap', 16)}<span>${escapeHtml(note.title || 'Untitled map')}</span></button>
+          <button type="button" class="mb__title" data-mb="open" title="Open the map · Shift+click: side pane">${icon('mindmap', 16)}<span>${escapeHtml(note.title || 'Untitled map')}</span></button>
           <button type="button" class="btn btn--secondary" data-mb="open">Open</button>
         </div>
         <div class="mb__view" style="height:${heightOf(el)}px"></div>
@@ -189,7 +190,7 @@ export function mountMapBlocks(root, { readOnly = false, history = null } = {}) 
     if (item) { assign(h, item.dataset.map); return; }
     const act = e.target.closest('[data-mb]')?.dataset.mb;
     const id = h.el.getAttribute('data-map-block') || '';
-    if (act === 'open') go(`#/map/${id}`);
+    if (act === 'open') { if (e.shiftKey) pane.openMap(id); else go(`#/map/${id}`); }      // Shift+click: the side pane, fully editable
     else if (act === 'existing') {
       const pick = wrap.querySelector('.tb__pick');
       pick.hidden = !pick.hidden;
